@@ -35,4 +35,6 @@ Thumbs.db
 *.pyc
 __pycache__/
 
+*.fbx
+
 .kilo/
