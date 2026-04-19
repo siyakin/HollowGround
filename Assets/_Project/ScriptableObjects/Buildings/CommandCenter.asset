@@ -13,11 +13,11 @@ MonoBehaviour:
   m_Name: Big Building
   m_EditorClassIdentifier: Assembly-CSharp::HollowGround.Buildings.BuildingData
   DisplayName: Komuta Merkezi
-  Description: "Heart of the base. Level determines building limits."
+  Description: Heart of the base. Level determines building limits.
   Type: 0
   Category: 3
   LevelPrefabs:
-  - {fileID: 919132149155446097, guid: 800db9977d0a97f429401ae780803d19, type: 3}
+  - {fileID: 919132149155446097, guid: 1ff83487850e3c843b1cd2aedfb4beb9, type: 3}
   MaxLevel: 10
   SizeX: 2
   SizeZ: 2

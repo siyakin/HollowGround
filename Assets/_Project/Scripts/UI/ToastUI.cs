@@ -47,8 +47,6 @@ namespace HollowGround.UI
             Instance.TryShowNext();
         }
 
-        public static void Show(string text) => Show(text, Color.white);
-
         private void TryShowNext()
         {
             if (_isShowing || _queue.Count == 0) return;

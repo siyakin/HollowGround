@@ -1,263 +1,264 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.EventSystems;
 
 namespace HollowGround.Camera
 {
+    /// <summary>
+    /// RTS/City-builder strateji kamerası.
+    /// Hiyerarşi: CameraRig (bu script) → Camera (child, offset pozisyonda)
+    ///
+    /// Kontroller:
+    ///   WASD / Ok tuşları  → Pan
+    ///   Orta mouse sürükle → Pan
+    ///   Sağ mouse sürükle  → Döndür
+    ///   Scroll             → Zoom
+    ///   Ekran kenarı       → Pan (edge scroll)
+    /// </summary>
     public class StrategyCamera : MonoBehaviour
     {
-        [Header("Input")]
-        [SerializeField] private UnityEngine.InputSystem.InputActionAsset _inputAsset;
+        [Header("Camera Reference")]
+        [SerializeField] private UnityEngine.Camera _cam;
 
         [Header("Pan")]
-        [SerializeField] private float _keyboardPanSpeed = 40f;
-        [SerializeField] private float _mousePanSpeed = 1.5f;
-        [SerializeField] private float _panSmoothTime = 0.12f;
-        [SerializeField] private float _edgePanZone = 15f;
-        [SerializeField] private float _edgePanSpeed = 20f;
+        [SerializeField] private float _keyPanSpeed    = 25f;
+        [SerializeField] private float _mousePanSpeed  = 0.06f;
+        [SerializeField] private float _panSmoothing   = 8f;
+
+        [Header("Edge Scroll")]
+        [SerializeField] private bool  _edgeScrollEnabled = true;
+        [SerializeField] private float _edgeZone           = 20f;
+        [SerializeField] private float _edgeSpeed          = 20f;
 
         [Header("Zoom")]
-        [SerializeField] private float _zoomSpeed = 3f;
-        [SerializeField] private float _minZoom = 8f;
-        [SerializeField] private float _maxZoom = 60f;
-        [SerializeField] private float _zoomSmoothTime = 0.15f;
+        [SerializeField] private float _zoomSpeed    = 6f;
+        [SerializeField] private float _minZoom      = 8f;
+        [SerializeField] private float _maxZoom      = 55f;
+        [SerializeField] private float _zoomSmooth   = 8f;
+        [SerializeField] private float _initialZoom  = 35f;
 
         [Header("Rotation")]
-        [SerializeField] private float _rotationSpeed = 150f;
-        [SerializeField] private float _rotationSmoothTime = 0.12f;
+        [SerializeField] private float _rotateSpeed  = 120f;
+        [SerializeField] private float _rotateSmooth = 8f;
+
+        [Header("Camera Angle")]
+        [SerializeField] private float _tiltAngle = 45f;
 
         [Header("Bounds")]
-        [SerializeField] private Vector3 _boundsMin = new(-50, 0, -50);
-        [SerializeField] private Vector3 _boundsMax = new(50, 0, 50);
+        [SerializeField] private Vector2 _boundsMin = new(-30f, -30f);
+        [SerializeField] private Vector2 _boundsMax = new(130f, 130f);
 
-        [Header("Angle")]
-        [SerializeField] private float _tiltAngle = 40f;
+        // Hedef değerler
+        private Vector3 _targetPos;
+        private float   _targetYaw;
+        private float   _targetZoom;
 
-        private UnityEngine.Camera _cam;
-        private Transform _pivot;
+        // Anlık değerler (smooth için)
+        private Vector3 _currentPos;
+        private float   _currentYaw;
+        private float   _currentZoom;
 
-        private Vector2 _keyPanInput;
-        private Vector2 _mouseDelta;
-        private Vector2 _mousePos;
-        private float _scrollY;
+        // Pan drag
+        private bool    _middleDragging;
+        private Vector2 _lastMousePos;
 
-        private Vector3 _targetPosition;
-        private float _targetZoom;
-        private float _targetRotation;
-
-        private Vector3 _panVelocity;
-        private float _zoomVelocity;
-        private float _rotationVelocity;
-
-        private Vector3 _dragStartWorld;
-        private bool _isPanning;
-        private bool _isRotating;
-
-        private InputAction _panAction;
-        private InputAction _zoomAction;
-        private InputAction _rotateAction;
-        private InputAction _rotateButtonAction;
-        private InputAction _mousePosAction;
+        // Rotate drag
+        private bool    _rightDragging;
 
         private void Awake()
         {
-            _cam = GetComponentInChildren<UnityEngine.Camera>();
-            CreatePivot();
-            _targetZoom = 25f;
-            _targetRotation = transform.eulerAngles.y;
-            _targetPosition = transform.position;
-        }
+            if (_cam == null)
+                _cam = GetComponentInChildren<UnityEngine.Camera>();
 
-        private void CreatePivot()
-        {
-            _pivot = new GameObject("CameraPivot").transform;
-            _pivot.position = transform.position;
-            _pivot.rotation = Quaternion.Euler(_tiltAngle, 0, 0);
-            _cam.transform.SetParent(_pivot);
-            _cam.transform.localPosition = new Vector3(0, _targetZoom, 0);
-            _cam.transform.localRotation = Quaternion.identity;
-        }
+            _targetPos  = transform.position;
+            _targetYaw  = transform.eulerAngles.y;
+            _targetZoom = _initialZoom;
 
-        private void Start()
-        {
-            if (_inputAsset != null)
-            {
-                var map = _inputAsset.FindActionMap("Strategy");
-                if (map != null)
-                {
-                    _panAction = map.FindAction("Pan");
-                    _zoomAction = map.FindAction("Zoom");
-                    _rotateAction = map.FindAction("Rotate");
-                    _rotateButtonAction = map.FindAction("RotateButton");
-                    _mousePosAction = map.FindAction("MousePosition");
+            _currentPos  = _targetPos;
+            _currentYaw  = _targetYaw;
+            _currentZoom = _targetZoom;
 
-                    _panAction?.Enable();
-                    _zoomAction?.Enable();
-                    _rotateAction?.Enable();
-                    _rotateButtonAction?.Enable();
-                    _mousePosAction?.Enable();
-                }
-            }
+            ApplyTransform();
         }
 
         private void Update()
         {
-            ReadInput();
-            HandleKeyboardPan();
-            HandleMousePan();
-            HandleMouseRotation();
-            HandleZoom();
-            HandleEdgePan();
-            ApplyBounds();
-        }
-
-        private void ReadInput()
-        {
             if (Mouse.current == null || Keyboard.current == null) return;
 
-            _keyPanInput = _panAction != null ? _panAction.ReadValue<Vector2>() : Vector2.zero;
-            _scrollY = _zoomAction != null ? _zoomAction.ReadValue<Vector2>().y : 0f;
-            _mousePos = _mousePosAction != null ? _mousePosAction.ReadValue<Vector2>() : Vector2.zero;
-            _mouseDelta = _rotateAction != null ? _rotateAction.ReadValue<Vector2>() : Vector2.zero;
-
-            bool middlePressed = Mouse.current.middleButton.isPressed;
-            bool rightPressed = Mouse.current.rightButton.isPressed;
-
-            if (middlePressed && !_isPanning)
-            {
-                _isPanning = true;
-                _dragStartWorld = GetWorldPoint(_mousePos);
-            }
-            else if (!middlePressed)
-            {
-                _isPanning = false;
-            }
-
-            if (rightPressed && !_isRotating)
-                _isRotating = true;
-            else if (!rightPressed)
-                _isRotating = false;
+            HandleDragState();
+            HandleKeyboardPan();
+            HandleMousePan();
+            HandleEdgeScroll();
+            HandleRotation();
+            HandleZoom();
+            ClampBounds();
+            SmoothApply();
         }
+
+        // ── Drag state ─────────────────────────────────────────────────────────
+
+        private void HandleDragState()
+        {
+            bool overUI = EventSystem.current != null && EventSystem.current.IsPointerOverGameObject();
+
+            // Orta mouse → pan
+            if (Mouse.current.middleButton.wasPressedThisFrame && !overUI)
+            {
+                _middleDragging = true;
+                _lastMousePos   = Mouse.current.position.ReadValue();
+            }
+            if (Mouse.current.middleButton.wasReleasedThisFrame)
+                _middleDragging = false;
+
+            // Sağ mouse → döndür
+            if (Mouse.current.rightButton.wasPressedThisFrame && !overUI)
+            {
+                _rightDragging = true;
+                _lastMousePos  = Mouse.current.position.ReadValue();
+            }
+            if (Mouse.current.rightButton.wasReleasedThisFrame)
+                _rightDragging = false;
+        }
+
+        // ── Pan ────────────────────────────────────────────────────────────────
 
         private void HandleKeyboardPan()
         {
-            if (_keyPanInput.sqrMagnitude < 0.01f) return;
+            var kb = Keyboard.current;
+            Vector2 input = Vector2.zero;
 
-            Vector3 forward = _pivot.forward;
-            forward.y = 0;
-            forward.Normalize();
-            Vector3 right = _pivot.right;
-            right.y = 0;
-            right.Normalize();
+            if (kb.wKey.isPressed || kb.upArrowKey.isPressed)    input.y += 1;
+            if (kb.sKey.isPressed || kb.downArrowKey.isPressed)  input.y -= 1;
+            if (kb.dKey.isPressed || kb.rightArrowKey.isPressed) input.x += 1;
+            if (kb.aKey.isPressed || kb.leftArrowKey.isPressed)  input.x -= 1;
 
-            Vector3 move = (forward * _keyPanInput.y + right * _keyPanInput.x) * _keyboardPanSpeed;
-            _targetPosition += move * Time.unscaledDeltaTime;
+            if (input.sqrMagnitude < 0.01f) return;
+
+            // Zoom'a göre hız ölçekle (uzaktayken daha hızlı)
+            float speedScale = _currentZoom / _initialZoom;
+            _targetPos += GetMoveDir(input) * (_keyPanSpeed * speedScale * Time.unscaledDeltaTime);
         }
 
         private void HandleMousePan()
         {
-            if (!_isPanning) return;
-            if (_mouseDelta.sqrMagnitude < 0.01f) return;
+            if (!_middleDragging) return;
 
-            Vector3 currentWorld = GetWorldPoint(_mousePos);
-            if (currentWorld == Vector3.zero && _dragStartWorld == Vector3.zero) return;
+            Vector2 currentMousePos = Mouse.current.position.ReadValue();
+            Vector2 delta = currentMousePos - _lastMousePos;
+            _lastMousePos = currentMousePos;
 
-            Vector3 diff = _dragStartWorld - currentWorld;
-            diff.y = 0;
-            _targetPosition += diff * _mousePanSpeed;
+            if (delta.sqrMagnitude < 0.01f) return;
+
+            // Screen delta → world XZ hareketi
+            float scale = _currentZoom * _mousePanSpeed;
+            _targetPos -= GetMoveDir(delta * scale * Time.unscaledDeltaTime);
         }
 
-        private void HandleMouseRotation()
+        private void HandleEdgeScroll()
         {
-            if (!_isRotating) return;
-            if (_mouseDelta.sqrMagnitude < 0.01f) return;
+            if (!_edgeScrollEnabled) return;
+            if (_middleDragging || _rightDragging) return;
+            if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject()) return;
 
-            _targetRotation += _mouseDelta.x * _rotationSpeed * Time.unscaledDeltaTime;
+            Vector2 mp = Mouse.current.position.ReadValue();
+            if (mp.x < 0 || mp.y < 0 || mp.x > Screen.width || mp.y > Screen.height) return;
 
-            float currentRot = Mathf.SmoothDampAngle(
-                _pivot.eulerAngles.y,
-                _targetRotation,
-                ref _rotationVelocity,
-                _rotationSmoothTime
-            );
-            _pivot.rotation = Quaternion.Euler(_tiltAngle, currentRot, 0);
+            Vector2 edgeInput = Vector2.zero;
+            if (mp.x < _edgeZone)                  edgeInput.x -= 1;
+            if (mp.x > Screen.width  - _edgeZone)  edgeInput.x += 1;
+            if (mp.y < _edgeZone)                   edgeInput.y -= 1;
+            if (mp.y > Screen.height - _edgeZone)   edgeInput.y += 1;
+
+            if (edgeInput.sqrMagnitude < 0.01f) return;
+
+            float speedScale = _currentZoom / _initialZoom;
+            _targetPos += GetMoveDir(edgeInput) * (_edgeSpeed * speedScale * Time.unscaledDeltaTime);
         }
+
+        // ── Rotation ───────────────────────────────────────────────────────────
+
+        private void HandleRotation()
+        {
+            if (!_rightDragging) return;
+
+            Vector2 currentMousePos = Mouse.current.position.ReadValue();
+            float deltaX = currentMousePos.x - _lastMousePos.x;
+            _lastMousePos = currentMousePos;
+
+            _targetYaw += deltaX * _rotateSpeed * Time.unscaledDeltaTime;
+        }
+
+        // ── Zoom ───────────────────────────────────────────────────────────────
 
         private void HandleZoom()
         {
-            if (Mathf.Abs(_scrollY) < 0.01f) return;
+            float scroll = Mouse.current.scroll.ReadValue().y;
+            if (Mathf.Abs(scroll) < 0.01f) return;
 
-            _targetZoom -= _scrollY * _zoomSpeed;
-            _targetZoom = Mathf.Clamp(_targetZoom, _minZoom, _maxZoom);
-
-            float currentZoom = Mathf.SmoothDamp(
-                _cam.transform.localPosition.y,
-                _targetZoom,
-                ref _zoomVelocity,
-                _zoomSmoothTime
-            );
-            _cam.transform.localPosition = new Vector3(0, currentZoom, 0);
+            _targetZoom -= scroll * _zoomSpeed;
+            _targetZoom  = Mathf.Clamp(_targetZoom, _minZoom, _maxZoom);
         }
 
-        private void HandleEdgePan()
+        // ── Bounds & Smooth Apply ──────────────────────────────────────────────
+
+        private void ClampBounds()
         {
-            if (_isPanning || _isRotating) return;
-            if (_mousePos.x <= 1 || _mousePos.y <= 1) return;
-            if (_mousePos.x >= Screen.width - 1 || _mousePos.y >= Screen.height - 1) return;
-
-            Vector3 edgeDir = Vector3.zero;
-
-            if (_mousePos.x < _edgePanZone) edgeDir -= _pivot.right;
-            if (_mousePos.x > Screen.width - _edgePanZone) edgeDir += _pivot.right;
-            if (_mousePos.y < _edgePanZone) edgeDir -= _pivot.forward;
-            if (_mousePos.y > Screen.height - _edgePanZone) edgeDir += _pivot.forward;
-
-            edgeDir.y = 0;
-            if (edgeDir.sqrMagnitude < 0.01f) return;
-            edgeDir.Normalize();
-
-            _targetPosition += edgeDir * _edgePanSpeed * Time.unscaledDeltaTime;
+            _targetPos.x = Mathf.Clamp(_targetPos.x, _boundsMin.x, _boundsMax.x);
+            _targetPos.z = Mathf.Clamp(_targetPos.z, _boundsMin.y, _boundsMax.y);
+            _targetPos.y = 0f;
         }
 
-        private void ApplyBounds()
+        private void SmoothApply()
         {
-            _targetPosition.x = Mathf.Clamp(_targetPosition.x, _boundsMin.x, _boundsMax.x);
-            _targetPosition.y = 0;
-            _targetPosition.z = Mathf.Clamp(_targetPosition.z, _boundsMin.z, _boundsMax.z);
+            float t = Time.unscaledDeltaTime;
 
-            transform.position = Vector3.SmoothDamp(
-                transform.position,
-                _targetPosition,
-                ref _panVelocity,
-                _panSmoothTime
-            );
-            _pivot.position = transform.position;
+            _currentPos  = Vector3.Lerp(_currentPos,  _targetPos,  _panSmoothing    * t);
+            _currentYaw  = Mathf.LerpAngle(_currentYaw, _targetYaw, _rotateSmooth   * t);
+            _currentZoom = Mathf.Lerp(_currentZoom,  _targetZoom,  _zoomSmooth      * t);
+
+            ApplyTransform();
         }
 
-        private Vector3 GetWorldPoint(Vector2 screenPos)
+        private void ApplyTransform()
         {
-            var cam = UnityEngine.Camera.main;
-            if (cam == null) return Vector3.zero;
+            // Rig pozisyonu ve yaw dönüşü
+            transform.position = _currentPos;
+            transform.rotation = Quaternion.Euler(0f, _currentYaw, 0f);
 
-            Ray ray = cam.ScreenPointToRay(screenPos);
-            if (Physics.Raycast(ray, out RaycastHit hit, Mathf.Infinity, LayerMask.GetMask("Ground")))
-                return hit.point;
+            // Kamera: rig'in yukarısında ve arkasında, tilt açısıyla
+            if (_cam != null)
+            {
+                float rad    = _tiltAngle * Mathf.Deg2Rad;
+                float height = _currentZoom * Mathf.Sin(rad);
+                float depth  = _currentZoom * Mathf.Cos(rad);
 
-            return Vector3.zero;
+                _cam.transform.localPosition = new Vector3(0f, height, -depth);
+                _cam.transform.localRotation = Quaternion.Euler(_tiltAngle, 0f, 0f);
+            }
         }
 
-        public void SetBounds(Vector3 min, Vector3 max)
+        // ── Yardımcı ───────────────────────────────────────────────────────────
+
+        /// <summary>2D input (XZ düzlemi) → yaw'a göre döndürülmüş world yönü</summary>
+        private Vector3 GetMoveDir(Vector2 input)
+        {
+            float yawRad = _currentYaw * Mathf.Deg2Rad;
+            Vector3 forward = new Vector3( Mathf.Sin(yawRad), 0f, Mathf.Cos(yawRad));
+            Vector3 right   = new Vector3( Mathf.Cos(yawRad), 0f,-Mathf.Sin(yawRad));
+            return forward * input.y + right * input.x;
+        }
+
+        public void FocusOn(Vector3 worldPos)
+        {
+            Vector3 pos = new(worldPos.x, 0f, worldPos.z);
+            _targetPos = pos;
+            _currentPos = pos;
+        }
+
+        public void SetBounds(Vector2 min, Vector2 max)
         {
             _boundsMin = min;
             _boundsMax = max;
-        }
-
-        private void OnDestroy()
-        {
-            _panAction?.Disable();
-            _zoomAction?.Disable();
-            _rotateAction?.Disable();
-            _rotateButtonAction?.Disable();
-            _mousePosAction?.Disable();
         }
     }
 }

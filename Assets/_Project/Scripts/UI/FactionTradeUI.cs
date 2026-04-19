@@ -33,7 +33,16 @@ namespace HollowGround.UI
 
         private void OnEnable()
         {
+            if (_closeTradeBtn != null)
+                _closeTradeBtn.onClick.AddListener(CloseTrade);
+
             RefreshFactions();
+        }
+
+        private void OnDisable()
+        {
+            if (_closeTradeBtn != null)
+                _closeTradeBtn.onClick.RemoveListener(CloseTrade);
         }
 
         public void RefreshFactions()

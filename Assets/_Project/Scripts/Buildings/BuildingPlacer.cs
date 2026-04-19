@@ -19,6 +19,7 @@ namespace HollowGround.Buildings
         private bool _isPlacing;
         private int _rotation;
         private bool _isValidPlacement;
+        private UnityEngine.Camera _cam;
 
         public bool IsPlacing => _isPlacing;
         public BuildingData CurrentBuilding => _currentBuilding;
@@ -35,10 +36,23 @@ namespace HollowGround.Buildings
                 return;
             }
             Instance = this;
+            ResolveCamera();
+        }
+
+        private void ResolveCamera()
+        {
+            _cam = UnityEngine.Camera.main;
+            if (_cam != null) return;
+
+            var strategyCam = FindAnyObjectByType<HollowGround.Camera.StrategyCamera>();
+            if (strategyCam != null)
+                _cam = strategyCam.GetComponentInChildren<UnityEngine.Camera>();
         }
 
         private void Update()
         {
+            if (_isPlacing && _cam == null)
+                ResolveCamera();
             if (!_isPlacing) return;
 
             UpdateGhostPosition();
@@ -58,6 +72,7 @@ namespace HollowGround.Buildings
             if (prefab != null)
             {
                 _ghostObject = Instantiate(prefab);
+                _ghostObject.transform.rotation = Quaternion.Euler(0, _rotation * 90f, 0);
                 SetGhostMaterial(_validMaterial);
             }
 
@@ -85,12 +100,10 @@ namespace HollowGround.Buildings
             if (_ghostObject == null) return;
             if (Mouse.current == null) return;
             if (GridSystem.Instance == null) return;
-
-            var cam = UnityEngine.Camera.main;
-            if (cam == null) return;
+            if (_cam == null) return;
 
             Vector2 mousePos = Mouse.current.position.ReadValue();
-            Ray ray = cam.ScreenPointToRay(mousePos);
+            Ray ray = _cam.ScreenPointToRay(mousePos);
             if (!Physics.Raycast(ray, out RaycastHit hit, Mathf.Infinity, _groundMask)) return;
 
             Vector3 snapped = GridSystem.Instance.SnapToGrid(hit.point);
@@ -127,8 +140,9 @@ namespace HollowGround.Buildings
 
         private void PlaceBuilding()
         {
+            if (_cam == null) return;
             Vector2 mousePos = Mouse.current.position.ReadValue();
-            Ray ray = UnityEngine.Camera.main.ScreenPointToRay(mousePos);
+            Ray ray = _cam.ScreenPointToRay(mousePos);
             if (!Physics.Raycast(ray, out RaycastHit hit, Mathf.Infinity, _groundMask)) return;
 
             var coords = GridSystem.Instance.GetGridCoordinates(hit.point);
@@ -137,10 +151,10 @@ namespace HollowGround.Buildings
             if (!GridSystem.Instance.IsAreaBuildable(coords.x, coords.y, sx, sz)) return;
 
             var costs = _currentBuilding.GetCostForLevel(1);
-            if (!BuildingManager.Instance.CanAffordBuilding(_currentBuilding, 1)) return;
+            if (BuildingManager.Instance != null && !BuildingManager.Instance.CanAffordBuilding(_currentBuilding, 1)) return;
 
             var rm = ResourceManager.Instance;
-            if (rm != null) rm.SpendMultiple(costs);
+            if (rm != null && !rm.SpendMultiple(costs)) return;
 
             GameObject buildingObj = new(_currentBuilding.DisplayName);
             buildingObj.transform.position = _ghostObject.transform.position;
@@ -150,7 +164,8 @@ namespace HollowGround.Buildings
             building.Initialize(_currentBuilding, coords);
 
             GridSystem.Instance.OccupyCells(coords.x, coords.y, sx, sz, buildingObj);
-            BuildingManager.Instance.RegisterBuilding(building);
+            if (BuildingManager.Instance != null)
+                BuildingManager.Instance.RegisterBuilding(building);
 
             if (_ghostObject != null) Destroy(_ghostObject);
             _ghostObject = null;

@@ -37,6 +37,14 @@ namespace HollowGround.UI
                 QuestManager.Instance.OnQuestTurnedIn += HandleQuestChanged;
                 QuestManager.Instance.OnQuestListChanged += RefreshList;
             }
+
+            if (_acceptBtn != null)
+                _acceptBtn.onClick.AddListener(AcceptSelectedQuest);
+            if (_turnInBtn != null)
+                _turnInBtn.onClick.AddListener(TurnInSelectedQuest);
+            if (_closeBtn != null)
+                _closeBtn.onClick.AddListener(CloseDetail);
+
             ShowTab(TabActive);
         }
 
@@ -50,6 +58,13 @@ namespace HollowGround.UI
                 QuestManager.Instance.OnQuestTurnedIn -= HandleQuestChanged;
                 QuestManager.Instance.OnQuestListChanged -= RefreshList;
             }
+
+            if (_acceptBtn != null)
+                _acceptBtn.onClick.RemoveListener(AcceptSelectedQuest);
+            if (_turnInBtn != null)
+                _turnInBtn.onClick.RemoveListener(TurnInSelectedQuest);
+            if (_closeBtn != null)
+                _closeBtn.onClick.RemoveListener(CloseDetail);
         }
 
         public void ShowTab(int tabIndex)

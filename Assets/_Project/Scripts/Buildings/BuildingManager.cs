@@ -102,6 +102,11 @@ namespace HollowGround.Buildings
             UnregisterBuilding(building);
         }
 
+        public void RefreshStorageCapacities()
+        {
+            UpdateStorageCapacities();
+        }
+
         private void UpdateStorageCapacities()
         {
             if (ResourceManager.Instance == null) return;

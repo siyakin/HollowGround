@@ -46,7 +46,7 @@ Last War ilhamlı, nükleer savaş sonrası strateji oyunu.
 - [x] TechTreeUI — araştırma ağacı paneli
 - [x] FactionTradeUI — faction ticaret paneli
 - [x] QuestLogUI — görev paneli (aktif/mevcut/tamamlanmış sekmeler)
-- [ ] Sahne kurulumları (BuildingInfo, ToastUI, TechTree, FactionTrade, QuestLog bağlantıları)
+- [x] Sahne kurulumları (BuildingInfo, ToastUI, TechTree, FactionTrade, QuestLog bağlantıları)
 
 ---
 
@@ -116,16 +116,21 @@ Last War ilhamlı, nükleer savaş sonrası strateji oyunu.
 
 ---
 
-## Faz 9 — Save/Load & Polish 🔶
+## Faz 9 — Save/Load & Polish ✅
 
 - [x] SaveData — tüm oyun verisini tutan seri serialize edilebilir yapı
 - [x] SaveSystem — JSON save/load + auto-save (5dk) + quicksave
 - [x] SaveMenuUI — kayıt listesi, yükleme, silme, yeni kayıt
 - [x] AudioManager — müzik + SFX pool sistemi + ses ayarları
 - [x] AudioConfig SO — 19 ses tipi tanımı
-- [ ] Post-processing (bloom, vignette)
-- [ ] Bina inşaat animasyonu
-- [ ] Atmosfer efektleri
+- [x] UIThemeSO — merkezi UI tema sistemi (buton, panel, metin stilleri)
+- [x] UIThemeTag — element bazlı stil etiketleme bileşeni
+- [x] UIThemeApplier — HollowGround > Apply UI Theme editor aracı (Ctrl+Shift+T)
+- [x] Post-apokaliptik koyu tema uygulandı (nav bar, build/training/hero panelleri)
+- [x] StrategyCamera yeniden yazıldı — raycast bağımlılığı kaldırıldı, zoom/pan/rotate düzeltildi
+- [x] Post-processing (bloom, vignette)
+- [x] Bina inşaat animasyonu
+- [x] Atmosfer efektleri
 
 ---
 
@@ -142,17 +147,41 @@ Last War ilhamlı, nükleer savaş sonrası strateji oyunu.
 
 ---
 
-## Mevcut Script Sayısı: 55+
+## Faz 11 — Playtest & Bugfix 🔶
+
+- [x] Ground plane kalıcı olarak sahneye eklendi (HollowGround > Setup Ground & Camera)
+- [x] "Ground" layer oluşturuldu, BuildingPlacer _groundMask ayarlandı
+- [x] Camera.main null check eklendi (BuildingPlacer _cam cache)
+- [x] StrategyCamera FocusOn düzeltildi (_currentPos de senkronize ediliyor)
+- [x] StrategyCamera bounds grid merkezine göre ayarlandı (-30,130)
+- [x] CameraRig > Main Camera tag = MainCamera ayarlandı
+- [x] Bina yerleştirme çalışıyor (CommandCenter test edildi)
+- [x] BuildingManager GameManager objesine eklendi
+- [x] GroundManager.cs silindi (çift ground üretiyordu)
+- [x] GameInitializer ground oluşturma kaldırıldı (editor ile kalıcı)
+- [x] 14 bug düzeltmesi (onClick listeners, Türkçe metinler, prefab eksikleri, mantık hataları)
+- [x] Post-processing değerleri düşürüldü (bloom 0.2, vignette 0.2, filmgrain kapalı)
+- [x] AtmosphereEffects varsayılanları düşürüldü (fog 0.004, dust kapalı, fog particles kapalı)
+- [ ] Kaynak üretim testi (Farm → Food artışı)
+- [ ] Tüm bina tipleri yerleştirme testi
+- [ ] UI panel testleri (ResourceBar, BuildMenu, BuildingInfo)
+- [ ] Askeri sistem testi (eğitim, ordu)
+- [ ] Hero sistemi testi (summon, ekipman)
+- [ ] Dünya haritası testi (sefer, fog of war)
+- [ ] Save/Load testi
+- [ ] Grid sınır çizgisi sorunu (GridVisualizer z-fighting)
 
 ### Klasör Yapısı
 ```
 Assets/_Project/Scripts/
 ├── Core/        GameManager, TimeManager, GameEvent, Singleton, GameInitializer,
-│                SaveData, SaveSystem, AudioManager, AudioConfig, BaseStarter
+│                SaveData, SaveSystem, AudioManager, AudioConfig, BaseStarter,
+│                PostProcessingSetup, AtmosphereEffects
 ├── Camera/      StrategyCamera
 ├── Grid/        GridSystem, GridCell, GridVisualizer, PlacementValidator
 ├── Buildings/   BuildingType, BuildingData, Building, BuildingManager,
-│                BuildingPlacer, BuildingSelector, BuildingDatabase
+│                BuildingPlacer, BuildingSelector, BuildingDatabase,
+│                BuildingConstructionAnimation
 ├── Resources/   ResourceType, ResourceManager
 ├── Army/        TroopType, TroopData, ArmyManager
 ├── Combat/      BattleCalculator, BattleTarget, BattleManager,
@@ -165,10 +194,13 @@ Assets/_Project/Scripts/
 ├── UI/          UIManager, ResourceBarUI, BuildMenuUI, BuildingInfoUI,
 │                ToastUI, TrainingPanelUI, ArmyPanelUI, BattleReportUI,
 │                HeroPanelUI, WorldMapUI, TechTreeUI, FactionTradeUI,
-│                QuestLogUI, SaveMenuUI, DebugHUD
+│                QuestLogUI, SaveMenuUI, DebugHUD,
+│                UIThemeSO, UIThemeTag
 └── Editor/      GridSystemEditor, BuildingDataFactory, TroopDataFactory,
                  HeroDataFactory, QuestDataFactory, FactionDataFactory,
-                 TechNodeFactory, GhostMaterialCreator
+                 TechNodeFactory, GhostMaterialCreator,
+                 UIThemeApplier, SceneSetupEditor,
+                  PostProcessingProfileFactory, GroundSetupEditor
 ```
 
 ### Dokumanlar
@@ -178,4 +210,4 @@ GDD.md        — Oyun tasarim dokumanı
 BALANCE.md    — Dengeleme referans tablosu
 ```
 
-*Son güncelleme: Faz 10 tamamlandı*
+*Son güncelleme: Faz 11 playtest başladı — ground/camera/buildingplacer düzeltmeleri, bina yerleştirme çalışıyor*

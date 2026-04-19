@@ -88,7 +88,7 @@ namespace HollowGround.UI
                 _nameText.text = _current.Data.DisplayName;
 
             if (_levelText != null)
-                _levelText.text = $"Seviye {_current.Level}";
+                _levelText.text = $"Level {_current.Level}";
 
             if (_stateText != null)
                 _stateText.text = _current.State.ToString();

@@ -41,6 +41,10 @@ namespace HollowGround.UI
                 ResearchManager.Instance.OnResearchCompleted += HandleResearchCompleted;
                 ResearchManager.Instance.OnResearchProgressChanged += HandleProgressChanged;
             }
+
+            if (_detailResearchBtn != null)
+                _detailResearchBtn.onClick.AddListener(StartResearchFromDetail);
+
             RefreshAll();
         }
 
@@ -52,6 +56,9 @@ namespace HollowGround.UI
                 ResearchManager.Instance.OnResearchCompleted -= HandleResearchCompleted;
                 ResearchManager.Instance.OnResearchProgressChanged -= HandleProgressChanged;
             }
+
+            if (_detailResearchBtn != null)
+                _detailResearchBtn.onClick.RemoveListener(StartResearchFromDetail);
         }
 
         private void Update()

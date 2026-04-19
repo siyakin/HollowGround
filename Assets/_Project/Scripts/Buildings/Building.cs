@@ -165,15 +165,8 @@ namespace HollowGround.Buildings
 
         private void ApplyLevelEffects()
         {
-            if (_data.PopulationCapacity > 0 && GameManager.Instance != null)
-            {
-                // Population capacity will be handled by BuildingManager
-            }
-
-            if (_data.StorageCapacity > 0 && ResourceManager.Instance != null)
-            {
-                // Storage capacity updates will be handled by BuildingManager
-            }
+            if (_data.StorageCapacity > 0 && BuildingManager.Instance != null)
+                BuildingManager.Instance.RefreshStorageCapacities();
         }
 
         public float GetProductionProgress()

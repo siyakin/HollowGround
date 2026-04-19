@@ -58,7 +58,7 @@ namespace HollowGround.UI
                     var parts = new List<string>();
                     foreach (var kvp in costs)
                         parts.Add($"{kvp.Key}: {kvp.Value}");
-                    card.CostText.text = parts.Count > 0 ? string.Join("  ", parts) : "Ücretsiz";
+                    card.CostText.text = parts.Count > 0 ? string.Join("  ", parts) : "Free";
                 }
 
                 if (card.LockedOverlay != null)
