@@ -1,0 +1,36 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aa644749d80cf484c872352eafe200eb, type: 3}
+  m_Name: StockpileResources
+  m_EditorClassIdentifier: Assembly-CSharp::HollowGround.Quests.QuestData
+  DisplayName: Stockpile Resources
+  Description: Gather 200 Wood and 100 Metal to prepare for expansion.
+  QuestType: 0
+  Icon: {fileID: 0}
+  RecommendedLevel: 1
+  Prerequisites: []
+  NextQuest: {fileID: 0}
+  Objectives:
+  - Type: 1
+    TargetId: Wood
+    RequiredAmount: 200
+    Description: Gather 200 Wood
+  - Type: 1
+    TargetId: Metal
+    RequiredAmount: 100
+    Description: Gather 100 Metal
+  Rewards:
+  - Type: 4
+    Amount: 5
+  XPReward: 100
+  RelationReward: 0
+  UnlocksQuests: []

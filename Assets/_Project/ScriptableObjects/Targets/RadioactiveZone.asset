@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fd74f11df19c2ab48af8dc815a799051, type: 3}
+  m_Name: "Radyoaktif B\u00F6lge"
+  m_EditorClassIdentifier: Assembly-CSharp::HollowGround.Combat.BattleTarget
+  DisplayName: "Radioactive Zone"
+  Description: "High risk, high reward. Contains tech parts."
+  Type: 3
+  Difficulty: 3
+  Distance: 4
+  DefenderTroops:
+  - Type: 0
+    Count: 8
+  - Type: 2
+    Count: 3
+  - Type: 1
+    Count: 2
+  LootResources:
+  - Type: 1
+    Amount: 50
+  - Type: 4
+    Amount: 15
+  - Type: 5
+    Amount: 10

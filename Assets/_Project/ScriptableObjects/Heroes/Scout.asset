@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 50c79b4d5e456a94286a97f02796070b, type: 3}
+  m_Name: Scout
+  m_EditorClassIdentifier: Assembly-CSharp::HollowGround.Heroes.HeroData
+  DisplayName: Scout
+  Description: Recon expert. Increases expedition speed.
+  Role: 4
+  Rarity: 0
+  ModelPrefab: {fileID: 0}
+  Portrait: {fileID: 0}
+  BaseHP: 150
+  BaseAttack: 10
+  BaseDefense: 8
+  BaseSpeed: 6
+  PassiveAbilityName: Pathfinder
+  PassiveAbilityDesc: Expeditions complete 20% faster
+  PassiveBonus: 0.2
+  ActiveAbilityName: Ambush
+  ActiveAbilityDesc: First strike deals double damage
+  ActiveAbilityCooldown: 15
+  ArmyAttackBonus: 0.04
+  ArmyDefenseBonus: 0.01
+  SummonCost: 100
+  SummonResource: 4

@@ -1,0 +1,132 @@
+using System.Collections.Generic;
+using HollowGround.Core;
+using HollowGround.Resources;
+using UnityEngine;
+
+namespace HollowGround.Tech
+{
+    public class ResearchManager : MonoBehaviour
+    {
+        public static ResearchManager Instance { get; private set; }
+
+        private TechNode _currentResearch;
+        private float _researchTimer;
+
+        public TechNode CurrentResearch => _currentResearch;
+        public bool IsResearching => _currentResearch != null;
+        public float ResearchProgress => _currentResearch != null ? _currentResearch.ResearchProgress : 0f;
+
+        public event System.Action<TechNode> OnResearchStarted;
+        public event System.Action<TechNode> OnResearchCompleted;
+        public event System.Action<float> OnResearchProgressChanged;
+
+        private void Awake()
+        {
+            if (Instance != null && Instance != this)
+            {
+                Destroy(gameObject);
+                return;
+            }
+            Instance = this;
+        }
+
+        private void Update()
+        {
+            if (_currentResearch == null) return;
+
+            float speedMult = 1f;
+            if (TimeManager.Instance != null)
+                speedMult = TimeManager.Instance.GameSpeed;
+
+            _researchTimer -= Time.deltaTime * speedMult;
+            _currentResearch.ResearchProgress = 1f - (_researchTimer / _currentResearch.ResearchTime);
+            OnResearchProgressChanged?.Invoke(_currentResearch.ResearchProgress);
+
+            if (_researchTimer <= 0f)
+            {
+                CompleteResearch();
+            }
+        }
+
+        public bool CanStartResearch(TechNode node)
+        {
+            if (node == null) return false;
+            if (_currentResearch != null) return false;
+            if (!node.CanResearch()) return false;
+
+            if (ResourceManager.Instance == null) return false;
+            return ResourceManager.Instance.CanAfford(node.GetCost());
+        }
+
+        public bool StartResearch(TechNode node)
+        {
+            if (!CanStartResearch(node)) return false;
+
+            var costs = node.GetCost();
+            ResourceManager.Instance.SpendMultiple(costs);
+
+            _currentResearch = node;
+            node.IsResearching = true;
+            node.ResearchProgress = 0f;
+            _researchTimer = node.ResearchTime;
+
+            OnResearchStarted?.Invoke(node);
+            return true;
+        }
+
+        private void CompleteResearch()
+        {
+            var node = _currentResearch;
+            node.IsResearching = false;
+            node.IsResearched = true;
+            node.ResearchProgress = 1f;
+            _currentResearch = null;
+
+            ApplyBonuses(node);
+            OnResearchCompleted?.Invoke(node);
+        }
+
+        private void ApplyBonuses(TechNode node)
+        {
+            if (node.ProductionBonus > 0f)
+                Debug.Log($"[Research] Production bonus: +{node.ProductionBonus:P0}");
+
+            if (node.TrainingSpeedBonus > 0f)
+                Debug.Log($"[Research] Training speed bonus: +{node.TrainingSpeedBonus:P0}");
+
+            if (node.ExpeditionSpeedBonus > 0f)
+                Debug.Log($"[Research] Expedition speed bonus: +{node.ExpeditionSpeedBonus:P0}");
+
+            if (node.DefenseBonus > 0f)
+                Debug.Log($"[Research] Defense bonus: +{node.DefenseBonus:P0}");
+        }
+
+        public List<TechNode> GetAvailableTechs()
+        {
+            var allTechs = UnityEngine.Resources.LoadAll<TechNode>("TechNodes");
+            var available = new List<TechNode>();
+
+            foreach (var tech in allTechs)
+            {
+                if (tech.CanResearch() && !tech.IsResearched)
+                    available.Add(tech);
+            }
+
+            return available;
+        }
+
+        public List<TechNode> GetResearchedTechs()
+        {
+            var allTechs = UnityEngine.Resources.LoadAll<TechNode>("TechNodes");
+            var researched = new List<TechNode>();
+
+            foreach (var tech in allTechs)
+            {
+                if (tech.IsResearched)
+                    researched.Add(tech);
+            }
+
+            return researched;
+        }
+    }
+}

@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 50c79b4d5e456a94286a97f02796070b, type: 3}
+  m_Name: Warrior
+  m_EditorClassIdentifier: Assembly-CSharp::HollowGround.Heroes.HeroData
+  DisplayName: Warrior
+  Description: Frontline fighter. High HP and defense.
+  Role: 1
+  Rarity: 0
+  ModelPrefab: {fileID: 0}
+  Portrait: {fileID: 0}
+  BaseHP: 300
+  BaseAttack: 15
+  BaseDefense: 20
+  BaseSpeed: 2
+  PassiveAbilityName: Iron Skin
+  PassiveAbilityDesc: Takes 15% less damage
+  PassiveBonus: 0.15
+  ActiveAbilityName: Shield Bash
+  ActiveAbilityDesc: Stuns enemies briefly
+  ActiveAbilityCooldown: 20
+  ArmyAttackBonus: 0.03
+  ArmyDefenseBonus: 0.08
+  SummonCost: 100
+  SummonResource: 4
