@@ -88,17 +88,6 @@ namespace HollowGround.Tech
 
         private void ApplyBonuses(TechNode node)
         {
-            if (node.ProductionBonus > 0f)
-                Debug.Log($"[Research] Production bonus: +{node.ProductionBonus:P0}");
-
-            if (node.TrainingSpeedBonus > 0f)
-                Debug.Log($"[Research] Training speed bonus: +{node.TrainingSpeedBonus:P0}");
-
-            if (node.ExpeditionSpeedBonus > 0f)
-                Debug.Log($"[Research] Expedition speed bonus: +{node.ExpeditionSpeedBonus:P0}");
-
-            if (node.DefenseBonus > 0f)
-                Debug.Log($"[Research] Defense bonus: +{node.DefenseBonus:P0}");
         }
 
         public List<TechNode> GetAvailableTechs()

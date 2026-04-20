@@ -49,17 +49,17 @@ namespace HollowGround.UI
                     row.CountText.text = $"x{count}";
 
                 if (row.PowerText != null)
-                    row.PowerText.text = count > 0 ? $"Güç: {count * 10}" : "-";
+                    row.PowerText.text = count > 0 ? $"Power: {count * 10}" : "-";
             }
 
             if (_totalTroopsText != null)
-                _totalTroopsText.text = $"Toplam: {ArmyManager.Instance.TotalTroopCount}";
+                _totalTroopsText.text = $"Total: {ArmyManager.Instance.TotalTroopCount}";
 
             if (_totalPowerText != null)
-                _totalPowerText.text = $"Ordu Gücü: {ArmyManager.Instance.CalculateArmyPower()}";
+                _totalPowerText.text = $"Army Power: {ArmyManager.Instance.CalculateArmyPower()}";
 
             if (_moraleText != null)
-                _moraleText.text = $"Moral: %{(ArmyManager.Instance.GetMorale() * 100):F0}";
+                _moraleText.text = $"Morale: {(ArmyManager.Instance.GetMorale() * 100):F0}%";
         }
     }
 }

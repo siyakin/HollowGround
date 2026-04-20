@@ -10,9 +10,9 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 6c7055fb7298b4c44877c972cfbd95b5, type: 3}
-  m_Name: Big Building
+  m_Name: CommandCenter
   m_EditorClassIdentifier: Assembly-CSharp::HollowGround.Buildings.BuildingData
-  DisplayName: Komuta Merkezi
+  DisplayName: Command Center
   Description: Heart of the base. Level determines building limits.
   Type: 0
   Category: 3
@@ -21,7 +21,11 @@ MonoBehaviour:
   MaxLevel: 10
   SizeX: 2
   SizeZ: 2
-  BaseCost: []
+  BaseCost:
+  - Type: 0
+    Amount: 50
+  - Type: 1
+    Amount: 30
   CostMultiplier: 1.5
   BaseBuildTime: 10
   HasProduction: 0

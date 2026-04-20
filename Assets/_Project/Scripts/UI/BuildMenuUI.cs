@@ -23,7 +23,43 @@ namespace HollowGround.UI
         [SerializeField] private BuildingCategory _currentCategory = BuildingCategory.Resource;
         [SerializeField] private Transform _cardContainer;
 
+        private float _refreshTimer;
+
+        private void Update()
+        {
+            _refreshTimer += Time.deltaTime;
+            if (_refreshTimer >= 1f)
+            {
+                _refreshTimer = 0f;
+                RefreshCards();
+            }
+        }
+
         private void OnEnable()
+        {
+            if (BuildingManager.Instance != null)
+            {
+                BuildingManager.Instance.OnBuildingAdded += HandleBuildingChanged;
+                BuildingManager.Instance.OnCommandCenterLevelChanged += HandleCCLevelChanged;
+            }
+            RefreshCards();
+        }
+
+        private void OnDisable()
+        {
+            if (BuildingManager.Instance != null)
+            {
+                BuildingManager.Instance.OnBuildingAdded -= HandleBuildingChanged;
+                BuildingManager.Instance.OnCommandCenterLevelChanged -= HandleCCLevelChanged;
+            }
+        }
+
+        private void HandleBuildingChanged(Building _)
+        {
+            RefreshCards();
+        }
+
+        private void HandleCCLevelChanged(int _)
         {
             RefreshCards();
         }
@@ -46,7 +82,7 @@ namespace HollowGround.UI
                 if (card.Button != null)
                 {
                     card.Button.gameObject.SetActive(true);
-                    card.Button.interactable = hasResources;
+                    card.Button.interactable = canBuild;
                 }
 
                 if (card.NameText != null)
@@ -62,7 +98,7 @@ namespace HollowGround.UI
                 }
 
                 if (card.LockedOverlay != null)
-                    card.LockedOverlay.SetActive(!hasResources);
+                    card.LockedOverlay.SetActive(!canBuild);
             }
         }
 

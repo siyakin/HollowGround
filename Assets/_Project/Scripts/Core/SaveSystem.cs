@@ -172,8 +172,9 @@ namespace HollowGround.Core
             data.Resources = new ResourceSave();
             foreach (ResourceType type in Enum.GetValues(typeof(ResourceType)))
             {
-                data.Resources.Amounts[type.ToString()] = ResourceManager.Instance.Get(type);
-                data.Resources.Capacities[type.ToString()] = ResourceManager.Instance.GetCapacity(type);
+                string key = type.ToString();
+                data.Resources.Amounts.Add(new StringIntEntry { Key = key, Value = ResourceManager.Instance.Get(type) });
+                data.Resources.Capacities.Add(new StringIntEntry { Key = key, Value = ResourceManager.Instance.GetCapacity(type) });
             }
         }
 
@@ -215,7 +216,7 @@ namespace HollowGround.Core
             data.Army = new ArmySave();
             var troops = ArmyManager.Instance.GetAllTroops();
             foreach (var kvp in troops)
-                data.Army.Troops[kvp.Key.ToString()] = kvp.Value;
+                data.Army.Troops.Add(new StringIntEntry { Key = kvp.Key.ToString(), Value = kvp.Value });
 
             foreach (var entry in ArmyManager.Instance.GetTrainingQueue())
             {
@@ -293,7 +294,7 @@ namespace HollowGround.Core
                     Status = quest.Status.ToString()
                 };
                 foreach (var kvp in quest.Progress)
-                    qs.Progress[kvp.Key] = kvp.Value;
+                    qs.Progress.Add(new IntIntEntry { Key = kvp.Key, Value = kvp.Value });
                 data.Quests.Add(qs);
             }
         }
@@ -331,6 +332,18 @@ namespace HollowGround.Core
 
         #region Apply
 
+        private static int FindValue(List<StringIntEntry> list, string key, int defaultVal = 0)
+        {
+            var entry = list.FirstOrDefault(e => e.Key == key);
+            return entry != null ? entry.Value : defaultVal;
+        }
+
+        private static int FindValue(List<IntIntEntry> list, int key, int defaultVal = 0)
+        {
+            var entry = list.FirstOrDefault(e => e.Key == key);
+            return entry != null ? entry.Value : defaultVal;
+        }
+
         private void ApplyResources(SaveData data)
         {
             if (ResourceManager.Instance == null || data.Resources == null) return;
@@ -338,13 +351,11 @@ namespace HollowGround.Core
             foreach (ResourceType type in Enum.GetValues(typeof(ResourceType)))
             {
                 string key = type.ToString();
-                if (data.Resources.Amounts.TryGetValue(key, out int amount))
-                {
-                    int cap = data.Resources.Capacities.TryGetValue(key, out int c) ? c : 500;
-                    ResourceManager.Instance.SetCapacity(type, cap);
-                    int diff = amount - ResourceManager.Instance.Get(type);
-                    if (diff > 0) ResourceManager.Instance.Add(type, diff);
-                }
+                int amount = FindValue(data.Resources.Amounts, key);
+                int cap = FindValue(data.Resources.Capacities, key, 500);
+                ResourceManager.Instance.SetCapacity(type, cap);
+                int diff = amount - ResourceManager.Instance.Get(type);
+                if (diff > 0) ResourceManager.Instance.Add(type, diff);
             }
         }
 
@@ -402,10 +413,10 @@ namespace HollowGround.Core
         {
             if (ArmyManager.Instance == null || data.Army == null) return;
 
-            foreach (var kvp in data.Army.Troops)
+            foreach (var entry in data.Army.Troops)
             {
-                if (Enum.TryParse<TroopType>(kvp.Key, out var type))
-                    ArmyManager.Instance.AddTroops(type, kvp.Value);
+                if (Enum.TryParse<TroopType>(entry.Key, out var type))
+                    ArmyManager.Instance.AddTroops(type, entry.Value);
             }
         }
 
@@ -495,8 +506,8 @@ namespace HollowGround.Core
                 if (Enum.TryParse<QuestStatus>(qs.Status, out var status))
                     instance.Status = status;
 
-                foreach (var kvp in qs.Progress)
-                    instance.AddProgress(kvp.Key, kvp.Value);
+                foreach (var entry in qs.Progress)
+                    instance.AddProgress(entry.Key, entry.Value);
             }
         }
 

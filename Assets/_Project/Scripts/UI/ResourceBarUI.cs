@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using HollowGround.Resources;
 using TMPro;
@@ -7,7 +8,7 @@ namespace HollowGround.UI
 {
     public class ResourceBarUI : MonoBehaviour
     {
-        [System.Serializable]
+        [Serializable]
         public class ResourceSlot
         {
             public ResourceType Type;
@@ -25,59 +26,61 @@ namespace HollowGround.UI
         {
             _slotMap = new Dictionary<ResourceType, ResourceSlot>();
             foreach (var slot in _slots)
-            {
                 _slotMap[slot.Type] = slot;
-            }
+        }
+
+        private void Start()
+        {
+            SubscribeEvents();
+            RefreshAll();
         }
 
         private void OnEnable()
         {
-            if (ResourceManager.Instance != null)
-            {
-                ResourceManager.Instance.OnResourceChanged += HandleResourceChanged;
-                ResourceManager.Instance.OnAllResourcesChanged += RefreshAll;
-            }
+            SubscribeEvents();
             RefreshAll();
         }
 
         private void OnDisable()
         {
-            if (ResourceManager.Instance != null)
-            {
-                ResourceManager.Instance.OnResourceChanged -= HandleResourceChanged;
-                ResourceManager.Instance.OnAllResourcesChanged -= RefreshAll;
-            }
+            UnsubscribeEvents();
+        }
+
+        private void SubscribeEvents()
+        {
+            if (ResourceManager.Instance == null) return;
+            ResourceManager.Instance.OnResourceChanged -= HandleResourceChanged;
+            ResourceManager.Instance.OnAllResourcesChanged -= RefreshAll;
+            ResourceManager.Instance.OnResourceChanged += HandleResourceChanged;
+            ResourceManager.Instance.OnAllResourcesChanged += RefreshAll;
+        }
+
+        private void UnsubscribeEvents()
+        {
+            if (ResourceManager.Instance == null) return;
+            ResourceManager.Instance.OnResourceChanged -= HandleResourceChanged;
+            ResourceManager.Instance.OnAllResourcesChanged -= RefreshAll;
         }
 
         private void HandleResourceChanged(ResourceType type, int amount)
         {
             if (_slotMap.TryGetValue(type, out ResourceSlot slot))
-            {
                 UpdateSlot(slot);
-            }
         }
 
         private void RefreshAll()
         {
             foreach (var slot in _slots)
-            {
                 UpdateSlot(slot);
-            }
             UpdatePopulation();
         }
 
         private void UpdateSlot(ResourceSlot slot)
         {
-            if (ResourceManager.Instance == null) return;
-
+            if (ResourceManager.Instance == null || slot.AmountText == null) return;
             int amount = ResourceManager.Instance.Get(slot.Type);
             int capacity = ResourceManager.Instance.GetCapacity(slot.Type);
-
-            if (slot.AmountText != null)
-                slot.AmountText.text = amount.ToString();
-
-            if (slot.CapacityText != null)
-                slot.CapacityText.text = $"/{capacity}";
+            slot.AmountText.text = $"{amount}/{capacity}";
         }
 
         private void UpdatePopulation()

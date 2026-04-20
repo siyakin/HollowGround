@@ -12,12 +12,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6c7055fb7298b4c44877c972cfbd95b5, type: 3}
   m_Name: Greenhouse
   m_EditorClassIdentifier: Assembly-CSharp::HollowGround.Buildings.BuildingData
-  DisplayName: "Farm"
-  Description: "Produces food. Regular timer-based production."
+  DisplayName: Farm
+  Description: Produces food. Regular timer-based production.
   Type: 1
   Category: 0
   LevelPrefabs:
-  - {fileID: 919132149155446097, guid: ddc1cdd9cd068fe448d4a49fbf059c4d, type: 3}
+  - {fileID: 919132149155446097, guid: a55b239280dcca5458ce1b03f441de60, type: 3}
   MaxLevel: 10
   SizeX: 2
   SizeZ: 2
@@ -27,11 +27,11 @@ MonoBehaviour:
   - Type: 1
     Amount: 30
   CostMultiplier: 1.5
-  BaseBuildTime: 60
+  BaseBuildTime: 10
   HasProduction: 1
   ProducedResource: 2
   BaseProductionAmount: 10
-  ProductionInterval: 300
+  ProductionInterval: 30
   ProductionMultiplierPerLevel: 1.2
   PopulationCapacity: 0
   StorageCapacity: 0

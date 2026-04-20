@@ -1,10 +1,5 @@
 using System;
 using System.Collections.Generic;
-using HollowGround.Army;
-using HollowGround.Buildings;
-using HollowGround.Combat;
-using HollowGround.Heroes;
-using HollowGround.Resources;
 using UnityEngine;
 
 namespace HollowGround.Core
@@ -30,10 +25,24 @@ namespace HollowGround.Core
     }
 
     [Serializable]
+    public class StringIntEntry
+    {
+        public string Key;
+        public int Value;
+    }
+
+    [Serializable]
+    public class IntIntEntry
+    {
+        public int Key;
+        public int Value;
+    }
+
+    [Serializable]
     public class ResourceSave
     {
-        public Dictionary<string, int> Amounts = new();
-        public Dictionary<string, int> Capacities = new();
+        public List<StringIntEntry> Amounts = new();
+        public List<StringIntEntry> Capacities = new();
     }
 
     [Serializable]
@@ -59,7 +68,7 @@ namespace HollowGround.Core
     [Serializable]
     public class ArmySave
     {
-        public Dictionary<string, int> Troops = new();
+        public List<StringIntEntry> Troops = new();
         public List<TrainingSave> TrainingQueue = new();
     }
 
@@ -103,7 +112,7 @@ namespace HollowGround.Core
     {
         public string QuestDataName;
         public string Status;
-        public Dictionary<int, int> Progress = new();
+        public List<IntIntEntry> Progress = new();
     }
 
     [Serializable]

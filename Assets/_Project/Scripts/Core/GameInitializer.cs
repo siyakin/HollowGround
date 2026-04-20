@@ -17,7 +17,7 @@ namespace HollowGround.Core
         private void Start()
         {
             CenterCamera();
-
+            InitializeWorldMap();
             InitializeQuests();
             InitializeMutantAttacks();
             StartGame();
@@ -44,6 +44,14 @@ namespace HollowGround.Core
 
             strategyCam.transform.position = target;
             strategyCam.FocusOn(target);
+        }
+
+        private void InitializeWorldMap()
+        {
+            if (HollowGround.World.WorldMap.Instance == null) return;
+            if (HollowGround.World.WorldMap.Instance.AllNodes.Count > 0) return;
+
+            HollowGround.World.WorldMap.Instance.GenerateDefaultMap();
         }
 
         private void InitializeQuests()

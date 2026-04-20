@@ -125,8 +125,10 @@ namespace HollowGround.Army
         {
             if (_trainingQueue.Count == 0) return;
 
+            float speed = HollowGround.Core.TimeManager.Instance != null ? HollowGround.Core.TimeManager.Instance.GameSpeed : 1f;
+
             var entry = _trainingQueue[0];
-            entry.RemainingTime -= Time.deltaTime;
+            entry.RemainingTime -= Time.deltaTime * speed;
 
             if (entry.IsComplete)
             {

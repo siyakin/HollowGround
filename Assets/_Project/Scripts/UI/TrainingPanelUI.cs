@@ -62,7 +62,7 @@ namespace HollowGround.UI
 
             if (!ArmyManager.Instance.CanAffordTraining(slot.Data, 1))
             {
-                ToastUI.Show("Yetersiz kaynak!");
+                ToastUI.Show("Not enough resources!");
                 return;
             }
 
@@ -96,17 +96,17 @@ namespace HollowGround.UI
                 }
 
                 if (slot.TimeText != null)
-                    slot.TimeText.text = $"{slot.Data.TrainingTime:F0}sn";
+                    slot.TimeText.text = $"{slot.Data.TrainingTime:F0}s";
 
                 if (slot.CountText != null)
                     slot.CountText.text = $"x{ArmyManager.Instance.GetTroopCount(slot.Data.Type)}";
             }
 
             if (_armyPowerText != null)
-                _armyPowerText.text = $"Güç: {ArmyManager.Instance.CalculateArmyPower()}";
+                _armyPowerText.text = $"Power: {ArmyManager.Instance.CalculateArmyPower()}";
 
             if (_moraleText != null)
-                _moraleText.text = $"Moral: %{(ArmyManager.Instance.GetMorale() * 100):F0}";
+                _moraleText.text = $"Morale: {(ArmyManager.Instance.GetMorale() * 100):F0}%";
         }
 
         private void UpdateTrainingProgress()
@@ -121,7 +121,7 @@ namespace HollowGround.UI
                     _trainingProgress.value = current.Progress;
 
                 if (_trainingLabel != null)
-                    _trainingLabel.text = $"{current.Data.DisplayName} x{current.Amount} ({current.RemainingTime:F0}sn)";
+                    _trainingLabel.text = $"{current.Data.DisplayName} x{current.Amount} ({current.RemainingTime:F0}s)";
             }
             else
             {
@@ -129,18 +129,18 @@ namespace HollowGround.UI
                     _trainingProgress.value = 0;
 
                 if (_trainingLabel != null)
-                    _trainingLabel.text = "Eğitim yok";
+                    _trainingLabel.text = "No training";
             }
         }
 
         private void HandleTrainingStarted(ArmyManager.TrainingQueueEntry entry)
         {
-            ToastUI.Show($"{entry.Data.DisplayName} x{entry.Amount} eğitimi başladı");
+            ToastUI.Show($"{entry.Data.DisplayName} x{entry.Amount} training started");
         }
 
         private void HandleTrainingCompleted(ArmyManager.TrainingQueueEntry entry)
         {
-            ToastUI.Show($"{entry.Data.DisplayName} x{entry.Amount} eğitim tamamlandı!");
+            ToastUI.Show($"{entry.Data.DisplayName} x{entry.Amount} training completed!");
             RefreshAll();
         }
     }

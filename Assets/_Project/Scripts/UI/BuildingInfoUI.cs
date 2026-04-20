@@ -3,6 +3,7 @@ using HollowGround.Buildings;
 using HollowGround.Resources;
 using TMPro;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
 namespace HollowGround.UI
@@ -28,31 +29,26 @@ namespace HollowGround.UI
 
         private Building _current;
 
+        private void Start()
+        {
+            SubscribeSelector();
+        }
+
         private void OnEnable()
         {
-            BuildingSelector selector = FindAnyObjectByType<BuildingSelector>();
-            if (selector != null)
-            {
-                selector.OnBuildingSelected += ShowInfo;
-                selector.OnBuildingDeselected += HideInfo;
-            }
+            SubscribeSelector();
 
             if (_upgradeButton != null)
                 _upgradeButton.onClick.AddListener(OnUpgradeClicked);
 
             if (_demolishButton != null)
                 _demolishButton.onClick.AddListener(OnDemolishClicked);
+
+            Debug.Log($"[BuildingInfoUI] OnEnable. Upgrade={_upgradeButton != null}, Demolish={_demolishButton != null}");
         }
 
         private void OnDisable()
         {
-            BuildingSelector selector = FindAnyObjectByType<BuildingSelector>();
-            if (selector != null)
-            {
-                selector.OnBuildingSelected -= ShowInfo;
-                selector.OnBuildingDeselected -= HideInfo;
-            }
-
             if (_upgradeButton != null)
                 _upgradeButton.onClick.RemoveListener(OnUpgradeClicked);
 
@@ -60,11 +56,47 @@ namespace HollowGround.UI
                 _demolishButton.onClick.RemoveListener(OnDemolishClicked);
         }
 
+        private void OnDestroy()
+        {
+            UnsubscribeSelector();
+        }
+
+        private void SubscribeSelector()
+        {
+            BuildingSelector selector = FindAnyObjectByType<BuildingSelector>();
+            if (selector != null)
+            {
+                selector.OnBuildingSelected -= ShowInfo;
+                selector.OnBuildingDeselected -= HideInfo;
+                selector.OnBuildingSelected += ShowInfo;
+                selector.OnBuildingDeselected += HideInfo;
+            }
+        }
+
+        private void UnsubscribeSelector()
+        {
+            BuildingSelector selector = FindAnyObjectByType<BuildingSelector>();
+            if (selector != null)
+            {
+                selector.OnBuildingSelected -= ShowInfo;
+                selector.OnBuildingDeselected -= HideInfo;
+            }
+        }
+
         private void Update()
         {
             if (_current == null) return;
             UpdateProgress();
             UpdateProductionProgress();
+
+            if (UnityEngine.InputSystem.Keyboard.current != null && UnityEngine.InputSystem.Keyboard.current.dKey.wasPressedThisFrame)
+            {
+                OnDemolishClicked();
+            }
+            if (UnityEngine.InputSystem.Keyboard.current != null && UnityEngine.InputSystem.Keyboard.current.uKey.wasPressedThisFrame)
+            {
+                OnUpgradeClicked();
+            }
         }
 
         public void ShowInfo(Building building)
@@ -152,15 +184,16 @@ namespace HollowGround.UI
             }
         }
 
-        private void OnUpgradeClicked()
+        public void OnUpgradeClicked()
         {
             if (_current == null) return;
             _current.StartUpgrade();
             RefreshDisplay();
         }
 
-        private void OnDemolishClicked()
+        public void OnDemolishClicked()
         {
+            Debug.Log($"[BuildingInfoUI] Demolish clicked! Current={_current != null}");
             if (_current == null) return;
             _current.Demolish();
             HideInfo();

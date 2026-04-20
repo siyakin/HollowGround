@@ -1,6 +1,9 @@
+using System.Collections.Generic;
+using System.Linq;
 using HollowGround.Core;
 using HollowGround.Grid;
 using HollowGround.Resources;
+using HollowGround.UI;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -151,12 +154,24 @@ namespace HollowGround.Buildings
             if (!GridSystem.Instance.IsAreaBuildable(coords.x, coords.y, sx, sz)) return;
 
             var costs = _currentBuilding.GetCostForLevel(1);
-            if (BuildingManager.Instance != null && !BuildingManager.Instance.CanAffordBuilding(_currentBuilding, 1)) return;
+            Debug.Log($"[BuildingPlacer] Placing {_currentBuilding.DisplayName}, costs: {string.Join(", ", costs.Select(c => $"{c.Key}={c.Value}"))}");
+
+            if (BuildingManager.Instance != null && !BuildingManager.Instance.CanAffordBuilding(_currentBuilding, 1))
+            {
+                ToastUI.Show("Not enough resources!", Color.red);
+                return;
+            }
 
             var rm = ResourceManager.Instance;
-            if (rm != null && !rm.SpendMultiple(costs)) return;
+            if (rm != null && !rm.SpendMultiple(costs))
+            {
+                ToastUI.Show("Not enough resources!", Color.red);
+                return;
+            }
 
-            GameObject buildingObj = new(_currentBuilding.DisplayName);
+            string buildingName = _currentBuilding.DisplayName;
+
+            GameObject buildingObj = new(buildingName);
             buildingObj.transform.position = _ghostObject.transform.position;
             buildingObj.transform.rotation = _ghostObject.transform.rotation;
 
@@ -174,6 +189,11 @@ namespace HollowGround.Buildings
 
             GameManager.Instance.SetState(GameState.Playing);
             OnPlacementCompleted?.Invoke(building);
+
+            if (ToastUI.Instance != null)
+                ToastUI.Show($"{buildingName} placed!", Color.green);
+            else
+                Debug.Log($"[Toast] {buildingName} placed!");
         }
 
         private (int x, int z) GetRotatedSize()

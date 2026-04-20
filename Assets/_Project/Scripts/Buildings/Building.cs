@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using HollowGround.Core;
 using HollowGround.Grid;
 using HollowGround.Resources;
+using HollowGround.UI;
 using UnityEngine;
 
 namespace HollowGround.Buildings
@@ -42,6 +43,13 @@ namespace HollowGround.Buildings
             Level = 1;
             State = BuildingState.Constructing;
             ConstructionProgress = 0f;
+
+            var col = gameObject.AddComponent<BoxCollider>();
+            col.size = new Vector3(data.SizeX * GridSystem.Instance.CellSize, 5f, data.SizeZ * GridSystem.Instance.CellSize);
+            col.center = new Vector3(0f, 2.5f, 0f);
+
+            gameObject.layer = LayerMask.NameToLayer("Building");
+
             UpdateModel();
         }
 
@@ -63,21 +71,24 @@ namespace HollowGround.Buildings
 
         private void TickConstruction()
         {
+            float speed = HollowGround.Core.TimeManager.Instance != null ? HollowGround.Core.TimeManager.Instance.GameSpeed : 1f;
             float buildTime = _data.GetBuildTimeForLevel(Level);
-            ConstructionProgress += Time.deltaTime / buildTime;
+            ConstructionProgress += Time.deltaTime * speed / buildTime;
 
             if (ConstructionProgress >= 1f)
             {
                 ConstructionProgress = 1f;
                 State = BuildingState.Active;
                 OnConstructionComplete?.Invoke(this);
+                ToastUI.Show($"{_data.DisplayName} construction complete!", Color.green);
             }
         }
 
         private void TickUpgrade()
         {
+            float speed = HollowGround.Core.TimeManager.Instance != null ? HollowGround.Core.TimeManager.Instance.GameSpeed : 1f;
             float buildTime = _data.GetBuildTimeForLevel(Level + 1);
-            UpgradeProgress += Time.deltaTime / buildTime;
+            UpgradeProgress += Time.deltaTime * speed / buildTime;
 
             if (UpgradeProgress >= 1f)
             {
@@ -94,8 +105,15 @@ namespace HollowGround.Buildings
         {
             if (!_data.HasProduction) return;
 
-            _productionTimer += Time.deltaTime;
-            if (_productionTimer >= _data.ProductionInterval)
+            float speed = HollowGround.Core.TimeManager.Instance != null ? HollowGround.Core.TimeManager.Instance.GameSpeed : 1f;
+            _productionTimer += Time.deltaTime * speed;
+
+            float productionInterval = _data.ProductionInterval;
+            float productionBonus = GetTotalProductionBonus();
+            if (productionBonus > 0f)
+                productionInterval *= (1f - productionBonus);
+
+            if (_productionTimer >= productionInterval)
             {
                 _productionTimer = 0f;
                 int amount = _data.GetProductionForLevel(Level);
@@ -107,6 +125,16 @@ namespace HollowGround.Buildings
                     OnProduced?.Invoke(this, resType, amount);
                 }
             }
+        }
+
+        private float GetTotalProductionBonus()
+        {
+            float bonus = 0f;
+            var rm = HollowGround.Tech.ResearchManager.Instance;
+            if (rm == null) return 0f;
+            foreach (var tech in rm.GetResearchedTechs())
+                bonus += tech.ProductionBonus;
+            return Mathf.Clamp01(bonus);
         }
 
         public bool CanUpgrade()

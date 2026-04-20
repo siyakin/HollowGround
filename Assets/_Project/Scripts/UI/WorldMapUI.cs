@@ -81,7 +81,7 @@ namespace HollowGround.UI
                         }
                         else if (node.NodeType == MapNodeType.PlayerBase)
                         {
-                            tmp.text = "★";
+                            tmp.text = "[HOME]";
                             tmp.color = Color.yellow;
                         }
                         else

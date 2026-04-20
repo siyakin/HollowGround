@@ -31,18 +31,18 @@ namespace HollowGround.Camera
         [SerializeField] private float _edgeSpeed          = 20f;
 
         [Header("Zoom")]
-        [SerializeField] private float _zoomSpeed    = 6f;
-        [SerializeField] private float _minZoom      = 8f;
-        [SerializeField] private float _maxZoom      = 55f;
+        [SerializeField] private float _zoomSpeed    = 5f;
+        [SerializeField] private float _minZoom      = 5f;
+        [SerializeField] private float _maxZoom      = 45f;
         [SerializeField] private float _zoomSmooth   = 8f;
-        [SerializeField] private float _initialZoom  = 35f;
+        [SerializeField] private float _initialZoom  = 12f;
 
         [Header("Rotation")]
         [SerializeField] private float _rotateSpeed  = 120f;
         [SerializeField] private float _rotateSmooth = 8f;
 
         [Header("Camera Angle")]
-        [SerializeField] private float _tiltAngle = 45f;
+        [SerializeField] private float _tiltAngle = 60f;
 
         [Header("Bounds")]
         [SerializeField] private Vector2 _boundsMin = new(-30f, -30f);
@@ -253,6 +253,7 @@ namespace HollowGround.Camera
             Vector3 pos = new(worldPos.x, 0f, worldPos.z);
             _targetPos = pos;
             _currentPos = pos;
+            ApplyTransform();
         }
 
         public void SetBounds(Vector2 min, Vector2 max)
