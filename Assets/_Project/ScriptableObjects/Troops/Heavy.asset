@@ -10,24 +10,24 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 60b9dc88774e443428f780bc9edf179c, type: 3}
-  m_Name: "Ni\u015Fanc\u0131"
+  m_Name: Heavy
   m_EditorClassIdentifier: Assembly-CSharp::HollowGround.Army.TroopData
-  DisplayName: "Ni\u015Fanc\u0131"
-  Description: "Uzun menzilli hasar. Yak\u0131n d\xF6v\xFC\u015Fte zay\u0131f."
-  Type: 1
-  Role: 1
+  DisplayName: Heavy
+  Description: Tank unit. High HP, slow movement.
+  Type: 2
+  Role: 2
   UnitPrefab: {fileID: 0}
-  BaseHP: 60
-  BaseAttack: 15
-  BaseDefense: 3
-  BaseSpeed: 2.5
-  StrongAgainst: 0
-  WeakAgainst: 2
+  BaseHP: 200
+  BaseAttack: 8
+  BaseDefense: 15
+  BaseSpeed: 1.5
+  StrongAgainst: 1
+  WeakAgainst: 0
   MatchupMultiplier: 1.5
   TrainingCost:
   - Type: 2
-    Amount: 8
+    Amount: 12
   - Type: 1
-    Amount: 5
-  TrainingTime: 45
-  BarracksLevelRequired: 1
+    Amount: 10
+  TrainingTime: 60
+  BarracksLevelRequired: 2

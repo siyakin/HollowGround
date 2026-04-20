@@ -10,24 +10,24 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 60b9dc88774e443428f780bc9edf179c, type: 3}
-  m_Name: "G\xF6zc\xFC"
+  m_Name: Infantry
   m_EditorClassIdentifier: Assembly-CSharp::HollowGround.Army.TroopData
-  DisplayName: "G\xF6zc\xFC"
-  Description: "H\u0131zl\u0131 ke\u015Fif birlik. Gizli hareket."
-  Type: 3
-  Role: 3
+  DisplayName: Infantry
+  Description: Balanced unit. Fights on the front line.
+  Type: 0
+  Role: 0
   UnitPrefab: {fileID: 0}
-  BaseHP: 50
-  BaseAttack: 6
-  BaseDefense: 2
-  BaseSpeed: 6
-  StrongAgainst: 4
-  WeakAgainst: 2
+  BaseHP: 100
+  BaseAttack: 10
+  BaseDefense: 5
+  BaseSpeed: 3
+  StrongAgainst: 2
+  WeakAgainst: 1
   MatchupMultiplier: 1.5
   TrainingCost:
   - Type: 2
-    Amount: 3
+    Amount: 5
   - Type: 1
-    Amount: 2
-  TrainingTime: 20
+    Amount: 3
+  TrainingTime: 30
   BarracksLevelRequired: 1

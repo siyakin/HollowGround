@@ -88,6 +88,39 @@ namespace HollowGround.Tech
 
         private void ApplyBonuses(TechNode node)
         {
+            Debug.Log($"[Research] Completed '{node.DisplayName}'. " +
+                $"Bonuses — Production: +{node.ProductionBonus:P0}, " +
+                $"Training: +{node.TrainingSpeedBonus:P0}, " +
+                $"Expedition: +{node.ExpeditionSpeedBonus:P0}, " +
+                $"Defense: +{node.DefenseBonus:P0}");
+        }
+
+        public float GetTotalProductionBonus()
+        {
+            return SumBonus(t => t.ProductionBonus);
+        }
+
+        public float GetTotalTrainingSpeedBonus()
+        {
+            return SumBonus(t => t.TrainingSpeedBonus);
+        }
+
+        public float GetTotalExpeditionSpeedBonus()
+        {
+            return SumBonus(t => t.ExpeditionSpeedBonus);
+        }
+
+        public float GetTotalDefenseBonus()
+        {
+            return SumBonus(t => t.DefenseBonus);
+        }
+
+        private float SumBonus(System.Func<TechNode, float> selector)
+        {
+            float sum = 0f;
+            foreach (var tech in GetResearchedTechs())
+                sum += selector(tech);
+            return Mathf.Clamp01(sum);
         }
 
         public List<TechNode> GetAvailableTechs()

@@ -127,6 +127,11 @@ namespace HollowGround.Army
 
             float speed = HollowGround.Core.TimeManager.Instance != null ? HollowGround.Core.TimeManager.Instance.GameSpeed : 1f;
 
+            float trainingBonus = 0f;
+            if (HollowGround.Tech.ResearchManager.Instance != null)
+                trainingBonus = HollowGround.Tech.ResearchManager.Instance.GetTotalTrainingSpeedBonus();
+            speed *= (1f + trainingBonus);
+
             var entry = _trainingQueue[0];
             entry.RemainingTime -= Time.deltaTime * speed;
 

@@ -95,6 +95,11 @@ namespace HollowGround.World
             float distance = WorldMap.Instance.GetDistance(WorldMap.Instance.BasePosition, target);
             float travelTime = distance * 30f;
 
+            float expeditionBonus = 0f;
+            if (HollowGround.Tech.ResearchManager.Instance != null)
+                expeditionBonus = HollowGround.Tech.ResearchManager.Instance.GetTotalExpeditionSpeedBonus();
+            travelTime *= (1f - expeditionBonus);
+
             var expedition = new ActiveExpedition
             {
                 Id = Guid.NewGuid().ToString().Substring(0, 8),

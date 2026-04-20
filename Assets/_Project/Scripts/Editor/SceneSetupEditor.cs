@@ -609,7 +609,7 @@ namespace HollowGround.Editor
                         new Vector2(0, 0), new Vector2(1, 0.1f), new Vector2(5, 0), new Vector2(-5, 0));
 
                     int idx = i;
-                    cardBtn.onClick.AddListener(() => { techUI.SelectTech(idx); });
+                    cardBtn.onClick.AddListener(() => { });
 
                     techCardsProp.arraySize++;
                     var element = techCardsProp.GetArrayElementAtIndex(i);

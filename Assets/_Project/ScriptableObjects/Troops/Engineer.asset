@@ -10,24 +10,24 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 60b9dc88774e443428f780bc9edf179c, type: 3}
-  m_Name: Piyade
+  m_Name: Engineer
   m_EditorClassIdentifier: Assembly-CSharp::HollowGround.Army.TroopData
-  DisplayName: Piyade
-  Description: "Dengeli birlik. Cephede \xE7at\u0131\u015F\u0131r."
-  Type: 0
-  Role: 0
+  DisplayName: Engineer
+  Description: Support unit. Repair and trap building.
+  Type: 4
+  Role: 4
   UnitPrefab: {fileID: 0}
-  BaseHP: 100
-  BaseAttack: 10
-  BaseDefense: 5
-  BaseSpeed: 3
+  BaseHP: 70
+  BaseAttack: 5
+  BaseDefense: 8
+  BaseSpeed: 2
   StrongAgainst: 2
-  WeakAgainst: 1
+  WeakAgainst: 3
   MatchupMultiplier: 1.5
   TrainingCost:
   - Type: 2
-    Amount: 5
+    Amount: 10
   - Type: 1
-    Amount: 3
-  TrainingTime: 30
-  BarracksLevelRequired: 1
+    Amount: 8
+  TrainingTime: 50
+  BarracksLevelRequired: 2

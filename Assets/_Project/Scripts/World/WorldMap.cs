@@ -50,6 +50,12 @@ namespace HollowGround.World
                 _allNodes.Add(node);
             }
 
+            var baseNode = GetNode(_basePosition);
+            if (baseNode != null)
+            {
+                baseNode.SetVisible(true);
+                baseNode.SetExplored(true);
+            }
             RevealArea(_basePosition, 2);
             OnMapUpdated?.Invoke();
         }
@@ -117,8 +123,6 @@ namespace HollowGround.World
                     if (node != null)
                     {
                         node.SetVisible(true);
-                        if (!node.IsExplored)
-                            node.SetExplored(true);
                     }
                 }
             }

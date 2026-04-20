@@ -10,24 +10,24 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 60b9dc88774e443428f780bc9edf179c, type: 3}
-  m_Name: "A\u011F\u0131r Asker"
+  m_Name: Scout
   m_EditorClassIdentifier: Assembly-CSharp::HollowGround.Army.TroopData
-  DisplayName: "A\u011F\u0131r Asker"
-  Description: "Tank birlik. Y\xFCksek HP, yava\u015F hareket."
-  Type: 2
-  Role: 2
+  DisplayName: Scout
+  Description: Fast recon unit. Stealthy movement.
+  Type: 3
+  Role: 3
   UnitPrefab: {fileID: 0}
-  BaseHP: 200
-  BaseAttack: 8
-  BaseDefense: 15
-  BaseSpeed: 1.5
-  StrongAgainst: 1
-  WeakAgainst: 0
+  BaseHP: 50
+  BaseAttack: 6
+  BaseDefense: 2
+  BaseSpeed: 6
+  StrongAgainst: 4
+  WeakAgainst: 2
   MatchupMultiplier: 1.5
   TrainingCost:
   - Type: 2
-    Amount: 12
+    Amount: 3
   - Type: 1
-    Amount: 10
-  TrainingTime: 60
-  BarracksLevelRequired: 2
+    Amount: 2
+  TrainingTime: 20
+  BarracksLevelRequired: 1
