@@ -147,7 +147,7 @@ Last War ilhamlı, nükleer savaş sonrası strateji oyunu.
 
 ---
 
-## Faz 11 — Playtest & Bugfix 🔶
+## Faz 11 — Playtest & Bugfix ✅
 
 - [x] Ground plane kalıcı olarak sahneye eklendi (HollowGround > Setup Ground & Camera)
 - [x] "Ground" layer oluşturuldu, BuildingPlacer _groundMask ayarlandı
@@ -162,21 +162,31 @@ Last War ilhamlı, nükleer savaş sonrası strateji oyunu.
 - [x] 14 bug düzeltmesi (onClick listeners, Türkçe metinler, prefab eksikleri, mantık hataları)
 - [x] Post-processing değerleri düşürüldü (bloom 0.2, vignette 0.2, filmgrain kapalı)
 - [x] AtmosphereEffects varsayılanları düşürüldü (fog 0.004, dust kapalı, fog particles kapalı)
-- [ ] Kaynak üretim testi (Farm → Food artışı)
-- [ ] Tüm bina tipleri yerleştirme testi
-- [ ] UI panel testleri (ResourceBar, BuildMenu, BuildingInfo)
-- [ ] Askeri sistem testi (eğitim, ordu)
-- [ ] Hero sistemi testi (summon, ekipman)
-- [ ] Dünya haritası testi (sefer, fog of war)
-- [ ] Save/Load testi
-- [ ] Grid sınır çizgisi sorunu (GridVisualizer z-fighting)
+- [x] Kaynak üretim testi (Farm → Food, Mine → Metal)
+- [x] Tüm bina tipleri yerleştirme testi (CC, Farm, Mine, Barracks)
+- [x] UI panel testleri (ResourceBar, BuildMenu, BuildingInfo)
+- [x] Askeri sistem testi (eğitim, ordu)
+- [x] Hero sistemi testi (summon, TechPart ile)
+- [x] Dünya haritası testi (sefer, fog of war)
+- [x] Save/Load testi (F5 QuickSave, F9 QuickLoad)
+- [x] GameConfig SO — DevMode, DisableMutantAttacks, BoostStartingResources, SessionLog
+- [x] SessionLogger — tüm oyun eventlerini dosyaya yazar
+- [x] Faction Ticaret testi (3 faction, BUY/SELL, ilişki)
+- [x] Araştırma testi (TechTreeUI, 10 tech SO)
+- [x] Görev sistemi testi (QuestLogUI, 5 quest SO)
+- [x] Mutant saldırı testi (wave, bina yıkımı, toast mesajları)
+- [x] Tüm UI paneller runtime oluşturucuya çevrildi
+- [x] ActionBar padding (60px) tüm panellere uygulandı
+- [x] Close butonları kaldırıldı, ActionBar toggle ile açılıp kapanıyor
+- [x] UITheme font (Roboto) runtime panellere uygulanıyor
+- [x] FactionData SO'lar oluşturuldu (Scavenger Guild, Iron Legion, Green Haven)
 
 ### Klasör Yapısı
 ```
 Assets/_Project/Scripts/
 ├── Core/        GameManager, TimeManager, GameEvent, Singleton, GameInitializer,
 │                SaveData, SaveSystem, AudioManager, AudioConfig, BaseStarter,
-│                PostProcessingSetup, AtmosphereEffects
+│                PostProcessingSetup, AtmosphereEffects, GameConfig, SessionLogger
 ├── Camera/      StrategyCamera
 ├── Grid/        GridSystem, GridCell, GridVisualizer, PlacementValidator
 ├── Buildings/   BuildingType, BuildingData, Building, BuildingManager,
@@ -199,8 +209,8 @@ Assets/_Project/Scripts/
 └── Editor/      GridSystemEditor, BuildingDataFactory, TroopDataFactory,
                  HeroDataFactory, QuestDataFactory, FactionDataFactory,
                  TechNodeFactory, GhostMaterialCreator,
-                 UIThemeApplier, SceneSetupEditor,
-                  PostProcessingProfileFactory, GroundSetupEditor
+                 UIThemeApplier, SceneSetupEditor, GameConfigCreator,
+                 PostProcessingProfileFactory, GroundSetupEditor
 ```
 
 ### Dokumanlar
@@ -210,4 +220,4 @@ GDD.md        — Oyun tasarim dokumanı
 BALANCE.md    — Dengeleme referans tablosu
 ```
 
-*Son güncelleme: Faz 11 playtest başladı — ground/camera/buildingplacer düzeltmeleri, bina yerleştirme çalışıyor*
+*Son güncelleme: Faz 11 playtest tamamlandi — 13/13 test gecti, GameConfig + SessionLogger eklendi*

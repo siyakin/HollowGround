@@ -72,7 +72,8 @@ namespace HollowGround.Buildings
         private void TickConstruction()
         {
             float speed = HollowGround.Core.TimeManager.Instance != null ? HollowGround.Core.TimeManager.Instance.GameSpeed : 1f;
-            float buildTime = _data.GetBuildTimeForLevel(Level);
+            float devMult = HollowGround.Core.GameConfig.Instance != null ? HollowGround.Core.GameConfig.Instance.GetBuildTimeMultiplier : 1f;
+            float buildTime = _data.GetBuildTimeForLevel(Level) * devMult;
             ConstructionProgress += Time.deltaTime * speed / buildTime;
 
             if (ConstructionProgress >= 1f)
@@ -87,7 +88,8 @@ namespace HollowGround.Buildings
         private void TickUpgrade()
         {
             float speed = HollowGround.Core.TimeManager.Instance != null ? HollowGround.Core.TimeManager.Instance.GameSpeed : 1f;
-            float buildTime = _data.GetBuildTimeForLevel(Level + 1);
+            float devMult = HollowGround.Core.GameConfig.Instance != null ? HollowGround.Core.GameConfig.Instance.GetBuildTimeMultiplier : 1f;
+            float buildTime = _data.GetBuildTimeForLevel(Level + 1) * devMult;
             UpgradeProgress += Time.deltaTime * speed / buildTime;
 
             if (UpgradeProgress >= 1f)
@@ -109,6 +111,8 @@ namespace HollowGround.Buildings
             _productionTimer += Time.deltaTime * speed;
 
             float productionInterval = _data.ProductionInterval;
+            float devMult = HollowGround.Core.GameConfig.Instance != null ? HollowGround.Core.GameConfig.Instance.GetProductionIntervalMultiplier : 1f;
+            productionInterval *= devMult;
             float productionBonus = GetTotalProductionBonus();
             if (productionBonus > 0f)
                 productionInterval *= (1f - productionBonus);

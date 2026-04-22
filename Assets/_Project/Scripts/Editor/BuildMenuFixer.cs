@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using HollowGround.Buildings;
 using HollowGround.UI;
 using UnityEditor;
@@ -8,72 +9,91 @@ namespace HollowGround.Editor
 {
     public static class BuildMenuFixer
     {
+        private static readonly BuildingType[] Order =
+        {
+            BuildingType.CommandCenter,
+            BuildingType.Farm,
+            BuildingType.Mine,
+            BuildingType.WoodFactory,
+            BuildingType.WaterWell,
+            BuildingType.Generator,
+            BuildingType.Barracks,
+            BuildingType.Storage,
+            BuildingType.Shelter
+        };
+
+        private static readonly string[] ButtonNames =
+        {
+            "btnCommandCenter",
+            "btnFarm",
+            "btnMine",
+            "btnWoodFactory",
+            "btnWaterWell",
+            "btnGenerator",
+            "btnBarracks",
+            "btnStorage",
+            "btnShelter"
+        };
+
         [MenuItem("HollowGround/Fix BuildMenu")]
         public static void Fix()
         {
-            var menu = Object.FindAnyObjectByType<BuildMenuUI>();
+            var menu = UnityEngine.Object.FindAnyObjectByType<BuildMenuUI>(FindObjectsInactive.Include);
             if (menu == null)
             {
-                Debug.LogError("[FixBuildMenu] BuildMenuUI not found in scene!");
+                Debug.LogError("[FixBuildMenu] BuildMenuUI not found!");
                 return;
             }
 
-            var allBuildings = AssetDatabase.FindAssets("t:BuildingData", new[] { "Assets/_Project/ScriptableObjects/Buildings" });
+            var allAssets = AssetDatabase.FindAssets("t:BuildingData", new[] { "Assets/_Project/ScriptableObjects/Buildings" });
+            var lookup = new Dictionary<BuildingType, BuildingData>();
 
-            BuildingData commandCenter = null;
-            BuildingData farm = null;
-            BuildingData mine = null;
-
-            foreach (var guid in allBuildings)
+            foreach (var guid in allAssets)
             {
                 var path = AssetDatabase.GUIDToAssetPath(guid);
                 var data = AssetDatabase.LoadAssetAtPath<BuildingData>(path);
-                if (data == null) continue;
-
-                if (data.Type == BuildingType.CommandCenter) commandCenter = data;
-                else if (data.Type == BuildingType.Farm) farm = data;
-                else if (data.Type == BuildingType.Mine) mine = data;
+                if (data != null && !lookup.ContainsKey(data.Type))
+                    lookup[data.Type] = data;
             }
+
+            var allButtons = menu.GetComponentsInChildren<Button>(true);
+            var buttonLookup = new Dictionary<string, Button>();
+            foreach (var b in allButtons)
+                buttonLookup[b.gameObject.name] = b;
 
             var so = new SerializedObject(menu);
             var cardsProp = so.FindProperty("_cards");
             cardsProp.ClearArray();
 
-            AddCard(cardsProp, 0, commandCenter);
-            AddCard(cardsProp, 1, farm);
-            AddCard(cardsProp, 2, mine);
+            int connected = 0;
+            for (int i = 0; i < Order.Length; i++)
+            {
+                if (!lookup.TryGetValue(Order[i], out var data)) continue;
+                if (i >= ButtonNames.Length) break;
+
+                Button btn = null;
+                buttonLookup.TryGetValue(ButtonNames[i], out btn);
+
+                cardsProp.InsertArrayElementAtIndex(connected);
+                var element = cardsProp.GetArrayElementAtIndex(connected);
+                element.FindPropertyRelative("Data").objectReferenceValue = data;
+                element.FindPropertyRelative("LockedOverlay").objectReferenceValue = null;
+                element.FindPropertyRelative("Button").objectReferenceValue = btn;
+
+                if (btn != null)
+                {
+                    int idx = connected;
+                    btn.onClick.RemoveAllListeners();
+                    btn.onClick.AddListener(() => menu.SelectBuilding(idx));
+                }
+
+                connected++;
+                string btnStatus = btn != null ? $"-> {btn.name}" : "-> NO BUTTON";
+                Debug.Log($"  [{i}] {data.Type}: {data.DisplayName} {btnStatus}");
+            }
 
             so.ApplyModifiedProperties();
-
-            WireButtonOnClick(menu, 0);
-            WireButtonOnClick(menu, 1);
-            WireButtonOnClick(menu, 2);
-
-            Debug.Log($"[FixBuildMenu] Cards: CC={commandCenter?.DisplayName}, Farm={farm?.DisplayName}, Mine={mine?.DisplayName}");
-        }
-
-        private static void AddCard(SerializedProperty cardsProp, int index, BuildingData data)
-        {
-            cardsProp.InsertArrayElementAtIndex(index);
-            var element = cardsProp.GetArrayElementAtIndex(index);
-            element.FindPropertyRelative("Data").objectReferenceValue = data;
-            element.FindPropertyRelative("LockedOverlay").objectReferenceValue = null;
-        }
-
-        private static void WireButtonOnClick(BuildMenuUI menu, int cardIndex)
-        {
-            var so = new SerializedObject(menu);
-            var cardsProp = so.FindProperty("_cards");
-            if (cardIndex >= cardsProp.arraySize) return;
-
-            var buttonProp = cardsProp.GetArrayElementAtIndex(cardIndex).FindPropertyRelative("Button");
-            var button = buttonProp.objectReferenceValue as Button;
-            if (button == null) return;
-
-            button.onClick.RemoveAllListeners();
-            button.onClick.AddListener(() => menu.SelectBuilding(cardIndex));
-
-            Debug.Log($"[FixBuildMenu] Button {cardIndex} wired: {button.name}");
+            Debug.Log($"[FixBuildMenu] {connected} buildings assigned");
         }
     }
 }

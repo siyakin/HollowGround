@@ -126,6 +126,8 @@ namespace HollowGround.Army
             if (_trainingQueue.Count == 0) return;
 
             float speed = HollowGround.Core.TimeManager.Instance != null ? HollowGround.Core.TimeManager.Instance.GameSpeed : 1f;
+            float devMult = HollowGround.Core.GameConfig.Instance != null ? HollowGround.Core.GameConfig.Instance.GetTrainingTimeMultiplier : 1f;
+            speed /= devMult;
 
             float trainingBonus = 0f;
             if (HollowGround.Tech.ResearchManager.Instance != null)

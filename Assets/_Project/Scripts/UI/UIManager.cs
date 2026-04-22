@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace HollowGround.UI
 {
@@ -21,6 +22,8 @@ namespace HollowGround.UI
         [SerializeField] private GameObject _factionTradePanel;
         [SerializeField] private GameObject _saveMenuPanel;
 
+        private bool _saveBtnCreated;
+
         private void Awake()
         {
             if (Instance != null && Instance != this)
@@ -29,6 +32,42 @@ namespace HollowGround.UI
                 return;
             }
             Instance = this;
+        }
+
+        private void Start()
+        {
+        }
+
+        private void Update()
+        {
+            if (UnityEngine.InputSystem.Keyboard.current != null)
+            {
+                if (UnityEngine.InputSystem.Keyboard.current.f5Key.wasPressedThisFrame)
+                    QuickSave();
+                if (UnityEngine.InputSystem.Keyboard.current.f9Key.wasPressedThisFrame)
+                    QuickLoad();
+            }
+        }
+
+        private void QuickSave()
+        {
+            if (HollowGround.Core.SaveSystem.Instance == null) return;
+            HollowGround.Core.SaveSystem.Instance.QuickSave();
+            ToastUI.Show("Quick saved!", Color.green);
+        }
+
+        private void QuickLoad()
+        {
+            if (HollowGround.Core.SaveSystem.Instance == null) return;
+            if (HollowGround.Core.SaveSystem.Instance.HasSave("quicksave"))
+            {
+                HollowGround.Core.SaveSystem.Instance.Load("quicksave");
+                ToastUI.Show("Quick loaded!", Color.cyan);
+            }
+            else
+            {
+                ToastUI.Show("No quicksave found!", Color.yellow);
+            }
         }
 
         public void TogglePanel(GameObject panel)

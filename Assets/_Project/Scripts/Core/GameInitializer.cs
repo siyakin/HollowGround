@@ -16,11 +16,18 @@ namespace HollowGround.Core
 
         private void Start()
         {
+            EnsureSessionLogger();
             CenterCamera();
             InitializeWorldMap();
             InitializeQuests();
             InitializeMutantAttacks();
             StartGame();
+        }
+
+        private void EnsureSessionLogger()
+        {
+            if (FindAnyObjectByType<SessionLogger>() == null)
+                gameObject.AddComponent<SessionLogger>();
         }
 
         private void CenterCamera()

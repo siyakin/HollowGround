@@ -13,7 +13,6 @@ namespace HollowGround.UI
         {
             public ResourceType Type;
             public TMP_Text AmountText;
-            public TMP_Text CapacityText;
         }
 
         [SerializeField] private List<ResourceSlot> _slots = new();
@@ -78,10 +77,21 @@ namespace HollowGround.UI
         private void UpdateSlot(ResourceSlot slot)
         {
             if (ResourceManager.Instance == null || slot.AmountText == null) return;
-            int amount = ResourceManager.Instance.Get(slot.Type);
+            int amount   = ResourceManager.Instance.Get(slot.Type);
             int capacity = ResourceManager.Instance.GetCapacity(slot.Type);
-            slot.AmountText.text = $"{amount}/{capacity}";
+            slot.AmountText.text = $"{GetDisplayName(slot.Type)} {amount}/{capacity}";
         }
+
+        private static string GetDisplayName(ResourceType type) => type switch
+        {
+            ResourceType.Wood     => "Wood",
+            ResourceType.Metal    => "Metal",
+            ResourceType.Food     => "Food",
+            ResourceType.Water    => "Water",
+            ResourceType.TechPart => "Tech Part",
+            ResourceType.Energy   => "Energy",
+            _                     => type.ToString(),
+        };
 
         private void UpdatePopulation()
         {

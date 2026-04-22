@@ -100,7 +100,7 @@ namespace HollowGround.Editor
                 var text = new GameObject("Text", typeof(RectTransform));
                 text.transform.SetParent(slot.transform, false);
                 var tmp = text.AddComponent<TextMeshProUGUI>();
-                tmp.fontSize = 18;
+                tmp.fontSize = 14;
                 tmp.alignment = TextAlignmentOptions.MidlineLeft;
                 tmp.color = Color.white;
                 tmp.text = $"{Names[i]}: 0/500";
@@ -112,9 +112,8 @@ namespace HollowGround.Editor
 
                 slots.Add(new ResourceBarUI.ResourceSlot
                 {
-                    Type = Types[i],
+                    Type       = Types[i],
                     AmountText = tmp,
-                    CapacityText = null
                 });
             }
 
@@ -126,7 +125,6 @@ namespace HollowGround.Editor
                 sp.InsertArrayElementAtIndex(i);
                 sp.GetArrayElementAtIndex(i).FindPropertyRelative("Type").enumValueIndex = (int)slots[i].Type;
                 sp.GetArrayElementAtIndex(i).FindPropertyRelative("AmountText").objectReferenceValue = slots[i].AmountText;
-                sp.GetArrayElementAtIndex(i).FindPropertyRelative("CapacityText").objectReferenceValue = null;
             }
             so.ApplyModifiedProperties();
         }

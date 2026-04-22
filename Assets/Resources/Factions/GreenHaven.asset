@@ -1,0 +1,36 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bba962f03011cf34f8c44da4d6ffb9fa, type: 3}
+  m_Name: GreenHaven
+  m_EditorClassIdentifier: Assembly-CSharp::HollowGround.NPCs.FactionData
+  DisplayName: Green Haven
+  Description: A peaceful community of farmers and healers living in a relatively
+    uncontaminated valley. They trade food and medical supplies.
+  Emblem: {fileID: 0}
+  DefaultRelation: 1
+  RelationPoints: 20
+  FriendlyThreshold: 50
+  AlliedThreshold: 100
+  Sells:
+  - Resource: 2
+    Amount: 80
+    Price: 8
+  - Resource: 3
+    Amount: 40
+    Price: 6
+  Buys:
+  - Resource: 0
+    Amount: 30
+    Price: 4
+  - Resource: 4
+    Amount: 1
+    Price: 12

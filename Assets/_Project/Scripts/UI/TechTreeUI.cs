@@ -31,6 +31,25 @@ namespace HollowGround.UI
             { TechCategory.Exploration,  new Color(0.75f, 0.55f, 0.2f) },
         };
 
+        private TMP_FontAsset _themeFont;
+
+        private TMP_FontAsset ThemeFont
+        {
+            get
+            {
+                if (_themeFont != null) return _themeFont;
+#if UNITY_EDITOR
+                var theme = UnityEditor.AssetDatabase.LoadAssetAtPath<UIThemeSO>("Assets/_Project/ScriptableObjects/UITheme.asset");
+#else
+                var theme = UnityEngine.Resources.LoadAll<UIThemeSO>("").Length > 0
+                    ? UnityEngine.Resources.LoadAll<UIThemeSO>("")[0] : null;
+#endif
+                if (theme != null && theme.defaultFont != null)
+                    _themeFont = theme.defaultFont;
+                return _themeFont;
+            }
+        }
+
         private RectTransform _root;
         private RectTransform _columnsContainer;
         private RectTransform _detailPanel;
@@ -110,6 +129,9 @@ namespace HollowGround.UI
                 return;
             }
 
+            _root.offsetMin = new Vector2(0f, 60f);
+            _root.offsetMax = new Vector2(0f, 0f);
+
             foreach (Transform child in _root)
                 Destroy(child.gameObject);
 
@@ -117,22 +139,18 @@ namespace HollowGround.UI
             StretchFull(bg);
             AddImage(bg, ColorPanelBg);
 
+            var cg = gameObject.GetComponent<CanvasGroup>();
+            if (cg == null) cg = gameObject.AddComponent<CanvasGroup>();
+            cg.interactable = true;
+            cg.blocksRaycasts = true;
+            cg.alpha = 1f;
+
             var header = CreateUIObject("Header", _root);
             SetAnchors(header, new Vector2(0, 1), new Vector2(1, 1), new Vector2(0.5f, 1));
             header.anchoredPosition = new Vector2(0, -30);
             header.sizeDelta = new Vector2(-40, 50);
-            var titleLabel = AddText(header, "TECHNOLOGY TREE", 28, TextAlignmentOptions.Center, ColorTextPrimary);
+            var titleLabel = AddThemedText(header, "TECHNOLOGY TREE", 28, TextAlignmentOptions.Center, ColorTextPrimary);
             StretchFull(titleLabel.rectTransform);
-
-            var closeBtn = CreateButton(header, "Close", "X", () =>
-            {
-                if (UIManager.Instance != null) UIManager.Instance.ToggleTechTree();
-                else gameObject.SetActive(false);
-            });
-            var closeRt = closeBtn.GetComponent<RectTransform>();
-            SetAnchors(closeRt, new Vector2(1, 0.5f), new Vector2(1, 0.5f), new Vector2(1, 0.5f));
-            closeRt.anchoredPosition = new Vector2(-10, 0);
-            closeRt.sizeDelta = new Vector2(40, 40);
 
             _columnsContainer = CreateUIObject("Columns", _root);
             SetAnchors(_columnsContainer, new Vector2(0, 0), new Vector2(1, 1), new Vector2(0.5f, 0.5f));
@@ -183,7 +201,7 @@ namespace HollowGround.UI
                 headerLE.preferredHeight = 32;
                 Color catColor = _categoryColors.TryGetValue(category, out var cc) ? cc : Color.gray;
                 AddImage(header, catColor);
-                var headerText = AddText(header, category.ToString().ToUpper(), 14, TextAlignmentOptions.Center, Color.white);
+                var headerText = AddThemedText(header, category.ToString().ToUpper(), 16, TextAlignmentOptions.Center, Color.white);
                 StretchFull(headerText.rectTransform);
 
                 var techsInCat = _allTechs
@@ -201,8 +219,8 @@ namespace HollowGround.UI
         {
             var card = CreateUIObject($"Card_{tech.name}", parent);
             var le = card.gameObject.AddComponent<LayoutElement>();
-            le.minHeight = 70;
-            le.preferredHeight = 70;
+            le.minHeight = 80;
+            le.preferredHeight = 80;
 
             var bg = AddImage(card, ColorCardLocked);
 
@@ -210,13 +228,13 @@ namespace HollowGround.UI
             btn.targetGraphic = bg;
             btn.onClick.AddListener(() => SelectTech(tech));
 
-            var nameText = AddText(card, tech.DisplayName, 13, TextAlignmentOptions.TopLeft, ColorTextPrimary);
+            var nameText = AddThemedText(card, tech.DisplayName, 15, TextAlignmentOptions.TopLeft, ColorTextPrimary);
             var nameRt = nameText.rectTransform;
             SetAnchors(nameRt, new Vector2(0, 1), new Vector2(1, 1), new Vector2(0.5f, 1));
             nameRt.anchoredPosition = new Vector2(0, -4);
             nameRt.sizeDelta = new Vector2(-12, 22);
 
-            var statusText = AddText(card, "", 11, TextAlignmentOptions.MidlineLeft, ColorTextMuted);
+            var statusText = AddThemedText(card, "", 13, TextAlignmentOptions.MidlineLeft, ColorTextMuted);
             var statusRt = statusText.rectTransform;
             SetAnchors(statusRt, new Vector2(0, 0.5f), new Vector2(1, 0.5f), new Vector2(0.5f, 0.5f));
             statusRt.anchoredPosition = new Vector2(0, -2);
@@ -248,50 +266,50 @@ namespace HollowGround.UI
 
         private void BuildDetailPanel()
         {
-            _detailName = AddText(_detailPanel, "Select a technology", 20, TextAlignmentOptions.TopLeft, ColorTextPrimary);
+            _detailName = AddThemedText(_detailPanel, "Select a technology", 22, TextAlignmentOptions.TopLeft, ColorTextPrimary);
             var nameRt = _detailName.rectTransform;
             SetAnchors(nameRt, new Vector2(0, 1), new Vector2(1, 1), new Vector2(0.5f, 1));
             nameRt.anchoredPosition = new Vector2(0, -15);
-            nameRt.sizeDelta = new Vector2(-24, 28);
+            nameRt.sizeDelta = new Vector2(-24, 30);
 
-            _detailCategory = AddText(_detailPanel, "", 12, TextAlignmentOptions.TopLeft, ColorTextMuted);
+            _detailCategory = AddThemedText(_detailPanel, "", 14, TextAlignmentOptions.TopLeft, ColorTextMuted);
             var catRt = _detailCategory.rectTransform;
             SetAnchors(catRt, new Vector2(0, 1), new Vector2(1, 1), new Vector2(0.5f, 1));
-            catRt.anchoredPosition = new Vector2(0, -45);
-            catRt.sizeDelta = new Vector2(-24, 18);
+            catRt.anchoredPosition = new Vector2(0, -48);
+            catRt.sizeDelta = new Vector2(-24, 20);
 
-            _detailDesc = AddText(_detailPanel, "", 13, TextAlignmentOptions.TopLeft, ColorTextPrimary);
+            _detailDesc = AddThemedText(_detailPanel, "", 15, TextAlignmentOptions.TopLeft, ColorTextPrimary);
             var descRt = _detailDesc.rectTransform;
             SetAnchors(descRt, new Vector2(0, 1), new Vector2(1, 1), new Vector2(0.5f, 1));
-            descRt.anchoredPosition = new Vector2(0, -75);
+            descRt.anchoredPosition = new Vector2(0, -78);
             descRt.sizeDelta = new Vector2(-24, 60);
 
-            _detailCost = AddText(_detailPanel, "", 13, TextAlignmentOptions.TopLeft, ColorTextMuted);
+            _detailCost = AddThemedText(_detailPanel, "", 15, TextAlignmentOptions.TopLeft, ColorTextMuted);
             var costRt = _detailCost.rectTransform;
             SetAnchors(costRt, new Vector2(0, 1), new Vector2(1, 1), new Vector2(0.5f, 1));
-            costRt.anchoredPosition = new Vector2(0, -145);
-            costRt.sizeDelta = new Vector2(-24, 70);
+            costRt.anchoredPosition = new Vector2(0, -150);
+            costRt.sizeDelta = new Vector2(-24, 80);
 
-            _detailBonuses = AddText(_detailPanel, "", 13, TextAlignmentOptions.TopLeft, ColorTextPrimary);
-            var bonRt = _detailBonuses.rectTransform;
-            SetAnchors(bonRt, new Vector2(0, 1), new Vector2(1, 1), new Vector2(0.5f, 1));
-            bonRt.anchoredPosition = new Vector2(0, -225);
-            bonRt.sizeDelta = new Vector2(-24, 100);
-
-            _detailPrereqs = AddText(_detailPanel, "", 12, TextAlignmentOptions.TopLeft, ColorTextDim);
-            var prereqRt = _detailPrereqs.rectTransform;
-            SetAnchors(prereqRt, new Vector2(0, 0), new Vector2(1, 0), new Vector2(0.5f, 0));
-            prereqRt.anchoredPosition = new Vector2(0, 75);
-            prereqRt.sizeDelta = new Vector2(-24, 60);
-
-            _detailResearchBtn = CreateButton(_detailPanel, "ResearchBtn", "RESEARCH", StartResearchFromDetail);
+            _detailResearchBtn = CreateButton(_detailPanel, "ResearchBtn", "START RESEARCH", StartResearchFromDetail);
             var btnRt = _detailResearchBtn.GetComponent<RectTransform>();
-            SetAnchors(btnRt, new Vector2(0, 0), new Vector2(1, 0), new Vector2(0.5f, 0));
-            btnRt.anchoredPosition = new Vector2(0, 20);
-            btnRt.sizeDelta = new Vector2(-24, 44);
+            SetAnchors(btnRt, new Vector2(0, 1), new Vector2(1, 1), new Vector2(0.5f, 1));
+            btnRt.anchoredPosition = new Vector2(0, -250);
+            btnRt.sizeDelta = new Vector2(-24, 50);
             _detailResearchBtnText = _detailResearchBtn.GetComponentInChildren<TextMeshProUGUI>();
             var confirmImg = _detailResearchBtn.GetComponent<Image>();
             if (confirmImg != null) confirmImg.color = ColorOk;
+
+            _detailBonuses = AddThemedText(_detailPanel, "", 15, TextAlignmentOptions.TopLeft, ColorTextPrimary);
+            var bonRt = _detailBonuses.rectTransform;
+            SetAnchors(bonRt, new Vector2(0, 1), new Vector2(1, 1), new Vector2(0.5f, 1));
+            bonRt.anchoredPosition = new Vector2(0, -310);
+            bonRt.sizeDelta = new Vector2(-24, 100);
+
+            _detailPrereqs = AddThemedText(_detailPanel, "", 14, TextAlignmentOptions.TopLeft, ColorTextDim);
+            var prereqRt = _detailPrereqs.rectTransform;
+            SetAnchors(prereqRt, new Vector2(0, 1), new Vector2(1, 1), new Vector2(0.5f, 1));
+            prereqRt.anchoredPosition = new Vector2(0, -420);
+            prereqRt.sizeDelta = new Vector2(-24, 60);
         }
 
         // === PART 3: Refresh + Card ===
@@ -411,6 +429,13 @@ namespace HollowGround.UI
             bool canStart = ResearchManager.Instance != null &&
                             ResearchManager.Instance.CanStartResearch(tech);
 
+            var dbgCosts = tech.GetCost();
+            string dbgCost = string.Join(", ", dbgCosts.Select(c => $"{c.Key}={c.Value}"));
+            string dbgHave = ResourceManager.Instance != null
+                ? string.Join(", ", dbgCosts.Select(c => $"{c.Key}={ResourceManager.Instance.Get(c.Key)}"))
+                : "RM null";
+            Debug.Log($"[TechTree] {tech.DisplayName} | Cost: {dbgCost} | Have: {dbgHave} | canStart={canStart}");
+
             _detailResearchBtn.gameObject.SetActive(true);
             _detailResearchBtn.interactable = canStart;
             var btnImg = _detailResearchBtn.GetComponent<Image>();
@@ -490,7 +515,15 @@ namespace HollowGround.UI
             return tmp;
         }
 
-        private static Button CreateButton(Transform parent, string name, string label, System.Action onClick)
+        private TMP_Text AddThemedText(RectTransform parent, string text, float fontSize,
+            TextAlignmentOptions alignment, Color color)
+        {
+            var tmp = AddText(parent, text, fontSize, alignment, color);
+            if (ThemeFont != null) tmp.font = ThemeFont;
+            return tmp;
+        }
+
+        private Button CreateButton(Transform parent, string name, string label, System.Action onClick)
         {
             var go = new GameObject(name, typeof(RectTransform));
             go.transform.SetParent(parent, false);
@@ -520,10 +553,11 @@ namespace HollowGround.UI
             txtRt.offsetMax = Vector2.zero;
             var tmp = txtGo.AddComponent<TextMeshProUGUI>();
             tmp.text = label;
-            tmp.fontSize = 14;
+            tmp.fontSize = 16;
             tmp.alignment = TextAlignmentOptions.Center;
             tmp.color = new Color(0.95f, 0.95f, 0.95f, 1f);
             tmp.raycastTarget = false;
+            if (ThemeFont != null) tmp.font = ThemeFont;
 
             if (onClick != null) btn.onClick.AddListener(() => onClick());
             return btn;

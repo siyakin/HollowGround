@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 50c79b4d5e456a94286a97f02796070b, type: 3}
+  m_Name: Engineer
+  m_EditorClassIdentifier: Assembly-CSharp::HollowGround.Heroes.HeroData
+  DisplayName: Engineer
+  Description: Support specialist. Boosts defense and healing.
+  Role: 3
+  Rarity: 1
+  ModelPrefab: {fileID: 0}
+  Portrait: {fileID: 0}
+  BaseHP: 200
+  BaseAttack: 12
+  BaseDefense: 18
+  BaseSpeed: 2.5
+  PassiveAbilityName: Fortify
+  PassiveAbilityDesc: Buildings produce 15% faster
+  PassiveBonus: 0.15
+  ActiveAbilityName: Repair Field
+  ActiveAbilityDesc: Heals wounded soldiers over time
+  ActiveAbilityCooldown: 40
+  ArmyAttackBonus: 0.02
+  ArmyDefenseBonus: 0.06
+  SummonCost: 100
+  SummonResource: 4

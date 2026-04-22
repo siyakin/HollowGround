@@ -40,10 +40,9 @@ Tek kisi PvE: Sehir kurma + ordu yonetimi + hero sistemi + dunya kesfi.
 ```
 Assets/_Project/
 ├── Scripts/
-│   ├── Core/        GameManager, TimeManager, GameEvent, Singleton,
-│   │                GameInitializer, SaveData, SaveSystem,
-│   │                AudioManager, AudioConfig, BaseStarter,
-│   │                PostProcessingSetup, AtmosphereEffects
+│   ├── Core/        GameManager, TimeManager, GameEvent, Singleton, GameInitializer,
+│   │                SaveData, SaveSystem, AudioManager, AudioConfig, BaseStarter,
+│   │                PostProcessingSetup, AtmosphereEffects, GameConfig, SessionLogger
 │   ├── Camera/      StrategyCamera
 │   ├── Grid/        GridSystem, GridCell, GridVisualizer, PlacementValidator
 │   ├── Buildings/   BuildingType, BuildingData, Building, BuildingManager,
@@ -61,11 +60,12 @@ Assets/_Project/
 │   ├── UI/          UIManager, ResourceBarUI, BuildMenuUI, BuildingInfoUI,
 │   │                ToastUI, TrainingPanelUI, ArmyPanelUI, BattleReportUI,
 │   │                HeroPanelUI, WorldMapUI, TechTreeUI, FactionTradeUI,
-│   │                QuestLogUI, SaveMenuUI, DebugHUD
+│   │                QuestLogUI, SaveMenuUI, DebugHUD,
+│   │                UIThemeSO, UIThemeTag
 │   └── Editor/      GridSystemEditor, BuildingDataFactory, TroopDataFactory,
 │                     HeroDataFactory, QuestDataFactory, FactionDataFactory,
 │                     TechNodeFactory, GhostMaterialCreator,
-│                     UIThemeApplier, SceneSetupEditor,
+│                     UIThemeApplier, SceneSetupEditor, GameConfigCreator,
 │                     PostProcessingProfileFactory, GroundSetupEditor
 ├── ScriptableObjects/
 │   ├── Buildings/   9 aktif SO + 10 yedek (silinmesi gerekiyor)
@@ -104,7 +104,7 @@ SaveSystem, BaseStarter, GameInitializer
 
 ### GameCanvas Alt Yapisi
 - ResourceBar
-- ActionBar (Yapi, Arastir, Ordu, Hero, Gorev, Harita butonlari — Gorev ve Arastir bagli)
+- ActionBar (Yapi, Arastir, Ordu, Hero, Gorev, Harita, Ticaret butonlari — hepsi bagli)
 - BuildMenu (3 buton: CommandCenter, Farm, Mine — kaynak kontrolu calisiyor)
 - TrainingPanel
 - BattleReportPanel
@@ -142,22 +142,49 @@ SaveSystem, BaseStarter, GameInitializer
 
 ## Bilinen Eksikler ve Sonraki Adimlar
 
-### Playtest Faz 11 (Devam Ediyor)
-- Kaynak üretim testi (Farm → Food artışı)
-- Tüm bina tipleri yerleştirme testi
-- UI panel testleri (ResourceBar, BuildMenu, BuildingInfo)
-- Askeri sistem testi (eğitim, ordu)
-- Hero sistemi testi (summon, ekipman)
-- Dünya haritası testi (sefer, fog of war)
-- Save/Load testi
-- Grid sınır çizgisi sorunu (GridVisualizer z-fighting)
+### Playtest Faz 11 (Tamamlandi) ✅
+
+Tum sistemler playtest edildi, 13/13 test gecti:
+
+| # | Test | Durum |
+|---|------|-------|
+| 1 | Oyun Baslangic | ✅ Kamera, WASD, zoom, GameManager, ResourceBar |
+| 2 | Bina Yerlestirme | ✅ CC, Farm, Mine, Barracks — toast + kaynak dususu |
+| 3 | Kaynak Uretim | ✅ Farm→Food, Mine→Metal uretimi |
+| 4 | UI Paneller | ✅ BuildMenu, BuildingInfo, Upgrade/Demolish |
+| 5 | Askeri Sistem | ✅ Barracks→Infantry egitimi, army summary |
+| 6 | Hero Sistemi | ✅ HeroPanel summon, DevMode ile TechPart boost |
+| 7 | Dunya Haritasi | ✅ WorldMapUI, node secimi, sefer sistemi |
+| 8 | Arastirma | ✅ TechTreeUI, 10 tech SO, START RESEARCH |
+| 9 | Faction Ticaret | ✅ 3 faction SO, BUY/SELL, iliski sistemi |
+| 10 | Gorev Sistemi | ✅ QuestLogUI, 5 quest SO, ACCEPT/TURN IN |
+| 11 | Mutant Saldirisi | ✅ Warning toast, attack, bina yikimi, session log |
+| 12 | Save/Load | ✅ F5 QuickSave, F9 QuickLoad, JSON |
+| 13 | Zaman Kontrolu | ✅ TimeDisplayUI, hiz degisimi |
+
+**Playtest'te eklenen/duzeltilen sistemler:**
+- GameConfig SO — DevMode, DisableMutantAttacks, BoostStartingResources, SessionLog toggle
+- SessionLogger — tum oyun eventlerini dosyaya yazar (persistentDataPath/SessionLogs/)
+- DevMode ile test hizlandirma (0.1x build/production/training/research/expedition/mutant interval)
+- Tum UI panelleri runtime olusturucuya cevrildi (TrainingPanel, HeroPanel, QuestLog, TechTree, SaveMenu, FactionTrade)
+- UITheme font (Roboto) runtime panellere uygulaniyor
+- Paneller alttan 60px ActionBar padding ile aciliyor
+- Close butonlari kaldirildi, ActionBar toggle ile acilip kapaniyor
+- Toast mesajlari: mutant warning/attack/victory/defeat
+- F5/F9 QuickSave/QuickLoad eklendi
+- Training/Research speed multiplier bug'i duzeltildi (speed /= devMult)
+- SaveSystem dosya adi uyumsuzlugu duzeltildi
+- ResearchManager sahnede eksikti — eklendi
+- 3 FactionData SO olusturuldu (Scavenger Guild, Iron Legion, Green Haven)
 
 ### SO'lar Olusturulmadi (Editor'de yapilmali)
 - `ScriptableObjects/Troops/` — 5 birlik SO (TroopDataFactory ile)
 - `ScriptableObjects/Heroes/` — 5 hero SO (HeroDataFactory ile)
-- `ScriptableObjects/TechNodes/` — 10 teknoloji SO (TechNodeFactory ile)
-- `ScriptableObjects/Factions/` — 3 faction SO (FactionDataFactory ile)
 - `ScriptableObjects/Quests/` — 10 ek quest SO (QuestDataFactory ile)
+
+### SO'lar Olusturuldu
+- `ScriptableObjects/TechNodes/` — 10 teknoloji SO ✅
+- `ScriptableObjects/Factions/` — 3 faction SO ✅
 
 ### Sahne Kurulumlari
 - `HollowGround > Setup Ground & Camera` ile ground plane + camera + lighting kalıcı olarak sahneye eklenir

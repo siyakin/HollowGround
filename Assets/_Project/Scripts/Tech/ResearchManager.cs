@@ -37,6 +37,8 @@ namespace HollowGround.Tech
             float speedMult = 1f;
             if (TimeManager.Instance != null)
                 speedMult = TimeManager.Instance.GameSpeed;
+            float devMult = GameConfig.Instance != null ? GameConfig.Instance.GetResearchTimeMultiplier : 1f;
+            speedMult /= devMult;
 
             _researchTimer -= Time.deltaTime * speedMult;
             _currentResearch.ResearchProgress = 1f - (_researchTimer / _currentResearch.ResearchTime);
@@ -50,12 +52,14 @@ namespace HollowGround.Tech
 
         public bool CanStartResearch(TechNode node)
         {
-            if (node == null) return false;
-            if (_currentResearch != null) return false;
-            if (!node.CanResearch()) return false;
+            if (node == null) { Debug.Log("[Research] FAIL: node null"); return false; }
+            if (_currentResearch != null) { Debug.Log($"[Research] FAIL: busy with {_currentResearch.DisplayName}"); return false; }
+            if (!node.CanResearch()) { Debug.Log($"[Research] FAIL: CanResearch false for {node.DisplayName}"); return false; }
 
-            if (ResourceManager.Instance == null) return false;
-            return ResourceManager.Instance.CanAfford(node.GetCost());
+            if (ResourceManager.Instance == null) { Debug.Log("[Research] FAIL: RM null"); return false; }
+            bool afford = ResourceManager.Instance.CanAfford(node.GetCost());
+            Debug.Log($"[Research] {node.DisplayName} afford={afford}");
+            return afford;
         }
 
         public bool StartResearch(TechNode node)

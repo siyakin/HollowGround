@@ -94,6 +94,8 @@ namespace HollowGround.World
             var node = WorldMap.Instance.GetNode(target);
             float distance = WorldMap.Instance.GetDistance(WorldMap.Instance.BasePosition, target);
             float travelTime = distance * 30f;
+            float devMult = HollowGround.Core.GameConfig.Instance != null ? HollowGround.Core.GameConfig.Instance.GetExpeditionTimeMultiplier : 1f;
+            travelTime *= devMult;
 
             float expeditionBonus = 0f;
             if (HollowGround.Tech.ResearchManager.Instance != null)

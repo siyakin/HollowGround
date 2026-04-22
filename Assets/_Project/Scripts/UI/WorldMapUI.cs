@@ -105,6 +105,9 @@ namespace HollowGround.UI
             foreach (Transform child in _root)
                 Destroy(child.gameObject);
 
+            _root.offsetMin = new Vector2(0f, 60f);
+            _root.offsetMax = new Vector2(0f, 0f);
+
             var bg = CreateUIObject("Background", _root);
             StretchFull(bg);
             AddImage(bg, ColorPanelBg);
@@ -115,16 +118,6 @@ namespace HollowGround.UI
             header.sizeDelta = new Vector2(-40, 50);
             var titleLabel = AddText(header, "WORLD MAP", 28, TextAlignmentOptions.Center, ColorTextPrimary);
             StretchFull(titleLabel.rectTransform);
-
-            var closeBtn = CreateButton(header, "Close", "X", () =>
-            {
-                if (UIManager.Instance != null) UIManager.Instance.ToggleWorldMap();
-                else gameObject.SetActive(false);
-            });
-            var closeRt = closeBtn.GetComponent<RectTransform>();
-            SetAnchors(closeRt, new Vector2(1, 0.5f), new Vector2(1, 0.5f), new Vector2(1, 0.5f));
-            closeRt.anchoredPosition = new Vector2(-10, 0);
-            closeRt.sizeDelta = new Vector2(40, 40);
 
             _gridRect = CreateUIObject("MapGrid", _root);
             SetAnchors(_gridRect, new Vector2(0, 0.5f), new Vector2(0, 0.5f), new Vector2(0, 0.5f));

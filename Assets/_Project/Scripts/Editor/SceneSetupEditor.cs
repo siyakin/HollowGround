@@ -80,7 +80,11 @@ namespace HollowGround.Editor
             GameObject go = new(CANVAS_NAME);
             canvas = go.AddComponent<Canvas>();
             canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-            go.AddComponent<CanvasScaler>();
+            var scaler = go.AddComponent<CanvasScaler>();
+            scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+            scaler.referenceResolution = new Vector2(1920, 1080);
+            scaler.screenMatchMode = CanvasScaler.ScreenMatchMode.MatchWidthOrHeight;
+            scaler.matchWidthOrHeight = 0.5f;
             go.AddComponent<GraphicRaycaster>();
             return canvas;
         }
@@ -746,7 +750,7 @@ namespace HollowGround.Editor
                         new Vector2(0, 0), new Vector2(1, 0.5f), new Vector2(8, 0), new Vector2(-8, 0), WarningColor, 11);
 
                     int idx = i;
-                    slotBtn.onClick.AddListener(() => { tradeUI.SelectFaction(idx); });
+                    slotBtn.onClick.AddListener(() => { });
 
                     factionSlotProp.arraySize++;
                     var element = factionSlotProp.GetArrayElementAtIndex(i);

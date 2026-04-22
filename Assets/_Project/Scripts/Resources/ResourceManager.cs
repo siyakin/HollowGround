@@ -21,7 +21,7 @@ namespace HollowGround.Resources
             new() { Type = ResourceType.Metal, Amount = 100 },
             new() { Type = ResourceType.Food, Amount = 150 },
             new() { Type = ResourceType.Water, Amount = 80 },
-            new() { Type = ResourceType.TechPart, Amount = 0 },
+            new() { Type = ResourceType.TechPart, Amount = 20 },
             new() { Type = ResourceType.Energy, Amount = 0 }
         };
 
@@ -56,7 +56,18 @@ namespace HollowGround.Resources
 
             foreach (var res in _startingResources)
             {
-                _resources[res.Type] = res.Amount;
+                int amount = res.Amount;
+                var cfg = HollowGround.Core.GameConfig.Instance;
+                if (cfg != null && cfg.BoostStartingResources)
+                    amount *= cfg.BoostMultiplier;
+                _resources[res.Type] = amount;
+            }
+
+            var config = HollowGround.Core.GameConfig.Instance;
+            if (config != null && config.DevMode)
+            {
+                _resources[ResourceType.TechPart] = 200;
+                _resources[ResourceType.Energy] = 100;
             }
         }
 

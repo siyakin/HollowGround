@@ -51,6 +51,9 @@ namespace HollowGround.Combat
 
         private void Update()
         {
+            if (HollowGround.Core.GameConfig.Instance != null && HollowGround.Core.GameConfig.Instance.DisableMutantAttacks)
+                return;
+
             if (GameManager.Instance == null || GameManager.Instance.CurrentState != GameState.Playing)
                 return;
 
@@ -84,7 +87,8 @@ namespace HollowGround.Combat
         private void ResetTimer()
         {
             float interval = _baseAttackInterval * Mathf.Pow(1f + _intervalGrowthFactor, _currentWaveIndex);
-            _attackTimer = interval;
+            float devMult = HollowGround.Core.GameConfig.Instance != null ? HollowGround.Core.GameConfig.Instance.GetMutantAttackIntervalMultiplier : 1f;
+            _attackTimer = interval * devMult;
         }
 
         private void TriggerWarning()
@@ -93,6 +97,7 @@ namespace HollowGround.Combat
             _warningTimer = _warningDuration;
             _pendingWave = GenerateWave(_currentWaveIndex);
             OnWaveWarning?.Invoke(_pendingWave);
+            UI.ToastUI.Show($"WARNING: {_pendingWave.MutantCount} mutants approaching in {_warningDuration:F0}s!", new Color(0.95f, 0.55f, 0.1f, 1f));
         }
 
         private void ExecuteWave(MutantWave wave)
@@ -101,6 +106,7 @@ namespace HollowGround.Combat
             IsUnderAttack = true;
 
             OnWaveStarted?.Invoke(wave);
+            UI.ToastUI.Show($"MUTANT ATTACK! {wave.MutantCount} enemies! (Power: {wave.MutantPower})", new Color(0.9f, 0.3f, 0.3f, 1f));
 
             int defenderPower = CalculateDefensePower();
             int attackerPower = wave.MutantPower;
@@ -130,6 +136,11 @@ namespace HollowGround.Combat
             IsUnderAttack = false;
             ResetTimer();
             OnWaveEnded?.Invoke(wave, victory);
+
+            if (victory)
+                UI.ToastUI.Show($"Victory! Wave {wave.WaveNumber} repelled! Resources gained.", new Color(0.35f, 0.8f, 0.4f, 1f));
+            else
+                UI.ToastUI.Show($"Defeat! Buildings damaged. Rebuild and prepare for next wave!", new Color(0.9f, 0.3f, 0.3f, 1f));
         }
 
         private MutantWave GenerateWave(int waveIndex)

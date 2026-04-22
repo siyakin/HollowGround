@@ -1,0 +1,31 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 522177dd8719ae541b5e820b21fc7a8a, type: 3}
+  m_Name: GameConfig
+  m_EditorClassIdentifier: Assembly-CSharp::HollowGround.Core.GameConfig
+  DevMode: 1
+  DisableMutantAttacks: 0
+  EnableSessionLog: 1
+  BoostStartingResources: 0
+  BoostMultiplier: 10
+  BuildTimeMultiplier: 0.1
+  ProductionIntervalMultiplier: 0.1
+  TrainingTimeMultiplier: 0.1
+  ResearchTimeMultiplier: 0.1
+  ExpeditionTimeMultiplier: 0.1
+  MutantAttackIntervalMultiplier: 0.1
+  NormalBuildTimeMultiplier: 1
+  NormalProductionIntervalMultiplier: 1
+  NormalTrainingTimeMultiplier: 1
+  NormalResearchTimeMultiplier: 1
+  NormalExpeditionTimeMultiplier: 1
+  NormalMutantAttackIntervalMultiplier: 1
