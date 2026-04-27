@@ -59,6 +59,7 @@ namespace HollowGround.UI
             MakeButton(btnRow.transform, "NEW SAVE", UIColors.Default.Ok, NewSave);
             MakeButton(btnRow.transform, "LOAD", UIColors.Default.Gold, LoadSelected);
             MakeButton(btnRow.transform, "DELETE", UIColors.Default.Danger, DeleteSelected);
+            MakeButton(btnRow.transform, "BACK", UIColors.Default.Muted, CloseSelf);
 
             _built = true;
         }
@@ -148,6 +149,11 @@ namespace HollowGround.UI
             SaveSystem.Instance.DeleteSave(save.SaveName);
             _infoText.text = "Save deleted!";
             RefreshList();
+        }
+
+        public void CloseSelf()
+        {
+            gameObject.SetActive(false);
         }
 
         private void MakeButton(Transform parent, string label, Color color, System.Action onClick)

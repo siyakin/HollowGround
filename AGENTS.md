@@ -43,12 +43,13 @@ Assets/_Project/
 ├── Scripts/
 │   ├── Core/        GameManager, TimeManager, GameEvent, Singleton, GameInitializer,
 │   │                SaveData, SaveSystem, AudioManager, AudioConfig, BaseStarter,
-│   │                PostProcessingSetup, AtmosphereEffects, GameConfig, SessionLogger
-│   ├── Camera/      StrategyCamera
-│   ├── Grid/        GridSystem, GridCell, GridVisualizer, PlacementValidator
+│   │                PostProcessingSetup, AtmosphereEffects, GameConfig, SessionLogger,
+│   │                WeatherSystem
+│   ├── Camera/      StrategyCamera, ScreenShake
+│   ├── Grid/        GridSystem, GridCell, GridVisualizer, GridOverlayRenderer
 │   ├── Buildings/   BuildingType, BuildingData, Building, BuildingManager,
 │   │                BuildingPlacer, BuildingSelector, BuildingDatabase,
-│   │                BuildingConstructionAnimation
+│   │                BuildingConstructionAnimation, BuildingHighlight, DamageEffects
 │   ├── Resources/   ResourceType, ResourceManager
 │   ├── Army/        TroopType, TroopData, ArmyManager
 │   ├── Combat/      BattleCalculator, BattleTarget, BattleManager,
@@ -101,7 +102,7 @@ GameManager, TimeManager, ResourceManager, GridSystem, GridVisualizer,
 BuildingPlacer, BuildingSelector, BuildingManager, ArmyManager,
 BattleManager, HeroManager, WorldMap, ExpeditionSystem,
 QuestManager, MutantAttackManager, ResearchManager, TradeSystem,
-SaveSystem, BaseStarter, GameInitializer
+SaveSystem, BaseStarter, GameInitializer, WeatherSystem
 
 ### GameCanvas Alt Yapisi
 - ResourceBar
@@ -115,12 +116,13 @@ SaveSystem, BaseStarter, GameInitializer
 - TechTreePanel (SceneSetupEditor ile otomatik)
 - FactionTradePanel (SceneSetupEditor ile otomatik)
 - SaveMenuPanel (kurulum yapildi)
-- PausePanel (kurulum yapildi)
+- PausePanel (ESC ile acilir, Resume/Save-Load/Quit butonlari, runtime olusturulur)
 - DebugPanel (DebugText + DebugHUD)
 - UIManager objesi (UIManager component + tum panel referanslari)
 
 ### Camera
 - CameraRig altinda Main Camera (MainCamera tag'i atanmali, tek Audio Listener olmali)
+- ScreenShake component CameraRig uzerinde
 
 ---
 
@@ -210,6 +212,40 @@ Tum sistemler playtest edildi, 13/13 test gecti:
 ### Bina Model Sistemi (Faz 12 — Tamamlandi) ✅
 
 ### Refactoring Faz 13 (Tamamlandi) ✅
+
+### Visual Faz 14 (Tamamlandi) ✅
+
+**Runtime Grid Overlay:**
+- `GridOverlayRenderer.cs` — LineRenderer ile yerlestirme modunda grid gorunur
+- Snake/zigzag pattern (2 LineRenderer: H+V), camera-relative culling (30 hucre)
+- Smooth fade-in/out (0.3s), bina footprint highlight (yesil/kirmizi, rotation destekli)
+- `BuildingPlacer.CurrentRotation` property eklendi
+
+**Weather System + Atmosfer:**
+- `WeatherSystem.cs` — 5 hava durumu: Clear, LightRain, HeavyRain, DustStorm, RadiationStorm
+- Auto-cycle 60-180s, weighted random (40/20/10/20/10%), 5s smooth transition
+- Per-weather: post-processing (vignette, saturation, color filter, chromatic aberration)
+- Per-weather: fog color/density, ambient lighting, particle systems
+- Events: OnWeatherChanged, OnRadiationStormStart, OnRadiationStormEnd
+- AtmosphereEffects: dust/fog varsayilan aktif, yeni Embers particle (kor parçaciklari)
+- PostProcessingSetup: SetColorFilter(), SetChromaticAberration() API eklendi
+
+**Bina Secim + Hasar Efektleri:**
+- `BuildingHighlight.cs` — 1.05x outline mesh, URP Unlit transparent, pulsing alpha
+- `DamageEffects.cs` — 3 fire emitter (additive blend), 2 smoke emitter, explosion burst
+- `ScreenShake.cs` — Perlin noise shake, LateUpdate, exponential decay
+- Auto-add: Building.Initialize() → BuildingHighlight + DamageEffects
+
+**Particle Shader Fix:**
+- Tum runtime ParticleSystem'ler `Universal Render Pipeline/Particles/Unlit` shader kullanmali
+- `ApplyURPParticleMaterial()` helper her particle olusturulduktan hemen sonra cagrilmali
+- Built-in `Particles/Standard Unlit` URP'de pembe/magenta flash verir
+
+**Pause Menu (ESC):**
+- ESC tuşu ile pause/resume toggle
+- Runtime olusturulan PausePanel: Resume, Save/Load, Quit butonlari
+- SaveMenuUI'ye Back butonu eklendi
+- GameManager.TogglePause() + TimeManager.TogglePause() entegrasyonu
 
 **Merkezi Altyapi Oluşturuldu:**
 - `Singleton<T>` base class: `protected set Instance`, `OnDestroy` ile Instance temizleme, `Destroy(gameObject)` duplicate koruması
@@ -409,3 +445,9 @@ Bu kurallar tekrarlanan hataları ve gereksiz kod tekrarını önlemek için Faz
 - Birlik gücü çarpanı: `TroopData.BaseAttack` üzerinden hesaplanmalı, `* 10` hard-code YASAK
 - Bina tamir/para iadesi oranları `BuildingData` veya `GameConfig` SO'da tanımlanmalı
 - `Resources.LoadAll<T>("")` ile boş string path YASAK — spesifik klasör yolu verilmeli
+
+### Runtime Particle System Shader
+- Runtime olusturulan her ParticleSystem `Universal Render Pipeline/Particles/Unlit` shader kullanmali
+- Built-in `Particles/Standard Unlit` URP'de pembe/magenta gorunur — YASAK
+- `ApplyURPParticleMaterial(ps)` helper her `AddComponent<ParticleSystem>()` sonrasi cagrilmali
+- Fire/ember gibi parlak efektler icin additive blend (`_Blend=2, DstBlend=One`) kullanilmali
