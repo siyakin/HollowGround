@@ -26,6 +26,7 @@ Tek kisi PvE: Sehir kurma + ordu yonetimi + hero sistemi + dunya kesfi.
 - **FindFirstObjectByType YASAK**: Unity 6'da deprecated (instance ID ordering). `FindAnyObjectByType<T>()` kullan
 - **FindObjectsByType(FindObjectsSortMode) YASAK**: Unity 6'da deprecated. `FindObjectsByType<T>()` veya `FindObjectsByType<T>(FindObjectsInactive)` kullan
 - **Dictionary serialize olmaz**: `Dictionary<K,V>` Inspector'da gorunmez. Her zaman `List<Entry>` pattern'i kullan
+- **GitHub push oncesi derleme kontrolu ZORUNLU**: Her `git push` oncesi Unity'de derleme hatasi olmadigi dogrulanmali. Hata varsa push YASAK
 
 ### Pattern'ler
 - Manager'lar **Singleton** pattern kullanir (Instance property)
