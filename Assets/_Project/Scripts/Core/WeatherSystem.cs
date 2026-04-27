@@ -297,12 +297,22 @@ namespace HollowGround.Core
             }
         }
 
+        private static void ApplyURPParticleMaterial(ParticleSystem ps)
+        {
+            var renderer = ps.GetComponent<ParticleSystemRenderer>();
+            if (renderer == null) return;
+            var mat = new Material(Shader.Find("Universal Render Pipeline/Particles/Unlit"));
+            if (mat == null) mat = new Material(Shader.Find("Particles/Standard Unlit"));
+            renderer.material = mat;
+        }
+
         private ParticleSystem CreateRainParticles()
         {
             GameObject go = new("WeatherRain");
             go.transform.SetParent(transform);
 
             ParticleSystem ps = go.AddComponent<ParticleSystem>();
+            ApplyURPParticleMaterial(ps);
             ps.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
 
             var main = ps.main;
@@ -342,6 +352,7 @@ namespace HollowGround.Core
             go.transform.SetParent(transform);
 
             ParticleSystem ps = go.AddComponent<ParticleSystem>();
+            ApplyURPParticleMaterial(ps);
             ps.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
 
             var main = ps.main;
@@ -374,6 +385,7 @@ namespace HollowGround.Core
             go.transform.SetParent(transform);
 
             ParticleSystem ps = go.AddComponent<ParticleSystem>();
+            ApplyURPParticleMaterial(ps);
             ps.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
 
             var main = ps.main;
@@ -426,6 +438,7 @@ namespace HollowGround.Core
             go.transform.SetParent(transform);
 
             ParticleSystem ps = go.AddComponent<ParticleSystem>();
+            ApplyURPParticleMaterial(ps);
             ps.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
 
             var main = ps.main;

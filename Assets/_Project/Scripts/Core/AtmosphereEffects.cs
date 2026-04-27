@@ -127,6 +127,15 @@ namespace HollowGround.Core
             RenderSettings.fogDensity = _fogDensity;
         }
 
+        private static void ApplyURPParticleMaterial(ParticleSystem ps)
+        {
+            var renderer = ps.GetComponent<ParticleSystemRenderer>();
+            if (renderer == null) return;
+            var mat = new Material(Shader.Find("Universal Render Pipeline/Particles/Unlit"));
+            if (mat == null) mat = new Material(Shader.Find("Particles/Standard Unlit"));
+            renderer.material = mat;
+        }
+
         private ParticleSystem CreateDustParticles()
         {
             GameObject dustGO = new("AtmosphereDust");
@@ -134,6 +143,7 @@ namespace HollowGround.Core
             dustGO.transform.position = transform.position;
 
             ParticleSystem ps = dustGO.AddComponent<ParticleSystem>();
+            ApplyURPParticleMaterial(ps);
 
             var main = ps.main;
             main.maxParticles = _dustCount;
@@ -192,6 +202,7 @@ namespace HollowGround.Core
             fogGO.transform.position = transform.position;
 
             ParticleSystem ps = fogGO.AddComponent<ParticleSystem>();
+            ApplyURPParticleMaterial(ps);
 
             var main = ps.main;
             main.maxParticles = _fogParticleCount;
@@ -279,6 +290,7 @@ namespace HollowGround.Core
             embersGO.transform.position = transform.position;
 
             ParticleSystem ps = embersGO.AddComponent<ParticleSystem>();
+            ApplyURPParticleMaterial(ps);
 
             var main = ps.main;
             main.maxParticles = _embersCount;
