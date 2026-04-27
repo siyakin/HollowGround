@@ -16,23 +16,28 @@ namespace HollowGround.Core
         [SerializeField] private Vector3 _sunRotation = new(50f, -30f, 0f);
 
         [Header("Dust Particles")]
-        [SerializeField] private bool _enableDust = false;
-        [SerializeField] private int _dustCount = 80;
+        [SerializeField] private bool _enableDust = true;
+        [SerializeField] private int _dustCount = 120;
         [SerializeField] private float _dustAreaSize = 80f;
         [SerializeField] private float _dustHeight = 15f;
         [SerializeField] private float _dustSpeed = 0.5f;
         [SerializeField] private float _dustParticleSize = 0.08f;
-        [SerializeField] private Color _dustColor = new(0.6f, 0.55f, 0.45f, 0.25f);
+        [SerializeField] private Color _dustColor = new(0.65f, 0.58f, 0.45f, 0.25f);
         [SerializeField] private float _dustLifetime = 8f;
 
         [Header("Fog Particles")]
-        [SerializeField] private bool _enableFogParticles = false;
+        [SerializeField] private bool _enableFogParticles = true;
         [SerializeField] private int _fogParticleCount = 15;
         [SerializeField] private float _fogAreaSize = 100f;
         [SerializeField] private float _fogParticleHeight = 2f;
         [SerializeField] private float _fogSpeed = 0.2f;
-        [SerializeField] private float _fogParticleSize = 6f;
+        [SerializeField] private float _fogParticleSize = 4f;
         [SerializeField] private Color _fogParticleColor = new(0.35f, 0.30f, 0.25f, 0.08f);
+
+        [Header("Embers")]
+        [SerializeField] private bool _enableEmbers = true;
+        [SerializeField] private int _embersCount = 30;
+        [SerializeField] private Color _embersColor = new(0.9f, 0.35f, 0.05f, 0.15f);
 
         [Header("Wind")]
         [SerializeField] private Vector3 _windDirection = new(1f, 0f, 0.5f);
@@ -51,6 +56,7 @@ namespace HollowGround.Core
         private Light _sunLight;
         private ParticleSystem _dustSystem;
         private ParticleSystem _fogSystem;
+        private ParticleSystem _embersSystem;
 
         private void Start()
         {
@@ -62,6 +68,9 @@ namespace HollowGround.Core
 
             if (_enableFogParticles)
                 _fogSystem = CreateFogParticles();
+
+            if (_enableEmbers)
+                _embersSystem = CreateEmbersParticles();
         }
 
         private void Update()
@@ -246,7 +255,6 @@ namespace HollowGround.Core
 
             if (_dustSystem != null)
             {
-                var dustShape = _dustSystem.shape;
                 _dustSystem.transform.position = new Vector3(
                     camPos.x, camPos.y * 0.5f, camPos.z);
             }
@@ -256,6 +264,75 @@ namespace HollowGround.Core
                 _fogSystem.transform.position = new Vector3(
                     camPos.x, 0f, camPos.z);
             }
+
+            if (_embersSystem != null)
+            {
+                _embersSystem.transform.position = new Vector3(
+                    camPos.x, camPos.y * 0.5f + 2f, camPos.z);
+            }
+        }
+
+        private ParticleSystem CreateEmbersParticles()
+        {
+            GameObject embersGO = new("AtmosphereEmbers");
+            embersGO.transform.SetParent(transform);
+            embersGO.transform.position = transform.position;
+
+            ParticleSystem ps = embersGO.AddComponent<ParticleSystem>();
+
+            var main = ps.main;
+            main.maxParticles = _embersCount;
+            main.startLifetime = new ParticleSystem.MinMaxCurve(6f, 12f);
+            main.startSpeed = 0f;
+            main.startSize = new ParticleSystem.MinMaxCurve(0.03f, 0.06f);
+            main.startColor = _embersColor;
+            main.simulationSpace = ParticleSystemSimulationSpace.World;
+            main.gravityModifier = -0.02f;
+
+            var emission = ps.emission;
+            emission.rateOverTime = _embersCount / 9f;
+
+            var shape = ps.shape;
+            shape.shapeType = ParticleSystemShapeType.Box;
+            shape.scale = new Vector3(60f, 8f, 60f);
+
+            var velocityOverLifetime = ps.velocityOverLifetime;
+            velocityOverLifetime.enabled = true;
+            velocityOverLifetime.space = ParticleSystemSimulationSpace.World;
+            Vector3 windDir = _windDirection.normalized * _windStrength * 0.3f;
+            velocityOverLifetime.x = new ParticleSystem.MinMaxCurve(windDir.x * 0.5f, windDir.x);
+            velocityOverLifetime.y = new ParticleSystem.MinMaxCurve(0.2f, 0.5f);
+            velocityOverLifetime.z = new ParticleSystem.MinMaxCurve(windDir.z * 0.5f, windDir.z);
+
+            var colorOverLifetime = ps.colorOverLifetime;
+            colorOverLifetime.enabled = true;
+            colorOverLifetime.color = new Gradient
+            {
+                alphaKeys = new[]
+                {
+                    new GradientAlphaKey(0f, 0f),
+                    new GradientAlphaKey(_embersColor.a, 0.2f),
+                    new GradientAlphaKey(_embersColor.a, 0.8f),
+                    new GradientAlphaKey(0f, 1f)
+                },
+                colorKeys = new[]
+                {
+                    new GradientColorKey(new Color(1f, 0.5f, 0.1f), 0f),
+                    new GradientColorKey(new Color(0.8f, 0.2f, 0.05f), 1f)
+                }
+            };
+
+            var sizeOverLifetime = ps.sizeOverLifetime;
+            sizeOverLifetime.enabled = true;
+            sizeOverLifetime.size = new ParticleSystem.MinMaxCurve(1f,
+                new AnimationCurve(
+                    new Keyframe(0f, 0f),
+                    new Keyframe(0.15f, 1f),
+                    new Keyframe(0.85f, 1f),
+                    new Keyframe(1f, 0f)
+                ));
+
+            return ps;
         }
 
         private void UpdateDayNight()

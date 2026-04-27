@@ -162,5 +162,24 @@ namespace HollowGround.Core
         {
             if (_filmGrain != null) _filmGrain.intensity.value = value;
         }
+
+        public void SetColorFilter(Color value)
+        {
+            if (_colorAdjustments != null) _colorAdjustments.colorFilter.value = value;
+        }
+
+        public void SetChromaticAberration(float value)
+        {
+            if (_chromaticAberration == null && _volume != null)
+            {
+                if (!_volume.profile.TryGet(out _chromaticAberration))
+                    _chromaticAberration = _volume.profile.Add<ChromaticAberration>(true);
+            }
+            if (_chromaticAberration != null)
+            {
+                _chromaticAberration.intensity.Override(value);
+                _chromaticAberration.active = value > 0.001f;
+            }
+        }
     }
 }
