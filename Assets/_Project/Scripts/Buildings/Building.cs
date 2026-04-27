@@ -55,6 +55,9 @@ namespace HollowGround.Buildings
 
             gameObject.layer = LayerMask.NameToLayer("Building");
 
+            gameObject.AddComponent<BuildingHighlight>();
+            gameObject.AddComponent<DamageEffects>();
+
             UpdateModel();
         }
 

@@ -303,8 +303,8 @@ RectTransform:
   - {fileID: 1081522825}
   - {fileID: 2002598006}
   - {fileID: 252440994}
-  - {fileID: 355263029}
   - {fileID: 1003827693}
+  - {fileID: 2027228833}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -3979,71 +3979,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::HollowGround.UI.UIThemeTag
   styleType: 0
---- !u!1 &355263028
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 355263029}
-  - component: {fileID: 355263030}
-  - component: {fileID: 355263031}
-  m_Layer: 0
-  m_Name: ToastUI
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!224 &355263029
-RectTransform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 355263028}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 48765785}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 0}
-  m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &355263030
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 355263028}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7593340c6b0eb154d8be15d10afbb369, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::HollowGround.UI.ToastUI
-  _displayDuration: 3
-  _fadeDuration: 0.5
-  _maxToasts: 5
---- !u!114 &355263031
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 355263028}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: af14f1c705e62974b9d555a85001655e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::HollowGround.UI.UIThemeTag
-  styleType: 0
 --- !u!1 &361276184
 GameObject:
   m_ObjectHideFlags: 0
@@ -6050,7 +5985,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: -29.999939}
+  m_AnchoredPosition: {x: 0, y: -29.999878}
   m_SizeDelta: {x: 0, y: -60}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &511085931
@@ -11087,6 +11022,7 @@ GameObject:
   - component: {fileID: 1006131214}
   - component: {fileID: 1006131215}
   - component: {fileID: 1006131216}
+  - component: {fileID: 1006131217}
   m_Layer: 0
   m_Name: GameObject
   m_TagString: Untagged
@@ -11380,6 +11316,23 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 42d05f0a3955719459348715cc239aeb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::HollowGround.NPCs.TradeSystem
+--- !u!114 &1006131217
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1006131196}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 415a509e0c2a02f49ac39231a27eb772, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::HollowGround.Core.WeatherSystem
+  _weatherChangeIntervalMin: 60
+  _weatherChangeIntervalMax: 180
+  _transitionDuration: 5
+  _weatherEnabled: 1
+  _postProcessing: {fileID: 0}
 --- !u!1 &1021365639
 GameObject:
   m_ObjectHideFlags: 0
@@ -23209,6 +23162,79 @@ CanvasRenderer:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2024136394}
+  m_CullTransparentMesh: 1
+--- !u!1 &2027228832
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2027228833}
+  - component: {fileID: 2027228836}
+  - component: {fileID: 2027228835}
+  - component: {fileID: 2027228834}
+  m_Layer: 5
+  m_Name: ToastUI
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &2027228833
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2027228832}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 48765785}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 0}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!225 &2027228834
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2027228832}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 0
+  m_BlocksRaycasts: 0
+  m_IgnoreParentGroups: 0
+--- !u!114 &2027228835
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2027228832}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7593340c6b0eb154d8be15d10afbb369, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::HollowGround.UI.ToastUI
+  _displayDuration: 3
+  _fadeDuration: 0.5
+  _maxToasts: 5
+--- !u!222 &2027228836
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2027228832}
   m_CullTransparentMesh: 1
 --- !u!1 &2027524038
 GameObject:
