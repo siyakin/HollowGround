@@ -486,54 +486,23 @@ namespace HollowGround.Editor
         static int SetupToastPanel(Canvas canvas)
         {
             DestroyExisting(canvas, "ToastPanel");
-            GameObject panel = CreatePanel(canvas, "ToastPanel", false);
+            DestroyExisting(canvas, "ToastUI");
+            GameObject panel = CreatePanel(canvas, "ToastUI", true);
             var toastUI = panel.GetComponent<ToastUI>() ?? panel.AddComponent<ToastUI>();
 
             RectTransform prt = panel.GetComponent<RectTransform>();
-            prt.anchorMin = new Vector2(1, 1);
-            prt.anchorMax = new Vector2(1, 1);
-            prt.pivot = new Vector2(1, 1);
-            prt.sizeDelta = new Vector2(350, 300);
-            prt.anchoredPosition = new Vector2(-20, -20);
+            prt.anchorMin = Vector2.zero;
+            prt.anchorMax = Vector2.one;
+            prt.pivot = new Vector2(0.5f, 0.5f);
+            prt.offsetMin = Vector2.zero;
+            prt.offsetMax = Vector2.zero;
 
             Image panelBg = panel.GetComponent<Image>();
             if (panelBg != null) panelBg.color = Color.clear;
 
-            Transform container = panel.transform.Find("ToastContainer");
-            if (container == null)
-            {
-                GameObject containerGO = new("ToastContainer");
-                containerGO.transform.SetParent(panel.transform, false);
-                RectTransform crt = containerGO.AddComponent<RectTransform>();
-                crt.anchorMin = new Vector2(0.5f, 1);
-                crt.anchorMax = new Vector2(0.5f, 1);
-                crt.pivot = new Vector2(0.5f, 1);
-                crt.sizeDelta = new Vector2(320, 300);
-                crt.anchoredPosition = Vector2.zero;
-
-                VerticalLayoutGroup vlg = containerGO.AddComponent<VerticalLayoutGroup>();
-                vlg.childAlignment = TextAnchor.UpperCenter;
-                vlg.childControlWidth = true;
-                vlg.childControlHeight = false;
-                vlg.childForceExpandWidth = true;
-                vlg.childForceExpandHeight = false;
-                vlg.spacing = 8;
-                vlg.padding = new RectOffset(5, 5, 5, 5);
-
-                ContentSizeFitter csf = containerGO.AddComponent<ContentSizeFitter>();
-                csf.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
-
-                container = containerGO.transform;
-            }
-
-            GameObject toastPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(
-                "Assets/_Project/Prefabs/ToastItem.prefab");
-
-            SerializedObject so = new SerializedObject(toastUI);
-            SetSerializedField(so, "_toastContainer", container);
-            if (toastPrefab != null)
-                SetSerializedField(so, "_toastPrefab", toastPrefab);
-            so.ApplyModifiedProperties();
+            var cg = panel.GetComponent<CanvasGroup>() ?? panel.AddComponent<CanvasGroup>();
+            cg.blocksRaycasts = false;
+            cg.interactable = false;
 
             EditorUtility.SetDirty(toastUI);
             return 1;

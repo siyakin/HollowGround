@@ -1,18 +1,17 @@
 using System.Collections;
 using System.Collections.Generic;
-using HollowGround.Core;
 using TMPro;
 using UnityEngine;
 
 namespace HollowGround.UI
 {
-    public class ToastUI : Singleton<ToastUI>
+    public class ToastUI : MonoBehaviour
     {
-
         [SerializeField] private float _displayDuration = 3f;
         [SerializeField] private float _fadeDuration = 0.5f;
         [SerializeField] private int _maxToasts = 5;
 
+        private static ToastUI _instance;
         private readonly Queue<ToastMessage> _queue = new();
         private readonly List<GameObject> _activeToasts = new();
         private bool _isShowing;
@@ -24,19 +23,63 @@ namespace HollowGround.UI
             public Color Color;
         }
 
-        protected override void Awake()
+        private void Awake()
         {
-            base.Awake();
+            _instance = this;
+        }
+
+        private void OnDestroy()
+        {
+            if (_instance == this) _instance = null;
+        }
+
+        private void Start()
+        {
+            EnsureContainer();
+        }
+
+        public static void Show(string text, Color? color = null)
+        {
+            if (_instance == null)
+            {
+                var found = FindAnyObjectByType<ToastUI>(FindObjectsInactive.Include);
+                if (found != null)
+                {
+                    found.gameObject.SetActive(true);
+                    _instance = found;
+                    found.EnsureContainer();
+                }
+                else
+                {
+                    Debug.Log($"[Toast] {text}");
+                    return;
+                }
+            }
+
+            var msg = new ToastMessage { Text = text, Color = color ?? Color.white };
+            _instance._queue.Enqueue(msg);
+            _instance.TryShowNext();
+        }
+
+        private void EnsureContainer()
+        {
+            if (_toastContainer != null) return;
+
+            Transform existing = transform.Find("ToastContainer");
+            if (existing != null)
+            {
+                _toastContainer = existing;
+                return;
+            }
 
             var containerObj = new GameObject("ToastContainer", typeof(RectTransform));
             containerObj.transform.SetParent(transform, false);
-            var containerRect = containerObj.GetComponent<RectTransform>();
-            containerRect.anchorMin = new Vector2(0.5f, 0.85f);
-            containerRect.anchorMax = new Vector2(0.5f, 0.85f);
-            containerRect.pivot = new Vector2(0.5f, 1f);
-            containerRect.sizeDelta = new Vector2(400f, 200f);
-            containerRect.anchoredPosition = Vector2.zero;
-            containerRect.SetAsLastSibling();
+            var cr = containerObj.GetComponent<RectTransform>();
+            cr.anchorMin = new Vector2(0f, 0.5f);
+            cr.anchorMax = new Vector2(1f, 0.85f);
+            cr.pivot = new Vector2(0.5f, 1f);
+            cr.offsetMin = Vector2.zero;
+            cr.offsetMax = Vector2.zero;
 
             var cg = containerObj.AddComponent<CanvasGroup>();
             cg.blocksRaycasts = false;
@@ -51,18 +94,6 @@ namespace HollowGround.UI
             vlg.childControlHeight = true;
 
             _toastContainer = containerObj.transform;
-        }
-
-        public static void Show(string text, Color? color = null)
-        {
-            if (Instance == null)
-            {
-                Debug.Log($"[Toast] {text}");
-                return;
-            }
-            var msg = new ToastMessage { Text = text, Color = color ?? Color.white };
-            Instance._queue.Enqueue(msg);
-            Instance.TryShowNext();
         }
 
         private void TryShowNext()
@@ -83,13 +114,13 @@ namespace HollowGround.UI
             toast.transform.SetParent(_toastContainer, false);
 
             var layout = toast.AddComponent<UnityEngine.UI.LayoutElement>();
-            layout.minWidth = 300;
-            layout.minHeight = 34;
+            layout.minWidth = 200;
+            layout.minHeight = 30;
             layout.preferredWidth = 350;
             layout.preferredHeight = 34;
 
             var bg = toast.AddComponent<UnityEngine.UI.Image>();
-            bg.color = new Color(0.1f, 0.1f, 0.1f, 0.9f);
+            bg.color = new Color(0.1f, 0.1f, 0.12f, 0.92f);
             bg.raycastTarget = false;
 
             var textObj = new GameObject("Text", typeof(RectTransform));

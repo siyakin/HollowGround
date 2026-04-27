@@ -32,6 +32,14 @@ namespace HollowGround.Core
         public float NormalExpeditionTimeMultiplier = 1f;
         public float NormalMutantAttackIntervalMultiplier = 1f;
 
+        [Header("Economy")]
+        [Range(0f, 1f)] public float DemolishRefundRatio = 0.5f;
+        [Range(0f, 1f)] public float RepairCostRatio = 0.5f;
+
+        [Header("Combat")]
+        public int WallDefenseBonus = 20;
+        [Range(0f, 1f)] public float DefeatTroopLossRatio = 0.6f;
+
         public float GetBuildTimeMultiplier => DevMode ? BuildTimeMultiplier : NormalBuildTimeMultiplier;
         public float GetProductionIntervalMultiplier => DevMode ? ProductionIntervalMultiplier : NormalProductionIntervalMultiplier;
         public float GetTrainingTimeMultiplier => DevMode ? TrainingTimeMultiplier : NormalTrainingTimeMultiplier;

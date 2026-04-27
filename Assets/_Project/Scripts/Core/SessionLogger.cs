@@ -6,6 +6,7 @@ using HollowGround.Buildings;
 using HollowGround.Combat;
 using HollowGround.Resources;
 using HollowGround.Tech;
+using HollowGround.UI;
 using HollowGround.World;
 using UnityEngine;
 
@@ -23,6 +24,8 @@ namespace HollowGround.Core
 
         private void Start()
         {
+            SubscribeEvents();
+
             var config = GameConfig.Instance;
             if (config == null || !config.EnableSessionLog) return;
 
@@ -48,12 +51,11 @@ namespace HollowGround.Core
             _sb.AppendLine();
 
             Log("Game started");
-
-            SubscribeEvents();
         }
 
-        private void OnDestroy()
+        protected override void OnDestroy()
         {
+            base.OnDestroy();
             UnsubscribeEvents();
             Flush();
         }
@@ -220,6 +222,7 @@ namespace HollowGround.Core
         {
             string origin = building.GridOrigin.ToString();
             Log($"BUILDING PLACED: {building.Data.DisplayName} at {origin} | Level {building.Level} | State: {building.State}");
+            ToastUI.Show($"{building.Data.DisplayName} placed!", UIColors.Default.Ok);
             building.OnConstructionComplete += OnBuildingConstructionComplete;
             building.OnUpgradeComplete += OnBuildingUpgradeComplete;
             building.OnProduced += OnBuildingProduced;
@@ -242,11 +245,13 @@ namespace HollowGround.Core
         private void OnBuildingConstructionComplete(Building building)
         {
             Log($"CONSTRUCTION COMPLETE: {building.Data.DisplayName} Level {building.Level}");
+            ToastUI.Show($"{building.Data.DisplayName} built!", UIColors.Default.Ok);
         }
 
         private void OnBuildingUpgradeComplete(Building building)
         {
             Log($"UPGRADE COMPLETE: {building.Data.DisplayName} → Level {building.Level}");
+            ToastUI.Show($"{building.Data.DisplayName} upgraded to Lv.{building.Level}!", UIColors.Default.Gold);
         }
 
         private void OnBuildingProduced(Building building, ResourceType type, int amount)
@@ -257,16 +262,19 @@ namespace HollowGround.Core
         private void OnBuildingDestroyed(Building building)
         {
             Log($"BUILDING DESTROYED: {building.Data.DisplayName} at {building.GridOrigin}");
+            ToastUI.Show($"{building.Data.DisplayName} destroyed!", UIColors.Default.Danger);
         }
 
         private void OnBuildingDamaged(Building building)
         {
             Log($"BUILDING DAMAGED: {building.Data.DisplayName} at {building.GridOrigin} | State: {building.State}");
+            ToastUI.Show($"{building.Data.DisplayName} damaged! Needs repair.", UIColors.Default.Warn);
         }
 
         private void OnBuildingRepaired(Building building)
         {
             Log($"BUILDING REPAIRED: {building.Data.DisplayName} at {building.GridOrigin} | Level {building.Level}");
+            ToastUI.Show($"{building.Data.DisplayName} repaired!", UIColors.Default.Ok);
         }
 
         private void OnResourceChanged(ResourceType type, int newVal)
@@ -292,17 +300,23 @@ namespace HollowGround.Core
         private void OnWaveWarning(MutantWaveData wave)
         {
             Log($"WARNING: MUTANT WARNING: {wave.DisplayName} | Power: {wave.MutantPower} | Count: {wave.MutantCount}");
+            ToastUI.Show($"WARNING: {wave.MutantCount} mutants approaching! Power: {wave.MutantPower}", UIColors.Default.Warn);
         }
 
         private void OnWaveStarted(MutantWaveData wave)
         {
             Log($"MUTANT ATTACK: {wave.DisplayName} | Power: {wave.MutantPower}");
+            ToastUI.Show($"Mutant wave {wave.WaveNumber} attacking!", UIColors.Default.Danger);
         }
 
         private void OnWaveEnded(MutantWaveData wave, bool victory)
         {
             string result = victory ? "VICTORY" : "DEFEAT";
             Log($" MUTANT WAVE {result}: {wave.DisplayName} | Survived");
+            if (victory)
+                ToastUI.Show($"Wave {wave.WaveNumber} defeated!", UIColors.Default.Ok);
+            else
+                ToastUI.Show($"Wave {wave.WaveNumber} — DEFEATED! Buildings damaged.", UIColors.Default.Danger);
         }
 
         private void OnResearchStarted(TechNode node)
@@ -313,6 +327,7 @@ namespace HollowGround.Core
         private void OnResearchCompleted(TechNode node)
         {
             Log($"RESEARCH COMPLETE: {node.DisplayName}");
+            ToastUI.Show($"Research complete: {node.DisplayName}!", UIColors.Default.Ok);
         }
 
         private void OnExpeditionLaunched(ExpeditionSystem.ActiveExpedition expedition)
@@ -323,6 +338,7 @@ namespace HollowGround.Core
         private void OnExpeditionCompleted(ExpeditionSystem.ActiveExpedition expedition)
         {
             Log($"EXPEDITION ARRIVED: {expedition.TargetName}");
+            ToastUI.Show($"Expedition arrived: {expedition.TargetName}", UIColors.Default.Ok);
         }
 
         #endregion

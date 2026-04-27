@@ -176,7 +176,7 @@ namespace HollowGround.Buildings
                 gridSystem.FreeCells(GridOrigin.x, GridOrigin.y, _data.SizeX, _data.SizeZ);
             }
 
-            float refundRatio = 0.5f;
+            float refundRatio = GameConfig.Instance != null ? GameConfig.Instance.DemolishRefundRatio : 0.5f;
             var costs = _data.GetCostForLevel(Level);
             if (ResourceManager.Instance != null)
             {
@@ -242,7 +242,7 @@ namespace HollowGround.Buildings
             if (State != BuildingState.Damaged) return false;
 
             var costs = _data.GetCostForLevel(Level);
-            float repairRatio = 0.5f;
+            float repairRatio = GameConfig.Instance != null ? GameConfig.Instance.RepairCostRatio : 0.5f;
             var repairCosts = new Dictionary<ResourceType, int>();
             foreach (var kvp in costs)
                 repairCosts[kvp.Key] = Mathf.CeilToInt(kvp.Value * repairRatio);

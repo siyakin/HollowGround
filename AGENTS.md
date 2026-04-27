@@ -208,6 +208,56 @@ Tum sistemler playtest edildi, 13/13 test gecti:
 - FBX import: `Assets/_Project/Models/Buildings/{BuildingName}/` altina
 
 ### Bina Model Sistemi (Faz 12 — Tamamlandi) ✅
+
+### Refactoring Faz 13 (Tamamlandi) ✅
+
+**Merkezi Altyapi Oluşturuldu:**
+- `Singleton<T>` base class: `protected set Instance`, `OnDestroy` ile Instance temizleme, `Destroy(gameObject)` duplicate koruması
+- `UIPrimitiveFactory`: 10+ static metod (CreateUIObject, AddThemedText, AddImage, CreateButton, StretchFull, SetAnchors, SetupPanelBackground, AddStandardVLG, AddRowHLG, AddLayoutElement)
+- `UIColors`: PanelColors struct (PanelBg, RowBg, Text, Muted, Ok, Gold, Danger, Warn) + GetRarityColor, GetNodeColor, GetStateColor + Fog, Empty, Selected, PanelInner, TextDim
+- `CostEntryHelper.Costs()`: Merkezi maliyet oluşturma utility
+
+**Factory'ler Merkezi Utility'ye Taşındı:**
+- BuildingDataFactory, TroopDataFactory, TechNodeFactory → lokal `Costs()` metodları kaldırıldı, `CostEntryHelper.Costs()` kullanılıyor
+
+**4 UI Panel UIPrimitiveFactory + UIColors'a Taşındı:**
+- FactionTradeUI, SaveMenuUI, TechTreeUI, WorldMapUI → tüm lokal CreateUIObject/AddText/CreateButton/StretchFull/SetAnchors metodları kaldırıldı
+- Tüm inline `static readonly Color` tanımları UIColors'a taşındı
+- BuildingInfoUI state renkleri → `UIColors.GetStateColor()`
+- UIManager QuickSave/Load renkleri → UIColors.Default.Ok/Warn
+- ToastUI bg → UIColors.Default.PanelBg
+- UIPrimitiveFactory buton renkleri → UIColors.Default
+
+**Magic Numbers → GameConfig SO'ya Taşındı:**
+- `DemolishRefundRatio` (0.5f) — Building.cs Demolish()
+- `RepairCostRatio` (0.5f) — Building.cs Repair()
+- `WallDefenseBonus` (20) — MutantAttackManager CalculateDefensePower()
+- `DefeatTroopLossRatio` (0.6f) — MutantAttackManager ExecuteWave()
+- `ArmyManager.CalculateArmyPower()` → `* 10` hard-code yerine `TroopData.BaseAttack` (cache pattern ile)
+- `GameConfigCreator` yeni alanları içeriyor
+
+**Ölü Kod Silindi:**
+- `GameEvent.cs` — C# `event Action<T>` kullanılıyor
+- `PlacementValidator.cs` — GridSystem direkt kullanılıyor
+
+**ToastUI Yeniden Yazıldı:**
+- Singleton<T> inheritance kaldırıldı → basit `_instance` field
+- `FindAnyObjectByType<ToastUI>(FindObjectsInactive.Include)` ile lazy activation
+- `EnsureContainer()` ile runtime container oluşturma
+- ToastPanel sahnede her zaman aktif olmalı
+
+**SessionLogger Event Subscription Düzeltmesi:**
+- `SubscribeEvents()` artık `EnableSessionLog`'dan bağımsız — toast'lar SessionLog kapalıyken de çalışıyor
+
+**Toast Mesajları Eklendi (15+ yeni mesaj):**
+- Bina: placed, built, upgraded, damaged, repaired, demolished, destroy
+- Kaynak eksik: "Not enough... Food 5 short, Metal 10 short"
+- CC level eksik: "Need Command Center Lv.2!"
+- Upgrade/Repair kaynak eksik detaylı mesajlar
+- Mutant: warning, attack, victory, defeat
+- Araştırma tamam, sefer varış
+- BuildMenuUI maliyet metni eksik kaynakları kırmızı gösteriyor
+- BuildMenuUI butonları her zaman tıklanabilir — eksik kaynak toast ile gösteriliyor
 - **BuildingData.BuildingModels** struct: 7 GameObject slot (Construct, L01, L03, L05, L10, Damaged, Destroyed)
 - **Level threshold**: L01 (lv1-2), L03 (lv3-4), L05 (lv5-9), L10 (lv10)
 - **State-based model swap**: Building.cs `UpdateModel()` state'e gore dogru modeli instantiate eder
@@ -265,6 +315,10 @@ Tum sistemler playtest edildi, 13/13 test gecti:
 20. MutantAttackManager defeat'te `ApplyBuildingDamage()` → hasarli bina uretimi durur, kullanici Repair ile geri donmeli. SessionLogger'a OnDamaged/OnRepaired eklenmeli
 21. `Setup UI Panels` sadece kendi olusturdugu panelleri siler (`DestroyExisting`), diger paneller (ResourceBar, BuildMenu, vs.) dokunulmaz
 22. 1x1 binalar ground plane ile z-fighting yapar → model `localPosition.y = 0.015f` offset
+23. Inactive GameObject'te `Awake()` çağrılmaz → Singleton Instance null kalır. ToastUI gibi UI panelleri her zaman aktif olmalı
+24. `SessionLogger.SubscribeEvents()` SessionLog kapalıyken de çağrılmalı — yoksa event-driven toast'lar çalışmaz
+25. `Singleton<T>.Destroy(gameObject)` tüm manager'lar aynı GO üzerinde olduğu için güvenli — duplicate GO'yu tamamen siler. `Destroy(this)` sadece component siler, Instance referansı kopar
+26. `UIPrimitiveFactory.AddThemedText()` TMP_Text `richText = true` varsayılan — renkli maliyet metni çalışır
 
 ---
 

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Text;
 using HollowGround.Buildings;
 using HollowGround.Resources;
 using TMPro;
@@ -82,7 +83,7 @@ namespace HollowGround.UI
                 if (card.Button != null)
                 {
                     card.Button.gameObject.SetActive(true);
-                    card.Button.interactable = canBuild;
+                    card.Button.interactable = true;
                 }
 
                 if (card.NameText != null)
@@ -93,7 +94,11 @@ namespace HollowGround.UI
                     var costs = card.Data.GetCostForLevel(1);
                     var parts = new List<string>();
                     foreach (var kvp in costs)
-                        parts.Add($"{kvp.Key}: {kvp.Value}");
+                    {
+                        int have = ResourceManager.Instance != null ? ResourceManager.Instance.Get(kvp.Key) : 0;
+                        string color = have >= kvp.Value ? "#C8C8C8" : "#E64D4D";
+                        parts.Add($"<color={color}>{kvp.Key}: {kvp.Value}</color>");
+                    }
                     card.CostText.text = parts.Count > 0 ? string.Join("  ", parts) : "Free";
                 }
 
@@ -115,11 +120,47 @@ namespace HollowGround.UI
             if (cardIndex < 0 || cardIndex >= _cards.Count) return;
 
             BuildingCard card = _cards[cardIndex];
-            if (BuildingPlacer.Instance != null && card.Data != null)
+            if (card.Data == null) return;
+
+            if (!HasEnoughResources(card.Data))
+            {
+                ShowMissingResources(card.Data);
+                return;
+            }
+
+            if (BuildingManager.Instance != null && !BuildingManager.Instance.CanBuild(card.Data))
+            {
+                int ccLevel = BuildingManager.Instance.GetCommandCenterLevel();
+                int required = card.Data.CommandCenterLevelRequired;
+                ToastUI.Show($"Need Command Center Lv.{required}! (Current: Lv.{ccLevel})", UIColors.Default.Danger);
+                return;
+            }
+
+            if (BuildingPlacer.Instance != null)
             {
                 BuildingPlacer.Instance.StartPlacement(card.Data);
                 gameObject.SetActive(false);
             }
+        }
+
+        private void ShowMissingResources(BuildingData data)
+        {
+            if (ResourceManager.Instance == null) return;
+            var costs = data.GetCostForLevel(1);
+            var sb = new StringBuilder();
+            sb.Append($"Not enough resources for {data.DisplayName}: ");
+            bool first = true;
+            foreach (var kvp in costs)
+            {
+                int have = ResourceManager.Instance.Get(kvp.Key);
+                if (have < kvp.Value)
+                {
+                    if (!first) sb.Append(", ");
+                    sb.Append($"{kvp.Key} {kvp.Value - have} short");
+                    first = false;
+                }
+            }
+            ToastUI.Show(sb.ToString(), UIColors.Default.Danger);
         }
     }
 }

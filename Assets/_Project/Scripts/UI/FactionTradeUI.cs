@@ -9,14 +9,6 @@ namespace HollowGround.UI
 {
     public class FactionTradeUI : MonoBehaviour
     {
-        private static readonly Color PanelBg = new(0.08f, 0.09f, 0.11f, 0.92f);
-        private static readonly Color RowBg = new(0.14f, 0.15f, 0.17f, 1f);
-        private static readonly Color ColorText = new(0.95f, 0.95f, 0.95f, 1f);
-        private static readonly Color ColorMuted = new(0.65f, 0.65f, 0.7f, 1f);
-        private static readonly Color ColorOk = new(0.35f, 0.8f, 0.4f, 1f);
-        private static readonly Color ColorGold = new(1f, 0.85f, 0.3f, 1f);
-        private static readonly Color ColorDanger = new(0.9f, 0.3f, 0.3f, 1f);
-
         private TMP_Text _headerText;
         private TMP_Text _detailName;
         private TMP_Text _detailRelation;
@@ -46,7 +38,7 @@ namespace HollowGround.UI
 
         private void OnTradeCompleted(FactionData faction)
         {
-            ToastUI.Show($"Trade completed! Relation with {faction.DisplayName}: {faction.RelationPoints}", ColorOk);
+            ToastUI.Show($"Trade completed! Relation with {faction.DisplayName}: {faction.RelationPoints}", UIColors.Default.Ok);
             if (_selectedFaction != null)
                 ShowTradePanel(_selectedFaction);
             RefreshFactions();
@@ -57,28 +49,11 @@ namespace HollowGround.UI
             var root = GetComponent<RectTransform>();
             if (root == null) return;
 
-            root.anchorMin = new Vector2(0f, 0f);
-            root.anchorMax = new Vector2(1f, 1f);
-            root.offsetMin = new Vector2(0f, 60f);
-            root.offsetMax = new Vector2(0f, 0f);
+            UIPrimitiveFactory.SetupPanelBackground(gameObject, UIColors.Default);
+            UIPrimitiveFactory.StretchFull(root, new Vector2(0f, 60f), Vector2.zero);
 
             foreach (Transform child in root)
                 Destroy(child.gameObject);
-
-            var oldVlg = GetComponent<VerticalLayoutGroup>();
-            if (oldVlg != null) DestroyImmediate(oldVlg);
-            var oldImages = GetComponents<Image>();
-            foreach (var img in oldImages) DestroyImmediate(img);
-            var oldCg = GetComponent<CanvasGroup>();
-            if (oldCg != null) DestroyImmediate(oldCg);
-
-            var bg = gameObject.AddComponent<Image>();
-            bg.color = PanelBg;
-            bg.raycastTarget = true;
-
-            var cg = gameObject.AddComponent<CanvasGroup>();
-            cg.interactable = true;
-            cg.blocksRaycasts = true;
 
             var mainHLG = gameObject.AddComponent<HorizontalLayoutGroup>();
             mainHLG.padding = new RectOffset(15, 15, 15, 15);
@@ -91,7 +66,7 @@ namespace HollowGround.UI
             var leftPanel = new GameObject("FactionList", typeof(RectTransform));
             leftPanel.transform.SetParent(root, false);
             var leftBg = leftPanel.AddComponent<Image>();
-            leftBg.color = RowBg;
+            leftBg.color = UIColors.Default.RowBg;
             var leftVLG = leftPanel.AddComponent<VerticalLayoutGroup>();
             leftVLG.padding = new RectOffset(10, 10, 10, 10);
             leftVLG.spacing = 6;
@@ -100,16 +75,13 @@ namespace HollowGround.UI
             leftVLG.childForceExpandWidth = true;
             leftVLG.childForceExpandHeight = false;
 
-            var leftHeader = AddText(leftPanel.transform, "FACTIONS", 22, ColorGold);
+            var leftHeader = UIPrimitiveFactory.AddThemedText(leftPanel.transform, "FACTIONS", 22, UIColors.Default.Gold);
             leftHeader.alignment = TextAlignmentOptions.Center;
-            var lhLE = leftHeader.gameObject.AddComponent<LayoutElement>();
-            lhLE.preferredHeight = 35;
+            UIPrimitiveFactory.AddLayoutElement(leftHeader.gameObject, preferredHeight: 35);
 
-            var listObj = new GameObject("List", typeof(RectTransform));
-            listObj.transform.SetParent(leftPanel.transform, false);
-            var listLE = listObj.AddComponent<LayoutElement>();
-            listLE.preferredHeight = 300;
-            var listVLG = listObj.AddComponent<VerticalLayoutGroup>();
+            var listObj = UIPrimitiveFactory.CreateUIObject("List", leftPanel.transform);
+            UIPrimitiveFactory.AddLayoutElement(listObj.gameObject, preferredHeight: 300);
+            var listVLG = listObj.gameObject.AddComponent<VerticalLayoutGroup>();
             listVLG.spacing = 4;
             listVLG.childControlWidth = true;
             listVLG.childControlHeight = false;
@@ -117,10 +89,9 @@ namespace HollowGround.UI
             listVLG.childForceExpandHeight = false;
             _factionList = listObj.transform;
 
-            _detailPanel = new GameObject("DetailPanel", typeof(RectTransform));
-            _detailPanel.transform.SetParent(root, false);
+            _detailPanel = UIPrimitiveFactory.CreateUIObject("DetailPanel", root).gameObject;
             var detailBg = _detailPanel.AddComponent<Image>();
-            detailBg.color = RowBg;
+            detailBg.color = UIColors.Default.RowBg;
             var detailVLG = _detailPanel.AddComponent<VerticalLayoutGroup>();
             detailVLG.padding = new RectOffset(15, 15, 10, 10);
             detailVLG.spacing = 8;
@@ -129,18 +100,15 @@ namespace HollowGround.UI
             detailVLG.childForceExpandWidth = true;
             detailVLG.childForceExpandHeight = false;
 
-            _detailName = AddText(_detailPanel.transform, "Select a faction", 22, ColorText);
-            _detailRelation = AddText(_detailPanel.transform, "", 16, ColorMuted);
-            _detailDesc = AddText(_detailPanel.transform, "", 15, ColorMuted);
-            var descLE = _detailDesc.gameObject.AddComponent<LayoutElement>();
-            descLE.preferredHeight = 50;
+            _detailName = UIPrimitiveFactory.AddThemedText(_detailPanel.transform, "Select a faction", 22, UIColors.Default.Text);
+            _detailRelation = UIPrimitiveFactory.AddThemedText(_detailPanel.transform, "", 16, UIColors.Default.Muted);
+            _detailDesc = UIPrimitiveFactory.AddThemedText(_detailPanel.transform, "", 15, UIColors.Default.Muted);
+            UIPrimitiveFactory.AddLayoutElement(_detailDesc.gameObject, preferredHeight: 50);
 
-            AddText(_detailPanel.transform, "-- BUY FROM FACTION --", 16, ColorOk).alignment = TextAlignmentOptions.Center;
-            var sellObj = new GameObject("SellList", typeof(RectTransform));
-            sellObj.transform.SetParent(_detailPanel.transform, false);
-            var sellLE = sellObj.AddComponent<LayoutElement>();
-            sellLE.preferredHeight = 120;
-            var sellVLG = sellObj.AddComponent<VerticalLayoutGroup>();
+            UIPrimitiveFactory.AddThemedText(_detailPanel.transform, "-- BUY FROM FACTION --", 16, UIColors.Default.Ok).alignment = TextAlignmentOptions.Center;
+            var sellObj = UIPrimitiveFactory.CreateUIObject("SellList", _detailPanel.transform);
+            UIPrimitiveFactory.AddLayoutElement(sellObj.gameObject, preferredHeight: 120);
+            var sellVLG = sellObj.gameObject.AddComponent<VerticalLayoutGroup>();
             sellVLG.spacing = 3;
             sellVLG.childControlWidth = true;
             sellVLG.childControlHeight = false;
@@ -148,12 +116,10 @@ namespace HollowGround.UI
             sellVLG.childForceExpandHeight = false;
             _sellContainer = sellObj.transform;
 
-            AddText(_detailPanel.transform, "-- SELL TO FACTION --", 16, ColorGold).alignment = TextAlignmentOptions.Center;
-            var buyObj = new GameObject("BuyList", typeof(RectTransform));
-            buyObj.transform.SetParent(_detailPanel.transform, false);
-            var buyLE = buyObj.AddComponent<LayoutElement>();
-            buyLE.preferredHeight = 120;
-            var buyVLG = buyObj.AddComponent<VerticalLayoutGroup>();
+            UIPrimitiveFactory.AddThemedText(_detailPanel.transform, "-- SELL TO FACTION --", 16, UIColors.Default.Gold).alignment = TextAlignmentOptions.Center;
+            var buyObj = UIPrimitiveFactory.CreateUIObject("BuyList", _detailPanel.transform);
+            UIPrimitiveFactory.AddLayoutElement(buyObj.gameObject, preferredHeight: 120);
+            var buyVLG = buyObj.gameObject.AddComponent<VerticalLayoutGroup>();
             buyVLG.spacing = 3;
             buyVLG.childControlWidth = true;
             buyVLG.childControlHeight = false;
@@ -177,7 +143,7 @@ namespace HollowGround.UI
             var allFactions = UnityEngine.Resources.LoadAll<FactionData>("Factions");
             if (allFactions == null || allFactions.Length == 0)
             {
-                var empty = AddText(_factionList, "No factions found. Create FactionData SOs.", 15, ColorMuted);
+                var empty = UIPrimitiveFactory.AddThemedText(_factionList, "No factions found. Create FactionData SOs.", 15, UIColors.Default.Muted);
                 empty.alignment = TextAlignmentOptions.Center;
                 return;
             }
@@ -187,31 +153,21 @@ namespace HollowGround.UI
 
             foreach (var faction in _factions)
             {
-                var row = new GameObject($"Faction_{faction.name}", typeof(RectTransform));
-                row.transform.SetParent(_factionList, false);
-                var le = row.AddComponent<LayoutElement>();
-                le.preferredHeight = 50;
-                var rbg = row.AddComponent<Image>();
-                rbg.color = RowBg;
-                var hlg = row.AddComponent<HorizontalLayoutGroup>();
-                hlg.padding = new RectOffset(12, 12, 6, 6);
-                hlg.spacing = 10;
-                hlg.childAlignment = TextAnchor.MiddleLeft;
-                hlg.childControlWidth = true;
-                hlg.childControlHeight = true;
-                hlg.childForceExpandWidth = true;
-                hlg.childForceExpandHeight = false;
+                var row = UIPrimitiveFactory.CreateUIObject($"Faction_{faction.name}", _factionList);
+                UIPrimitiveFactory.AddLayoutElement(row.gameObject, preferredHeight: 50);
+                var rbg = row.gameObject.AddComponent<Image>();
+                rbg.color = UIColors.Default.RowBg;
+                var hlg = UIPrimitiveFactory.AddRowHLG(row.gameObject);
 
-                var nameT = AddText(row.transform, faction.DisplayName, 16, ColorText);
+                var nameT = UIPrimitiveFactory.AddThemedText(row, faction.DisplayName, 16, UIColors.Default.Text);
                 nameT.alignment = TextAlignmentOptions.MidlineLeft;
-                var nle = nameT.gameObject.AddComponent<LayoutElement>();
-                nle.preferredWidth = 140;
+                UIPrimitiveFactory.AddLayoutElement(nameT.gameObject, preferredWidth: 140);
 
-                var relColor = faction.CanTrade() ? ColorOk : ColorDanger;
-                var relT = AddText(row.transform, $"{faction.GetCurrentRelation()} ({faction.RelationPoints})", 14, relColor);
+                var relColor = faction.CanTrade() ? UIColors.Default.Ok : UIColors.Default.Danger;
+                var relT = UIPrimitiveFactory.AddThemedText(row, $"{faction.GetCurrentRelation()} ({faction.RelationPoints})", 14, relColor);
                 relT.alignment = TextAlignmentOptions.MidlineRight;
 
-                var btn = row.AddComponent<Button>();
+                var btn = row.gameObject.AddComponent<Button>();
                 btn.targetGraphic = rbg;
                 btn.interactable = faction.CanTrade();
                 var captured = faction;
@@ -244,42 +200,27 @@ namespace HollowGround.UI
 
         private void CreateOfferRow(Transform container, FactionData.TradeOffer offer, bool isBuy)
         {
-            var row = new GameObject("Offer", typeof(RectTransform));
-            row.transform.SetParent(container, false);
-            var le = row.AddComponent<LayoutElement>();
-            le.preferredHeight = 36;
-            var hlg = row.AddComponent<HorizontalLayoutGroup>();
-            hlg.padding = new RectOffset(8, 8, 4, 4);
-            hlg.spacing = 10;
-            hlg.childAlignment = TextAnchor.MiddleLeft;
-            hlg.childControlWidth = true;
-            hlg.childControlHeight = true;
-            hlg.childForceExpandWidth = true;
-            hlg.childForceExpandHeight = false;
+            var row = UIPrimitiveFactory.CreateUIObject("Offer", container);
+            UIPrimitiveFactory.AddLayoutElement(row.gameObject, preferredHeight: 36);
+            var hlg = UIPrimitiveFactory.AddRowHLG(row.gameObject, new RectOffset(8, 8, 4, 4));
 
-            var nameT = AddText(row.transform, $"{offer.Resource} x{offer.Amount}", 14, ColorText);
+            var nameT = UIPrimitiveFactory.AddThemedText(row, $"{offer.Resource} x{offer.Amount}", 14, UIColors.Default.Text);
             nameT.alignment = TextAlignmentOptions.MidlineLeft;
-            var nle = nameT.gameObject.AddComponent<LayoutElement>();
-            nle.preferredWidth = 140;
+            UIPrimitiveFactory.AddLayoutElement(nameT.gameObject, preferredWidth: 140);
 
-            var priceT = AddText(row.transform, $"{offer.Price} TechPart", 14, ColorGold);
+            var priceT = UIPrimitiveFactory.AddThemedText(row, $"{offer.Price} TechPart", 14, UIColors.Default.Gold);
             priceT.alignment = TextAlignmentOptions.MidlineLeft;
-            var ple = priceT.gameObject.AddComponent<LayoutElement>();
-            ple.preferredWidth = 100;
+            UIPrimitiveFactory.AddLayoutElement(priceT.gameObject, preferredWidth: 100);
 
-            var btnObj = new GameObject("Btn", typeof(RectTransform));
-            btnObj.transform.SetParent(row.transform, false);
-            var btnLE = btnObj.AddComponent<LayoutElement>();
-            btnLE.minWidth = 70;
-            btnLE.preferredWidth = 90;
-            btnLE.minHeight = 28;
-            var btnImg = btnObj.AddComponent<Image>();
-            btnImg.color = isBuy ? ColorOk : ColorGold;
-            var btn = btnObj.AddComponent<Button>();
+            var btnObj = UIPrimitiveFactory.CreateUIObject("Btn", row);
+            UIPrimitiveFactory.AddLayoutElement(btnObj.gameObject, minWidth: 70, preferredWidth: 90, minHeight: 28);
+            var btnImg = btnObj.gameObject.AddComponent<Image>();
+            btnImg.color = isBuy ? UIColors.Default.Ok : UIColors.Default.Gold;
+            var btn = btnObj.gameObject.AddComponent<Button>();
             btn.targetGraphic = btnImg;
-            var btnLabel = AddText(btnObj.transform, isBuy ? "BUY" : "SELL", 14, Color.black);
+            var btnLabel = UIPrimitiveFactory.AddThemedText(btnObj, isBuy ? "BUY" : "SELL", 14, Color.black);
             btnLabel.alignment = TextAlignmentOptions.Center;
-            StretchFull(btnLabel.rectTransform);
+            UIPrimitiveFactory.StretchFull(btnLabel.rectTransform);
 
             bool canAfford = isBuy
                 ? TradeSystem.Instance != null && TradeSystem.Instance.CanBuyFrom(_selectedFaction, offer)
@@ -295,14 +236,14 @@ namespace HollowGround.UI
                     if (TradeSystem.Instance != null && TradeSystem.Instance.BuyFrom(_selectedFaction, captured))
                         ShowTradePanel(_selectedFaction);
                     else
-                        ToastUI.Show("Trade failed!", ColorDanger);
+                        ToastUI.Show("Trade failed!", UIColors.Default.Danger);
                 }
                 else
                 {
                     if (TradeSystem.Instance != null && TradeSystem.Instance.SellTo(_selectedFaction, captured))
                         ShowTradePanel(_selectedFaction);
                     else
-                        ToastUI.Show("Trade failed!", ColorDanger);
+                        ToastUI.Show("Trade failed!", UIColors.Default.Danger);
                 }
             });
         }
@@ -312,27 +253,6 @@ namespace HollowGround.UI
             if (container == null) return;
             for (int i = container.childCount - 1; i >= 0; i--)
                 Destroy(container.GetChild(i).gameObject);
-        }
-
-        private static TMP_Text AddText(Transform parent, string text, float size, Color color)
-        {
-            var go = new GameObject("T", typeof(RectTransform));
-            go.transform.SetParent(parent, false);
-            var tmp = go.AddComponent<TextMeshProUGUI>();
-            tmp.text = text;
-            tmp.fontSize = size;
-            tmp.alignment = TextAlignmentOptions.MidlineLeft;
-            tmp.color = color;
-            tmp.raycastTarget = false;
-            return tmp;
-        }
-
-        private static void StretchFull(RectTransform rt)
-        {
-            rt.anchorMin = Vector2.zero;
-            rt.anchorMax = Vector2.one;
-            rt.offsetMin = Vector2.zero;
-            rt.offsetMax = Vector2.zero;
         }
     }
 }

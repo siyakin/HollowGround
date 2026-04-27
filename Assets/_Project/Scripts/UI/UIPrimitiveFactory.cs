@@ -70,19 +70,19 @@ namespace HollowGround.UI
             rt.localScale = Vector3.one;
 
             var img = go.AddComponent<Image>();
-            img.color = bgColor ?? new Color(0.25f, 0.27f, 0.32f, 1f);
+            img.color = bgColor ?? UIColors.Default.RowBg;
 
             var btn = go.AddComponent<Button>();
             btn.targetGraphic = img;
 
             var colors = btn.colors;
             colors.normalColor = Color.white;
-            colors.highlightedColor = new Color(1.15f, 1.15f, 1.15f, 1f);
-            colors.pressedColor = new Color(0.8f, 0.8f, 0.8f, 1f);
+            colors.highlightedColor = new Color(1.1f, 1.1f, 1.1f, 1f);
+            colors.pressedColor = new Color(0.85f, 0.85f, 0.85f, 1f);
             colors.disabledColor = new Color(0.5f, 0.5f, 0.5f, 0.5f);
             btn.colors = colors;
 
-            var lbl = AddThemedText(go.transform, label, 16, new Color(0.95f, 0.95f, 0.95f, 1f),
+            var lbl = AddThemedText(go.transform, label, 16, UIColors.Default.Text,
                 TextAlignmentOptions.Center);
             StretchFull(lbl.rectTransform);
 

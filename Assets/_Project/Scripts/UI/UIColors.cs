@@ -1,3 +1,4 @@
+using HollowGround.Buildings;
 using HollowGround.Heroes;
 using HollowGround.World;
 using UnityEngine;
@@ -57,6 +58,19 @@ namespace HollowGround.UI
                 MapNodeType.RadioactiveZone => new Color(0.75f, 0.3f, 0.85f, 1f),
                 MapNodeType.BossArea => new Color(0.95f, 0.5f, 0.1f, 1f),
                 _ => new Color(0.28f, 0.28f, 0.3f, 1f)
+            };
+        }
+
+        public static Color GetStateColor(BuildingState state)
+        {
+            return state switch
+            {
+                BuildingState.Damaged => new Color(0.9f, 0.3f, 0.2f),
+                BuildingState.Destroyed => new Color(0.6f, 0.1f, 0.1f),
+                BuildingState.Constructing => new Color(0.9f, 0.7f, 0.2f),
+                BuildingState.Upgrading => new Color(0.3f, 0.7f, 0.9f),
+                BuildingState.Active => Default.Ok,
+                _ => Default.Text
             };
         }
 

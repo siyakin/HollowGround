@@ -115,7 +115,7 @@ namespace HollowGround.Combat
             else
             {
                 ApplyPenalties(wave);
-                ApplyTroopLosses(0.6f);
+                ApplyTroopLosses(GameConfig.Instance != null ? GameConfig.Instance.DefeatTroopLossRatio : 0.6f);
                 damagedCount = ApplyBuildingDamage();
             }
 
@@ -148,7 +148,8 @@ namespace HollowGround.Combat
             if (BuildingManager.Instance != null)
             {
                 int walls = BuildingManager.Instance.GetBuildingCount(BuildingType.Walls);
-                power += walls * 20;
+                int wallBonus = GameConfig.Instance != null ? GameConfig.Instance.WallDefenseBonus : 20;
+                power += walls * wallBonus;
             }
 
             float defenseBonus = 0f;

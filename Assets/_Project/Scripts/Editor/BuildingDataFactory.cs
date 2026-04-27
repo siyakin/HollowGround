@@ -17,70 +17,56 @@ namespace HollowGround.Editor
         [MenuItem("Assets/Create/HollowGround/BuildingData/Farm")]
         public static void CreateFarm() => CreateBuildingData("Farm", BuildingType.Farm, BuildingCategory.Resource,
             2, 2, true, ResourceType.Food, 10, 300f,
-            Costs(ResourceType.Wood, 50, ResourceType.Metal, 30));
+            CostEntryHelper.Costs(ResourceType.Wood, 50, ResourceType.Metal, 30));
 
         [MenuItem("Assets/Create/HollowGround/BuildingData/Wood Factory")]
         public static void CreateWoodFactory() => CreateBuildingData("WoodFactory", BuildingType.WoodFactory, BuildingCategory.Resource,
             2, 2, true, ResourceType.Wood, 12, 300f,
-            Costs(ResourceType.Metal, 40));
+            CostEntryHelper.Costs(ResourceType.Metal, 40));
 
         [MenuItem("Assets/Create/HollowGround/BuildingData/Mine")]
         public static void CreateMine() => CreateBuildingData("Mine", BuildingType.Mine, BuildingCategory.Resource,
             2, 2, true, ResourceType.Metal, 8, 300f,
-            Costs(ResourceType.Wood, 50));
+            CostEntryHelper.Costs(ResourceType.Wood, 50));
 
         [MenuItem("Assets/Create/HollowGround/BuildingData/Water Well")]
         public static void CreateWaterWell() => CreateBuildingData("WaterWell", BuildingType.WaterWell, BuildingCategory.Resource,
             1, 1, true, ResourceType.Water, 8, 300f,
-            Costs(ResourceType.Metal, 30));
+            CostEntryHelper.Costs(ResourceType.Metal, 30));
 
         [MenuItem("Assets/Create/HollowGround/BuildingData/Barracks")]
         public static void CreateBarracks() => CreateBuildingData("Barracks", BuildingType.Barracks, BuildingCategory.Military,
             2, 2, false, ResourceType.Wood, 0, 0f,
-            Costs(ResourceType.Food, 80, ResourceType.Metal, 60));
+            CostEntryHelper.Costs(ResourceType.Food, 80, ResourceType.Metal, 60));
 
         [MenuItem("Assets/Create/HollowGround/BuildingData/Shelter")]
         public static void CreateShelter() => CreateBuildingData("Shelter", BuildingType.Shelter, BuildingCategory.Social,
             2, 2, false, ResourceType.Wood, 0, 0f,
-            Costs(ResourceType.Wood, 50, ResourceType.Metal, 30),
+            CostEntryHelper.Costs(ResourceType.Wood, 50, ResourceType.Metal, 30),
             populationCapacity: 10);
 
         [MenuItem("Assets/Create/HollowGround/BuildingData/Storage")]
         public static void CreateStorage() => CreateBuildingData("Storage", BuildingType.Storage, BuildingCategory.Resource,
             2, 2, false, ResourceType.Wood, 0, 0f,
-            Costs(ResourceType.Metal, 60),
+            CostEntryHelper.Costs(ResourceType.Metal, 60),
             storageCapacity: 500);
 
         [MenuItem("Assets/Create/HollowGround/BuildingData/Generator")]
         public static void CreateGenerator() => CreateBuildingData("Generator", BuildingType.Generator, BuildingCategory.Resource,
             2, 2, true, ResourceType.Energy, 5, 300f,
-            Costs(ResourceType.Metal, 80, ResourceType.TechPart, 10));
+            CostEntryHelper.Costs(ResourceType.Metal, 80, ResourceType.TechPart, 10));
 
         [MenuItem("Assets/Create/HollowGround/BuildingData/Workshop")]
         public static void CreateWorkshop() => CreateBuildingData("Workshop", BuildingType.Workshop, BuildingCategory.Military,
             2, 2, false, ResourceType.Wood, 0, 0f,
-            Costs(ResourceType.Metal, 100, ResourceType.TechPart, 20),
+            CostEntryHelper.Costs(ResourceType.Metal, 100, ResourceType.TechPart, 20),
             commandCenterLevelRequired: 2);
 
         [MenuItem("Assets/Create/HollowGround/BuildingData/Research Lab")]
         public static void CreateResearchLab() => CreateBuildingData("ResearchLab", BuildingType.ResearchLab, BuildingCategory.Special,
             2, 2, false, ResourceType.Wood, 0, 0f,
-            Costs(ResourceType.Metal, 120, ResourceType.Food, 30),
+            CostEntryHelper.Costs(ResourceType.Metal, 120, ResourceType.Food, 30),
             commandCenterLevelRequired: 3);
-
-        private static List<BuildingData.CostEntry> Costs(params object[] pairs)
-        {
-            var list = new List<BuildingData.CostEntry>();
-            for (int i = 0; i < pairs.Length - 1; i += 2)
-            {
-                list.Add(new BuildingData.CostEntry
-                {
-                    Type = (ResourceType)pairs[i],
-                    Amount = (int)pairs[i + 1]
-                });
-            }
-            return list;
-        }
 
         private static void CreateBuildingData(
             string name,

@@ -17,6 +17,10 @@ namespace HollowGround.Editor
 
             var config = ScriptableObject.CreateInstance<GameConfig>();
             config.DevMode = false;
+            config.DemolishRefundRatio = 0.5f;
+            config.RepairCostRatio = 0.5f;
+            config.WallDefenseBonus = 20;
+            config.DefeatTroopLossRatio = 0.6f;
             config.BuildTimeMultiplier = 0.1f;
             config.ProductionIntervalMultiplier = 0.1f;
             config.TrainingTimeMultiplier = 0.1f;

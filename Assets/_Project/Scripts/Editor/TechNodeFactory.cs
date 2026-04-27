@@ -21,56 +21,48 @@ namespace HollowGround.Editor
                 AssetDatabase.CreateFolder("Assets/_Project/Resources", "TechNodes");
 
             Create("BasicConstruction", "Basic Construction", "Reduces construction time and enables advanced structures.",
-                TechCategory.Construction, 60, Costs(ResourceType.Metal, 50, ResourceType.TechPart, 5),
+                TechCategory.Construction, 60, CostEntryHelper.Costs(ResourceType.Metal, 50, ResourceType.TechPart, 5),
                 productionBonus: 0.1f);
 
             Create("AdvancedConstruction", "Advanced Construction", "Stronger structures and defensive walls.",
-                TechCategory.Construction, 120, Costs(ResourceType.Metal, 150, ResourceType.TechPart, 15),
+                TechCategory.Construction, 120, CostEntryHelper.Costs(ResourceType.Metal, 150, ResourceType.TechPart, 15),
                 productionBonus: 0.15f, defenseBonus: 0.1f, prereq: "BasicConstruction");
 
             Create("BasicAgriculture", "Basic Agriculture", "Improved farming increases food production.",
-                TechCategory.Agriculture, 60, Costs(ResourceType.Wood, 40, ResourceType.TechPart, 5),
+                TechCategory.Agriculture, 60, CostEntryHelper.Costs(ResourceType.Wood, 40, ResourceType.TechPart, 5),
                 productionBonus: 0.15f);
 
             Create("EfficientFarming", "Efficient Farming", "Advanced irrigation doubles food output.",
-                TechCategory.Agriculture, 120, Costs(ResourceType.Food, 100, ResourceType.TechPart, 20),
+                TechCategory.Agriculture, 120, CostEntryHelper.Costs(ResourceType.Food, 100, ResourceType.TechPart, 20),
                 productionBonus: 0.25f, prereq: "BasicAgriculture");
 
             Create("BasicWeapons", "Basic Weapons", "Basic weapon modifications for troops.",
-                TechCategory.Military, 60, Costs(ResourceType.Metal, 60, ResourceType.TechPart, 10),
+                TechCategory.Military, 60, CostEntryHelper.Costs(ResourceType.Metal, 60, ResourceType.TechPart, 10),
                 trainingSpeedBonus: 0.1f);
 
             Create("AdvancedWeapons", "Advanced Weapons", "Powerful upgrades and faster training.",
-                TechCategory.Military, 120, Costs(ResourceType.Metal, 200, ResourceType.TechPart, 25),
+                TechCategory.Military, 120, CostEntryHelper.Costs(ResourceType.Metal, 200, ResourceType.TechPart, 25),
                 trainingSpeedBonus: 0.2f, defenseBonus: 0.1f, prereq: "BasicWeapons");
 
             Create("BasicMedicine", "Basic Medicine", "Troops recover faster, reduced casualties.",
-                TechCategory.Medicine, 60, Costs(ResourceType.Food, 50, ResourceType.TechPart, 8),
+                TechCategory.Medicine, 60, CostEntryHelper.Costs(ResourceType.Food, 50, ResourceType.TechPart, 8),
                 trainingSpeedBonus: 0.05f);
 
             Create("RadiationTreatment", "Radiation Treatment", "Anti-radiation drugs for exploration.",
-                TechCategory.Medicine, 120, Costs(ResourceType.TechPart, 30, ResourceType.Food, 80),
+                TechCategory.Medicine, 120, CostEntryHelper.Costs(ResourceType.TechPart, 30, ResourceType.Food, 80),
                 expeditionSpeedBonus: 0.15f, prereq: "BasicMedicine");
 
             Create("BasicExploration", "Basic Exploration", "Scout training speeds up expeditions.",
-                TechCategory.Exploration, 60, Costs(ResourceType.Wood, 30, ResourceType.TechPart, 5),
+                TechCategory.Exploration, 60, CostEntryHelper.Costs(ResourceType.Wood, 30, ResourceType.TechPart, 5),
                 expeditionSpeedBonus: 0.2f);
 
             Create("RadioactiveCrossing", "Radioactive Crossing", "Safe travel through irradiated areas.",
-                TechCategory.Exploration, 120, Costs(ResourceType.TechPart, 40, ResourceType.Metal, 100),
+                TechCategory.Exploration, 120, CostEntryHelper.Costs(ResourceType.TechPart, 40, ResourceType.Metal, 100),
                 expeditionSpeedBonus: 0.3f, prereq: "BasicExploration");
 
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
             Debug.Log("[TechNodeFactory] 10 TechNode SOs created in " + Folder);
-        }
-
-        private static List<BuildingData.CostEntry> Costs(params object[] pairs)
-        {
-            var list = new List<BuildingData.CostEntry>();
-            for (int i = 0; i < pairs.Length - 1; i += 2)
-                list.Add(new BuildingData.CostEntry { Type = (ResourceType)pairs[i], Amount = (int)pairs[i + 1] });
-            return list;
         }
 
         private static void Create(string fileName, string displayName, string desc,

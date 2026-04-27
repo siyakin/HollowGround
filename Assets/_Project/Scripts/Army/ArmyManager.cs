@@ -10,6 +10,8 @@ namespace HollowGround.Army
 
         private readonly Dictionary<TroopType, int> _troops = new();
         private readonly List<TrainingQueueEntry> _trainingQueue = new();
+        private TroopData[] _cachedTroopData;
+        private TroopData[] AllTroopData => _cachedTroopData ??= UnityEngine.Resources.LoadAll<TroopData>("Troops");
 
         public int TotalTroopCount { get; private set; }
         public int TotalArmyPower { get; private set; }
@@ -160,9 +162,14 @@ namespace HollowGround.Army
         public int CalculateArmyPower()
         {
             int power = 0;
+            var dataMap = new Dictionary<TroopType, int>();
+            foreach (var td in AllTroopData)
+                dataMap[td.Type] = td.BaseAttack;
+
             foreach (var kvp in _troops)
             {
-                power += kvp.Value * 10;
+                int atk = dataMap.TryGetValue(kvp.Key, out int v) ? v : 10;
+                power += kvp.Value * atk;
             }
             power = Mathf.CeilToInt(power * Morale);
             TotalArmyPower = power;

@@ -43,7 +43,7 @@ namespace HollowGround.UI
         {
             if (HollowGround.Core.SaveSystem.Instance == null) return;
             HollowGround.Core.SaveSystem.Instance.QuickSave();
-            ToastUI.Show("Quick saved!", Color.green);
+            ToastUI.Show("Quick saved!", UIColors.Default.Ok);
         }
 
         private void QuickLoad()
@@ -52,11 +52,11 @@ namespace HollowGround.UI
             if (HollowGround.Core.SaveSystem.Instance.HasSave("quicksave"))
             {
                 HollowGround.Core.SaveSystem.Instance.Load("quicksave");
-                ToastUI.Show("Quick loaded!", Color.cyan);
+                ToastUI.Show("Quick loaded!", UIColors.Default.Ok);
             }
             else
             {
-                ToastUI.Show("No quicksave found!", Color.yellow);
+                ToastUI.Show("No quicksave found!", UIColors.Default.Warn);
             }
         }
 

@@ -10,17 +10,11 @@ namespace HollowGround.UI
 {
     public class TechTreeUI : MonoBehaviour
     {
-        private static readonly Color ColorPanelBg = new(0.08f, 0.09f, 0.11f, 0.92f);
-        private static readonly Color ColorPanelInner = new(0.14f, 0.15f, 0.17f, 1f);
         private static readonly Color ColorColumnBg = new(0.11f, 0.12f, 0.14f, 1f);
         private static readonly Color ColorCardLocked = new(0.18f, 0.18f, 0.2f, 1f);
         private static readonly Color ColorCardAvailable = new(0.22f, 0.3f, 0.4f, 1f);
         private static readonly Color ColorCardResearching = new(0.45f, 0.35f, 0.15f, 1f);
         private static readonly Color ColorCardCompleted = new(0.2f, 0.45f, 0.22f, 1f);
-        private static readonly Color ColorTextPrimary = new(0.95f, 0.95f, 0.95f, 1f);
-        private static readonly Color ColorTextMuted = new(0.65f, 0.65f, 0.7f, 1f);
-        private static readonly Color ColorTextDim = new(0.45f, 0.45f, 0.48f, 1f);
-        private static readonly Color ColorOk = new(0.35f, 0.8f, 0.4f, 1f);
 
         private readonly Dictionary<TechCategory, Color> _categoryColors = new()
         {
@@ -30,25 +24,6 @@ namespace HollowGround.UI
             { TechCategory.Medicine,     new Color(0.3f, 0.7f, 0.75f) },
             { TechCategory.Exploration,  new Color(0.75f, 0.55f, 0.2f) },
         };
-
-        private TMP_FontAsset _themeFont;
-
-        private TMP_FontAsset ThemeFont
-        {
-            get
-            {
-                if (_themeFont != null) return _themeFont;
-#if UNITY_EDITOR
-                var theme = UnityEditor.AssetDatabase.LoadAssetAtPath<UIThemeSO>("Assets/_Project/ScriptableObjects/UITheme.asset");
-#else
-                var theme = UnityEngine.Resources.LoadAll<UIThemeSO>("").Length > 0
-                    ? UnityEngine.Resources.LoadAll<UIThemeSO>("")[0] : null;
-#endif
-                if (theme != null && theme.defaultFont != null)
-                    _themeFont = theme.defaultFont;
-                return _themeFont;
-            }
-        }
 
         private RectTransform _root;
         private RectTransform _columnsContainer;
@@ -118,8 +93,6 @@ namespace HollowGround.UI
             _allTechs = UnityEngine.Resources.LoadAll<TechNode>("TechNodes").ToList();
         }
 
-        // === PART 2: BuildUI ===
-
         private void BuildUI()
         {
             _root = GetComponent<RectTransform>();
@@ -129,15 +102,14 @@ namespace HollowGround.UI
                 return;
             }
 
-            _root.offsetMin = new Vector2(0f, 60f);
-            _root.offsetMax = new Vector2(0f, 0f);
+            UIPrimitiveFactory.StretchFull(_root, new Vector2(0f, 60f), Vector2.zero);
 
             foreach (Transform child in _root)
                 Destroy(child.gameObject);
 
-            var bg = CreateUIObject("Background", _root);
-            StretchFull(bg);
-            AddImage(bg, ColorPanelBg);
+            var bg = UIPrimitiveFactory.CreateUIObject("Background", _root);
+            UIPrimitiveFactory.StretchFull(bg);
+            UIPrimitiveFactory.AddImage(bg, UIColors.Default.PanelBg);
 
             var cg = gameObject.GetComponent<CanvasGroup>();
             if (cg == null) cg = gameObject.AddComponent<CanvasGroup>();
@@ -145,15 +117,15 @@ namespace HollowGround.UI
             cg.blocksRaycasts = true;
             cg.alpha = 1f;
 
-            var header = CreateUIObject("Header", _root);
-            SetAnchors(header, new Vector2(0, 1), new Vector2(1, 1), new Vector2(0.5f, 1));
+            var header = UIPrimitiveFactory.CreateUIObject("Header", _root);
+            UIPrimitiveFactory.SetAnchors(header, new Vector2(0, 1), new Vector2(1, 1), new Vector2(0.5f, 1));
             header.anchoredPosition = new Vector2(0, -30);
             header.sizeDelta = new Vector2(-40, 50);
-            var titleLabel = AddThemedText(header, "TECHNOLOGY TREE", 28, TextAlignmentOptions.Center, ColorTextPrimary);
-            StretchFull(titleLabel.rectTransform);
+            var titleLabel = UIPrimitiveFactory.AddThemedText(header, "TECHNOLOGY TREE", 28, UIColors.Default.Text, TextAlignmentOptions.Center);
+            UIPrimitiveFactory.StretchFull(titleLabel.rectTransform);
 
-            _columnsContainer = CreateUIObject("Columns", _root);
-            SetAnchors(_columnsContainer, new Vector2(0, 0), new Vector2(1, 1), new Vector2(0.5f, 0.5f));
+            _columnsContainer = UIPrimitiveFactory.CreateUIObject("Columns", _root);
+            UIPrimitiveFactory.SetAnchors(_columnsContainer, new Vector2(0, 0), new Vector2(1, 1), new Vector2(0.5f, 0.5f));
             _columnsContainer.offsetMin = new Vector2(40, 30);
             _columnsContainer.offsetMax = new Vector2(-420, -80);
             var hlg = _columnsContainer.gameObject.AddComponent<HorizontalLayoutGroup>();
@@ -164,11 +136,11 @@ namespace HollowGround.UI
             hlg.childForceExpandWidth = true;
             hlg.childForceExpandHeight = true;
 
-            _detailPanel = CreateUIObject("DetailPanel", _root);
-            SetAnchors(_detailPanel, new Vector2(1, 0), new Vector2(1, 1), new Vector2(1, 0.5f));
+            _detailPanel = UIPrimitiveFactory.CreateUIObject("DetailPanel", _root);
+            UIPrimitiveFactory.SetAnchors(_detailPanel, new Vector2(1, 0), new Vector2(1, 1), new Vector2(1, 0.5f));
             _detailPanel.offsetMin = new Vector2(-400, 30);
             _detailPanel.offsetMax = new Vector2(-20, -80);
-            AddImage(_detailPanel, ColorPanelInner);
+            UIPrimitiveFactory.AddImage(_detailPanel, UIColors.PanelInner);
             BuildDetailPanel();
 
             _built = true;
@@ -183,8 +155,8 @@ namespace HollowGround.UI
 
             foreach (TechCategory category in System.Enum.GetValues(typeof(TechCategory)))
             {
-                var column = CreateUIObject($"Col_{category}", _columnsContainer);
-                AddImage(column, ColorColumnBg);
+                var column = UIPrimitiveFactory.CreateUIObject($"Col_{category}", _columnsContainer);
+                UIPrimitiveFactory.AddImage(column, ColorColumnBg);
 
                 var vlg = column.gameObject.AddComponent<VerticalLayoutGroup>();
                 vlg.spacing = 6;
@@ -195,14 +167,12 @@ namespace HollowGround.UI
                 vlg.childForceExpandWidth = true;
                 vlg.childForceExpandHeight = false;
 
-                var header = CreateUIObject("Header", column);
-                var headerLE = header.gameObject.AddComponent<LayoutElement>();
-                headerLE.minHeight = 32;
-                headerLE.preferredHeight = 32;
+                var colHeader = UIPrimitiveFactory.CreateUIObject("Header", column);
+                UIPrimitiveFactory.AddLayoutElement(colHeader.gameObject, minHeight: 32, preferredHeight: 32);
                 Color catColor = _categoryColors.TryGetValue(category, out var cc) ? cc : Color.gray;
-                AddImage(header, catColor);
-                var headerText = AddThemedText(header, category.ToString().ToUpper(), 16, TextAlignmentOptions.Center, Color.white);
-                StretchFull(headerText.rectTransform);
+                UIPrimitiveFactory.AddImage(colHeader, catColor);
+                var headerText = UIPrimitiveFactory.AddThemedText(colHeader, category.ToString().ToUpper(), 16, Color.white, TextAlignmentOptions.Center);
+                UIPrimitiveFactory.StretchFull(headerText.rectTransform);
 
                 var techsInCat = _allTechs
                     .Where(t => t.Category == category)
@@ -217,40 +187,38 @@ namespace HollowGround.UI
 
         private void BuildCard(RectTransform parent, TechNode tech)
         {
-            var card = CreateUIObject($"Card_{tech.name}", parent);
-            var le = card.gameObject.AddComponent<LayoutElement>();
-            le.minHeight = 80;
-            le.preferredHeight = 80;
+            var card = UIPrimitiveFactory.CreateUIObject($"Card_{tech.name}", parent);
+            UIPrimitiveFactory.AddLayoutElement(card.gameObject, minHeight: 80, preferredHeight: 80);
 
-            var bg = AddImage(card, ColorCardLocked);
+            var bg = UIPrimitiveFactory.AddImage(card, ColorCardLocked);
 
             var btn = card.gameObject.AddComponent<Button>();
             btn.targetGraphic = bg;
             btn.onClick.AddListener(() => SelectTech(tech));
 
-            var nameText = AddThemedText(card, tech.DisplayName, 15, TextAlignmentOptions.TopLeft, ColorTextPrimary);
+            var nameText = UIPrimitiveFactory.AddThemedText(card, tech.DisplayName, 15, UIColors.Default.Text, TextAlignmentOptions.TopLeft);
             var nameRt = nameText.rectTransform;
-            SetAnchors(nameRt, new Vector2(0, 1), new Vector2(1, 1), new Vector2(0.5f, 1));
+            UIPrimitiveFactory.SetAnchors(nameRt, new Vector2(0, 1), new Vector2(1, 1), new Vector2(0.5f, 1));
             nameRt.anchoredPosition = new Vector2(0, -4);
             nameRt.sizeDelta = new Vector2(-12, 22);
 
-            var statusText = AddThemedText(card, "", 13, TextAlignmentOptions.MidlineLeft, ColorTextMuted);
+            var statusText = UIPrimitiveFactory.AddThemedText(card, "", 13, UIColors.Default.Muted, TextAlignmentOptions.MidlineLeft);
             var statusRt = statusText.rectTransform;
-            SetAnchors(statusRt, new Vector2(0, 0.5f), new Vector2(1, 0.5f), new Vector2(0.5f, 0.5f));
+            UIPrimitiveFactory.SetAnchors(statusRt, new Vector2(0, 0.5f), new Vector2(1, 0.5f), new Vector2(0.5f, 0.5f));
             statusRt.anchoredPosition = new Vector2(0, -2);
             statusRt.sizeDelta = new Vector2(-12, 18);
 
-            var progressBar = CreateUIObject("ProgressBar", card);
-            SetAnchors(progressBar, new Vector2(0, 0), new Vector2(1, 0), new Vector2(0.5f, 0));
+            var progressBar = UIPrimitiveFactory.CreateUIObject("ProgressBar", card);
+            UIPrimitiveFactory.SetAnchors(progressBar, new Vector2(0, 0), new Vector2(1, 0), new Vector2(0.5f, 0));
             progressBar.anchoredPosition = new Vector2(0, 8);
             progressBar.sizeDelta = new Vector2(-12, 6);
-            AddImage(progressBar, new Color(0, 0, 0, 0.4f));
+            UIPrimitiveFactory.AddImage(progressBar, new Color(0, 0, 0, 0.4f));
 
-            var progressFillContainer = CreateUIObject("Fill", progressBar);
-            SetAnchors(progressFillContainer, new Vector2(0, 0), new Vector2(0, 1), new Vector2(0, 0.5f));
+            var progressFillContainer = UIPrimitiveFactory.CreateUIObject("Fill", progressBar);
+            UIPrimitiveFactory.SetAnchors(progressFillContainer, new Vector2(0, 0), new Vector2(0, 1), new Vector2(0, 0.5f));
             progressFillContainer.anchoredPosition = Vector2.zero;
             progressFillContainer.sizeDelta = new Vector2(0, 0);
-            var fillImg = AddImage(progressFillContainer, ColorOk);
+            var fillImg = UIPrimitiveFactory.AddImage(progressFillContainer, UIColors.Default.Ok);
 
             _cards[tech] = new TechCardView
             {
@@ -266,53 +234,51 @@ namespace HollowGround.UI
 
         private void BuildDetailPanel()
         {
-            _detailName = AddThemedText(_detailPanel, "Select a technology", 22, TextAlignmentOptions.TopLeft, ColorTextPrimary);
+            _detailName = UIPrimitiveFactory.AddThemedText(_detailPanel, "Select a technology", 22, UIColors.Default.Text, TextAlignmentOptions.TopLeft);
             var nameRt = _detailName.rectTransform;
-            SetAnchors(nameRt, new Vector2(0, 1), new Vector2(1, 1), new Vector2(0.5f, 1));
+            UIPrimitiveFactory.SetAnchors(nameRt, new Vector2(0, 1), new Vector2(1, 1), new Vector2(0.5f, 1));
             nameRt.anchoredPosition = new Vector2(0, -15);
             nameRt.sizeDelta = new Vector2(-24, 30);
 
-            _detailCategory = AddThemedText(_detailPanel, "", 14, TextAlignmentOptions.TopLeft, ColorTextMuted);
+            _detailCategory = UIPrimitiveFactory.AddThemedText(_detailPanel, "", 14, UIColors.Default.Muted, TextAlignmentOptions.TopLeft);
             var catRt = _detailCategory.rectTransform;
-            SetAnchors(catRt, new Vector2(0, 1), new Vector2(1, 1), new Vector2(0.5f, 1));
+            UIPrimitiveFactory.SetAnchors(catRt, new Vector2(0, 1), new Vector2(1, 1), new Vector2(0.5f, 1));
             catRt.anchoredPosition = new Vector2(0, -48);
             catRt.sizeDelta = new Vector2(-24, 20);
 
-            _detailDesc = AddThemedText(_detailPanel, "", 15, TextAlignmentOptions.TopLeft, ColorTextPrimary);
+            _detailDesc = UIPrimitiveFactory.AddThemedText(_detailPanel, "", 15, UIColors.Default.Text, TextAlignmentOptions.TopLeft);
             var descRt = _detailDesc.rectTransform;
-            SetAnchors(descRt, new Vector2(0, 1), new Vector2(1, 1), new Vector2(0.5f, 1));
+            UIPrimitiveFactory.SetAnchors(descRt, new Vector2(0, 1), new Vector2(1, 1), new Vector2(0.5f, 1));
             descRt.anchoredPosition = new Vector2(0, -78);
             descRt.sizeDelta = new Vector2(-24, 60);
 
-            _detailCost = AddThemedText(_detailPanel, "", 15, TextAlignmentOptions.TopLeft, ColorTextMuted);
+            _detailCost = UIPrimitiveFactory.AddThemedText(_detailPanel, "", 15, UIColors.Default.Muted, TextAlignmentOptions.TopLeft);
             var costRt = _detailCost.rectTransform;
-            SetAnchors(costRt, new Vector2(0, 1), new Vector2(1, 1), new Vector2(0.5f, 1));
+            UIPrimitiveFactory.SetAnchors(costRt, new Vector2(0, 1), new Vector2(1, 1), new Vector2(0.5f, 1));
             costRt.anchoredPosition = new Vector2(0, -150);
             costRt.sizeDelta = new Vector2(-24, 80);
 
-            _detailResearchBtn = CreateButton(_detailPanel, "ResearchBtn", "START RESEARCH", StartResearchFromDetail);
+            _detailResearchBtn = UIPrimitiveFactory.CreateButton(_detailPanel, "ResearchBtn", "START RESEARCH", StartResearchFromDetail);
             var btnRt = _detailResearchBtn.GetComponent<RectTransform>();
-            SetAnchors(btnRt, new Vector2(0, 1), new Vector2(1, 1), new Vector2(0.5f, 1));
+            UIPrimitiveFactory.SetAnchors(btnRt, new Vector2(0, 1), new Vector2(1, 1), new Vector2(0.5f, 1));
             btnRt.anchoredPosition = new Vector2(0, -250);
             btnRt.sizeDelta = new Vector2(-24, 50);
             _detailResearchBtnText = _detailResearchBtn.GetComponentInChildren<TextMeshProUGUI>();
             var confirmImg = _detailResearchBtn.GetComponent<Image>();
-            if (confirmImg != null) confirmImg.color = ColorOk;
+            if (confirmImg != null) confirmImg.color = UIColors.Default.Ok;
 
-            _detailBonuses = AddThemedText(_detailPanel, "", 15, TextAlignmentOptions.TopLeft, ColorTextPrimary);
+            _detailBonuses = UIPrimitiveFactory.AddThemedText(_detailPanel, "", 15, UIColors.Default.Text, TextAlignmentOptions.TopLeft);
             var bonRt = _detailBonuses.rectTransform;
-            SetAnchors(bonRt, new Vector2(0, 1), new Vector2(1, 1), new Vector2(0.5f, 1));
+            UIPrimitiveFactory.SetAnchors(bonRt, new Vector2(0, 1), new Vector2(1, 1), new Vector2(0.5f, 1));
             bonRt.anchoredPosition = new Vector2(0, -310);
             bonRt.sizeDelta = new Vector2(-24, 100);
 
-            _detailPrereqs = AddThemedText(_detailPanel, "", 14, TextAlignmentOptions.TopLeft, ColorTextDim);
+            _detailPrereqs = UIPrimitiveFactory.AddThemedText(_detailPanel, "", 14, UIColors.TextDim, TextAlignmentOptions.TopLeft);
             var prereqRt = _detailPrereqs.rectTransform;
-            SetAnchors(prereqRt, new Vector2(0, 1), new Vector2(1, 1), new Vector2(0.5f, 1));
+            UIPrimitiveFactory.SetAnchors(prereqRt, new Vector2(0, 1), new Vector2(1, 1), new Vector2(0.5f, 1));
             prereqRt.anchoredPosition = new Vector2(0, -420);
             prereqRt.sizeDelta = new Vector2(-24, 60);
         }
-
-        // === PART 3: Refresh + Card ===
 
         private void RefreshAll()
         {
@@ -345,7 +311,7 @@ namespace HollowGround.UI
 
             if (view.Background != null) view.Background.color = bg;
             if (view.NameText != null)
-                view.NameText.color = (isResearched || isResearching || canStart) ? ColorTextPrimary : ColorTextDim;
+                view.NameText.color = (isResearched || isResearching || canStart) ? UIColors.Default.Text : UIColors.TextDim;
             if (view.StatusText != null) view.StatusText.text = status;
 
             if (view.ProgressBar != null)
@@ -433,7 +399,7 @@ namespace HollowGround.UI
             _detailResearchBtn.interactable = canStart;
             var btnImg = _detailResearchBtn.GetComponent<Image>();
             if (btnImg != null)
-                btnImg.color = canStart ? ColorOk : new Color(0.3f, 0.3f, 0.32f, 1f);
+                btnImg.color = canStart ? UIColors.Default.Ok : new Color(0.3f, 0.3f, 0.32f, 1f);
 
             if (_detailResearchBtnText != null)
             {
@@ -450,126 +416,25 @@ namespace HollowGround.UI
             if (_selectedTech == null) return;
             if (ResearchManager.Instance == null)
             {
-                ToastUI.Show("Research system not available!");
+                ToastUI.Show("Research system not available!", UIColors.Default.Warn);
                 return;
             }
 
             if (ResearchManager.Instance.IsResearching)
             {
-                ToastUI.Show("Another research is already in progress!");
+                ToastUI.Show("Another research is already in progress!", UIColors.Default.Warn);
                 return;
             }
 
             if (ResearchManager.Instance.StartResearch(_selectedTech))
             {
-                ToastUI.Show($"Research started: {_selectedTech.DisplayName}");
+                ToastUI.Show($"Research started: {_selectedTech.DisplayName}", UIColors.Default.Ok);
                 RefreshAll();
             }
             else
             {
-                ToastUI.Show("Cannot start research!");
+                ToastUI.Show("Cannot start research!", UIColors.Default.Danger);
             }
-        }
-
-        // === PART 4: UI primitives ===
-
-        private static RectTransform CreateUIObject(string name, Transform parent)
-        {
-            var go = new GameObject(name, typeof(RectTransform));
-            go.transform.SetParent(parent, false);
-            var rt = go.GetComponent<RectTransform>();
-            rt.anchoredPosition = Vector2.zero;
-            rt.localScale = Vector3.one;
-            return rt;
-        }
-
-        private static Image AddImage(RectTransform rt, Color color)
-        {
-            var img = rt.gameObject.AddComponent<Image>();
-            img.color = color;
-            img.raycastTarget = true;
-            return img;
-        }
-
-        private static TMP_Text AddText(RectTransform parent, string text, float fontSize,
-            TextAlignmentOptions alignment, Color color)
-        {
-            var go = new GameObject("Text", typeof(RectTransform));
-            go.transform.SetParent(parent, false);
-            var rt = go.GetComponent<RectTransform>();
-            rt.localScale = Vector3.one;
-            var tmp = go.AddComponent<TextMeshProUGUI>();
-            tmp.text = text;
-            tmp.fontSize = fontSize;
-            tmp.alignment = alignment;
-            tmp.color = color;
-            tmp.richText = true;
-            tmp.raycastTarget = false;
-            return tmp;
-        }
-
-        private TMP_Text AddThemedText(RectTransform parent, string text, float fontSize,
-            TextAlignmentOptions alignment, Color color)
-        {
-            var tmp = AddText(parent, text, fontSize, alignment, color);
-            if (ThemeFont != null) tmp.font = ThemeFont;
-            return tmp;
-        }
-
-        private Button CreateButton(Transform parent, string name, string label, System.Action onClick)
-        {
-            var go = new GameObject(name, typeof(RectTransform));
-            go.transform.SetParent(parent, false);
-            var rt = go.GetComponent<RectTransform>();
-            rt.localScale = Vector3.one;
-
-            var img = go.AddComponent<Image>();
-            img.color = new Color(0.25f, 0.27f, 0.32f, 1f);
-
-            var btn = go.AddComponent<Button>();
-            btn.targetGraphic = img;
-
-            var colors = btn.colors;
-            colors.normalColor = Color.white;
-            colors.highlightedColor = new Color(1.15f, 1.15f, 1.15f, 1f);
-            colors.pressedColor = new Color(0.8f, 0.8f, 0.8f, 1f);
-            colors.disabledColor = new Color(0.5f, 0.5f, 0.5f, 0.5f);
-            btn.colors = colors;
-
-            var txtGo = new GameObject("Label", typeof(RectTransform));
-            txtGo.transform.SetParent(go.transform, false);
-            var txtRt = txtGo.GetComponent<RectTransform>();
-            txtRt.localScale = Vector3.one;
-            txtRt.anchorMin = Vector2.zero;
-            txtRt.anchorMax = Vector2.one;
-            txtRt.offsetMin = Vector2.zero;
-            txtRt.offsetMax = Vector2.zero;
-            var tmp = txtGo.AddComponent<TextMeshProUGUI>();
-            tmp.text = label;
-            tmp.fontSize = 16;
-            tmp.alignment = TextAlignmentOptions.Center;
-            tmp.color = new Color(0.95f, 0.95f, 0.95f, 1f);
-            tmp.raycastTarget = false;
-            if (ThemeFont != null) tmp.font = ThemeFont;
-
-            if (onClick != null) btn.onClick.AddListener(() => onClick());
-            return btn;
-        }
-
-        private static void StretchFull(RectTransform rt, Vector2? offsetMin = null, Vector2? offsetMax = null)
-        {
-            rt.anchorMin = Vector2.zero;
-            rt.anchorMax = Vector2.one;
-            rt.offsetMin = offsetMin ?? Vector2.zero;
-            rt.offsetMax = offsetMax ?? Vector2.zero;
-        }
-
-        private static void SetAnchors(RectTransform rt, Vector2 anchorMin, Vector2 anchorMax, Vector2 pivot)
-        {
-            rt.anchorMin = anchorMin;
-            rt.anchorMax = anchorMax;
-            rt.pivot = pivot;
         }
     }
 }
-

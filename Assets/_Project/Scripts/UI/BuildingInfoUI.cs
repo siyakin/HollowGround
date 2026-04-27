@@ -1,3 +1,4 @@
+using HollowGround.Core;
 using System.Collections.Generic;
 using HollowGround.Buildings;
 using HollowGround.Grid;
@@ -137,14 +138,7 @@ namespace HollowGround.UI
             if (_stateText != null)
             {
                 _stateText.text = _current.State.ToString();
-                _stateText.color = _current.State switch
-                {
-                    BuildingState.Damaged => new Color(0.9f, 0.3f, 0.2f),
-                    BuildingState.Destroyed => new Color(0.6f, 0.1f, 0.1f),
-                    BuildingState.Constructing => new Color(0.9f, 0.7f, 0.2f),
-                    BuildingState.Upgrading => new Color(0.3f, 0.7f, 0.9f),
-                    _ => Color.white
-                };
+                _stateText.color = UIColors.GetStateColor(_current.State);
             }
 
             if (_productionGroup != null)
@@ -210,14 +204,29 @@ namespace HollowGround.UI
         public void OnUpgradeClicked()
         {
             if (_current == null) return;
-            _current.StartUpgrade();
+            if (!_current.CanUpgrade())
+            {
+                ToastUI.Show("Cannot upgrade right now!", UIColors.Default.Warn);
+                return;
+            }
+
+            if (!CanAffordUpgrade())
+            {
+                ShowMissingUpgradeResources();
+                return;
+            }
+
+            if (_current.StartUpgrade())
+                ToastUI.Show($"Upgrading {_current.Data.DisplayName} to Lv.{_current.Level + 1}...", UIColors.Default.Gold);
             RefreshDisplay();
         }
 
         public void OnDemolishClicked()
         {
             if (_current == null) return;
+            string name = _current.Data.DisplayName;
             _current.Demolish();
+            ToastUI.Show($"{name} demolished. Resources refunded.", UIColors.Default.Warn);
             HideInfo();
         }
 
@@ -233,7 +242,7 @@ namespace HollowGround.UI
                 var costs = _current.Data.GetCostForLevel(_current.Level);
                 var parts = new List<string>();
                 foreach (var kvp in costs)
-                    parts.Add($"{kvp.Key}: {Mathf.CeilToInt(kvp.Value * 0.5f)}");
+                    parts.Add($"{kvp.Key}: {Mathf.CeilToInt(kvp.Value * (GameConfig.Instance != null ? GameConfig.Instance.RepairCostRatio : 0.5f))}");
                 _repairCostText.text = string.Join("  ", parts);
             }
         }
@@ -241,7 +250,14 @@ namespace HollowGround.UI
         public void OnRepairClicked()
         {
             if (_current == null) return;
-            _current.Repair();
+            if (_current.Repair())
+            {
+                ToastUI.Show($"{_current.Data.DisplayName} repaired!", UIColors.Default.Ok);
+            }
+            else
+            {
+                ToastUI.Show("Not enough resources to repair!", UIColors.Default.Danger);
+            }
             RefreshDisplay();
         }
 
@@ -331,6 +347,33 @@ namespace HollowGround.UI
             rt.anchorMin = new Vector2(0.5f, 0.5f);
             rt.anchorMax = new Vector2(0.5f, 0.5f);
             rt.anchoredPosition = new Vector2(targetX, targetY);
+        }
+
+        private bool CanAffordUpgrade()
+        {
+            if (ResourceManager.Instance == null) return false;
+            var costs = _current.Data.GetCostForLevel(_current.Level + 1);
+            return ResourceManager.Instance.CanAfford(costs);
+        }
+
+        private void ShowMissingUpgradeResources()
+        {
+            if (ResourceManager.Instance == null) return;
+            var costs = _current.Data.GetCostForLevel(_current.Level + 1);
+            var sb = new System.Text.StringBuilder();
+            sb.Append($"Upgrade needs: ");
+            bool first = true;
+            foreach (var kvp in costs)
+            {
+                int have = ResourceManager.Instance.Get(kvp.Key);
+                if (have < kvp.Value)
+                {
+                    if (!first) sb.Append(", ");
+                    sb.Append($"{kvp.Key} {kvp.Value - have} more");
+                    first = false;
+                }
+            }
+            ToastUI.Show(sb.ToString(), UIColors.Default.Danger);
         }
     }
 }
