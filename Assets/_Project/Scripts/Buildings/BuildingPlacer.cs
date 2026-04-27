@@ -25,6 +25,7 @@ namespace HollowGround.Buildings
 
         public bool IsPlacing => _isPlacing;
         public BuildingData CurrentBuilding => _currentBuilding;
+        public int CurrentRotation => _rotation;
 
         public event System.Action OnPlacementStarted;
         public event System.Action<Building> OnPlacementCompleted;
