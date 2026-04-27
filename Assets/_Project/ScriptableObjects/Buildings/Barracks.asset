@@ -12,13 +12,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6c7055fb7298b4c44877c972cfbd95b5, type: 3}
   m_Name: Building Red
   m_EditorClassIdentifier: Assembly-CSharp::HollowGround.Buildings.BuildingData
-  DisplayName: "Barracks"
-  Description: "Trains soldiers. Increases army capacity."
+  DisplayName: Barracks
+  Description: Trains soldiers. Increases army capacity.
   Type: 7
   Category: 1
-  LevelPrefabs:
-  - {fileID: 919132149155446097, guid: 953378be2bad7154e9f51f02bba6fec7, type: 3}
   MaxLevel: 10
+  Models:
+    ConstructModel: {fileID: 919132149155446097, guid: 8adc986dc9f767447b95747a2d0b4cae, type: 3}
+    Level01Model: {fileID: 919132149155446097, guid: c362c1755a70ad44dadfe42469e02d31, type: 3}
+    Level03Model: {fileID: 919132149155446097, guid: 00dd17d813e640141976dbf9b068825f, type: 3}
+    Level05Model: {fileID: 919132149155446097, guid: d42ad4c5afcede146afa82cf1f393769, type: 3}
+    Level10Model: {fileID: 919132149155446097, guid: 831b3e7e55ad7ce4595989cbd6a9b104, type: 3}
+    DamagedModel: {fileID: 919132149155446097, guid: f9ee262ca9af168488c6b0ac6bc83d01, type: 3}
+    DestroyedModel: {fileID: 919132149155446097, guid: 5ec289aab7ec1834390780e23f5dbb68, type: 3}
   SizeX: 2
   SizeZ: 2
   BaseCost:

@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using HollowGround.Buildings;
+using HollowGround.Core;
 using HollowGround.Resources;
 using HollowGround.Tech;
 using UnityEditor;
@@ -64,6 +65,14 @@ namespace HollowGround.Editor
             Debug.Log("[TechNodeFactory] 10 TechNode SOs created in " + Folder);
         }
 
+        private static List<BuildingData.CostEntry> Costs(params object[] pairs)
+        {
+            var list = new List<BuildingData.CostEntry>();
+            for (int i = 0; i < pairs.Length - 1; i += 2)
+                list.Add(new BuildingData.CostEntry { Type = (ResourceType)pairs[i], Amount = (int)pairs[i + 1] });
+            return list;
+        }
+
         private static void Create(string fileName, string displayName, string desc,
             TechCategory category, float researchTime, List<BuildingData.CostEntry> cost,
             float productionBonus = 0f, float trainingSpeedBonus = 0f,
@@ -86,8 +95,7 @@ namespace HollowGround.Editor
 
             AssetDatabase.CreateAsset(node, path);
 
-            if (!string.IsNullOrEmpty(prereq))
-            {
+            if (!string.IsNullOrEmpty(prereq))            {
                 string prereqPath = $"{Folder}/{prereq}.asset";
                 var prereqNode = AssetDatabase.LoadAssetAtPath<TechNode>(prereqPath);
                 if (prereqNode != null)
@@ -100,20 +108,6 @@ namespace HollowGround.Editor
                     Debug.LogWarning($"[TechNodeFactory] Prerequisite '{prereq}' not found for '{fileName}'");
                 }
             }
-        }
-
-        private static List<BuildingData.CostEntry> Costs(params object[] pairs)
-        {
-            var list = new List<BuildingData.CostEntry>();
-            for (int i = 0; i < pairs.Length - 1; i += 2)
-            {
-                list.Add(new BuildingData.CostEntry
-                {
-                    Type = (ResourceType)pairs[i],
-                    Amount = (int)pairs[i + 1]
-                });
-            }
-            return list;
         }
     }
 }

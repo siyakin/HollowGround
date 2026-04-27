@@ -10,22 +10,15 @@ namespace HollowGround.Core
         Building
     }
 
-    public class GameManager : MonoBehaviour
+    public class GameManager : Singleton<GameManager>
     {
-        public static GameManager Instance { get; private set; }
-
         public GameState CurrentState { get; private set; } = GameState.Menu;
 
         public event System.Action<GameState> OnStateChanged;
 
-        private void Awake()
+        protected override void Awake()
         {
-            if (Instance != null && Instance != this)
-            {
-                Destroy(gameObject);
-                return;
-            }
-            Instance = this;
+            base.Awake();
             DontDestroyOnLoad(gameObject);
         }
 

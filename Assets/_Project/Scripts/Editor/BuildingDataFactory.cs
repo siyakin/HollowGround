@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using HollowGround.Buildings;
+using HollowGround.Core;
 using HollowGround.Resources;
 using UnityEditor;
 using UnityEngine;

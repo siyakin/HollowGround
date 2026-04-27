@@ -4,17 +4,6 @@ using UnityEngine.EventSystems;
 
 namespace HollowGround.Camera
 {
-    /// <summary>
-    /// RTS/City-builder strateji kamerası.
-    /// Hiyerarşi: CameraRig (bu script) → Camera (child, offset pozisyonda)
-    ///
-    /// Kontroller:
-    ///   WASD / Ok tuşları  → Pan
-    ///   Orta mouse sürükle → Pan
-    ///   Sağ mouse sürükle  → Döndür
-    ///   Scroll             → Zoom
-    ///   Ekran kenarı       → Pan (edge scroll)
-    /// </summary>
     public class StrategyCamera : MonoBehaviour
     {
         [Header("Camera Reference")]
@@ -48,21 +37,17 @@ namespace HollowGround.Camera
         [SerializeField] private Vector2 _boundsMin = new(-30f, -30f);
         [SerializeField] private Vector2 _boundsMax = new(130f, 130f);
 
-        // Hedef değerler
         private Vector3 _targetPos;
         private float   _targetYaw;
         private float   _targetZoom;
 
-        // Anlık değerler (smooth için)
         private Vector3 _currentPos;
         private float   _currentYaw;
         private float   _currentZoom;
 
-        // Pan drag
         private bool    _middleDragging;
         private Vector2 _lastMousePos;
 
-        // Rotate drag
         private bool    _rightDragging;
 
         private void Awake()
@@ -134,7 +119,6 @@ namespace HollowGround.Camera
 
             if (input.sqrMagnitude < 0.01f) return;
 
-            // Zoom'a göre hız ölçekle (uzaktayken daha hızlı)
             float speedScale = _currentZoom / _initialZoom;
             _targetPos += GetMoveDir(input) * (_keyPanSpeed * speedScale * Time.unscaledDeltaTime);
         }
@@ -149,7 +133,6 @@ namespace HollowGround.Camera
 
             if (delta.sqrMagnitude < 0.01f) return;
 
-            // Screen delta → world XZ hareketi
             float scale = _currentZoom * _mousePanSpeed;
             _targetPos -= GetMoveDir(delta * scale * Time.unscaledDeltaTime);
         }
@@ -221,11 +204,9 @@ namespace HollowGround.Camera
 
         private void ApplyTransform()
         {
-            // Rig pozisyonu ve yaw dönüşü
             transform.position = _currentPos;
             transform.rotation = Quaternion.Euler(0f, _currentYaw, 0f);
 
-            // Kamera: rig'in yukarısında ve arkasında, tilt açısıyla
             if (_cam != null)
             {
                 float rad    = _tiltAngle * Mathf.Deg2Rad;
@@ -239,7 +220,6 @@ namespace HollowGround.Camera
 
         // ── Yardımcı ───────────────────────────────────────────────────────────
 
-        /// <summary>2D input (XZ düzlemi) → yaw'a göre döndürülmüş world yönü</summary>
         private Vector3 GetMoveDir(Vector2 input)
         {
             float yawRad = _currentYaw * Mathf.Deg2Rad;

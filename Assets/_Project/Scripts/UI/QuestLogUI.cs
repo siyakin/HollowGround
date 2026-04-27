@@ -9,13 +9,6 @@ namespace HollowGround.UI
 {
     public class QuestLogUI : MonoBehaviour
     {
-        private static readonly Color PanelBg = new(0.08f, 0.09f, 0.11f, 0.92f);
-        private static readonly Color RowBg = new(0.14f, 0.15f, 0.17f, 1f);
-        private static readonly Color ColorText = new(0.95f, 0.95f, 0.95f, 1f);
-        private static readonly Color ColorMuted = new(0.65f, 0.65f, 0.7f, 1f);
-        private static readonly Color ColorOk = new(0.35f, 0.8f, 0.4f, 1f);
-        private static readonly Color ColorGold = new(1f, 0.85f, 0.3f, 1f);
-
         private int _currentTab;
         private QuestInstance _selectedQuest;
         private TMP_Text _headerText;
@@ -77,23 +70,9 @@ namespace HollowGround.UI
             var oldImages = GetComponents<Image>();
             foreach (var img in oldImages) DestroyImmediate(img);
 
-            var bg = gameObject.AddComponent<Image>();
-            bg.color = PanelBg;
-            bg.raycastTarget = true;
+            UIPrimitiveFactory.SetupPanelBackground(gameObject, UIColors.Default);
 
-            var cg = gameObject.GetComponent<CanvasGroup>();
-            if (cg == null) cg = gameObject.AddComponent<CanvasGroup>();
-            cg.interactable = true;
-            cg.blocksRaycasts = true;
-
-            var vlg = gameObject.AddComponent<VerticalLayoutGroup>();
-            vlg.padding = new RectOffset(20, 20, 15, 15);
-            vlg.spacing = 8;
-            vlg.childAlignment = TextAnchor.UpperCenter;
-            vlg.childControlWidth = true;
-            vlg.childControlHeight = false;
-            vlg.childForceExpandWidth = true;
-            vlg.childForceExpandHeight = false;
+            var vlg = UIPrimitiveFactory.AddStandardVLG(gameObject);
 
             var headerRow = new GameObject("Header", typeof(RectTransform));
             headerRow.transform.SetParent(root, false);
@@ -108,7 +87,7 @@ namespace HollowGround.UI
             headerHLG.childForceExpandHeight = false;
 
             var prevBtn = MakeTabButton(headerRow.transform, "< Prev", () => PrevTab());
-            _headerText = AddText(headerRow.transform, "QUEST LOG", 22, ColorGold);
+            _headerText = UIPrimitiveFactory.AddThemedText(headerRow.transform, "QUEST LOG", 22, UIColors.Default.Gold);
             _headerText.alignment = TextAlignmentOptions.Center;
             var headerTextLE = _headerText.gameObject.AddComponent<LayoutElement>();
             headerTextLE.preferredWidth = 200;
@@ -133,7 +112,7 @@ namespace HollowGround.UI
             detailLE.preferredHeight = 200;
             detailLE.minHeight = 100;
             var detailBg = detailObj.AddComponent<Image>();
-            detailBg.color = RowBg;
+            detailBg.color = UIColors.Default.RowBg;
             var detailVLG = detailObj.AddComponent<VerticalLayoutGroup>();
             detailVLG.padding = new RectOffset(15, 15, 10, 10);
             detailVLG.spacing = 6;
@@ -142,10 +121,10 @@ namespace HollowGround.UI
             detailVLG.childForceExpandWidth = true;
             detailVLG.childForceExpandHeight = false;
 
-            _detailName = AddText(detailObj.transform, "", 18, ColorText);
-            _detailDesc = AddText(detailObj.transform, "", 14, ColorMuted);
-            _detailObjectives = AddText(detailObj.transform, "", 14, ColorText);
-            _detailRewards = AddText(detailObj.transform, "", 14, ColorGold);
+            _detailName = UIPrimitiveFactory.AddThemedText(detailObj.transform, "", 18, UIColors.Default.Text);
+            _detailDesc = UIPrimitiveFactory.AddThemedText(detailObj.transform, "", 14, UIColors.Default.Muted);
+            _detailObjectives = UIPrimitiveFactory.AddThemedText(detailObj.transform, "", 14, UIColors.Default.Text);
+            _detailRewards = UIPrimitiveFactory.AddThemedText(detailObj.transform, "", 14, UIColors.Default.Gold);
 
             var btnRow = new GameObject("BtnRow", typeof(RectTransform));
             btnRow.transform.SetParent(detailObj.transform, false);
@@ -159,8 +138,8 @@ namespace HollowGround.UI
             btnRowHLG.childForceExpandWidth = true;
             btnRowHLG.childForceExpandHeight = false;
 
-            _acceptBtn = MakeActionButton(btnRow.transform, "ACCEPT QUEST", ColorOk, AcceptSelectedQuest);
-            _turnInBtn = MakeActionButton(btnRow.transform, "TURN IN", ColorGold, TurnInSelectedQuest);
+            _acceptBtn = MakeActionButton(btnRow.transform, "ACCEPT QUEST", UIColors.Default.Ok, AcceptSelectedQuest);
+            _turnInBtn = MakeActionButton(btnRow.transform, "TURN IN", UIColors.Default.Gold, TurnInSelectedQuest);
 
             _detailPanel = detailObj;
             _detailPanel.SetActive(false);
@@ -213,7 +192,7 @@ namespace HollowGround.UI
 
             if (quests.Count == 0)
             {
-                var empty = AddText(_listContainer, "No quests in this tab.", 15, ColorMuted);
+                var empty = UIPrimitiveFactory.AddThemedText(_listContainer, "No quests in this tab.", 15, UIColors.Default.Muted);
                 empty.alignment = TextAlignmentOptions.Center;
                 return;
             }
@@ -225,24 +204,17 @@ namespace HollowGround.UI
                 var le = row.AddComponent<LayoutElement>();
                 le.preferredHeight = 40;
                 var rbg = row.AddComponent<Image>();
-                rbg.color = RowBg;
-                var hlg = row.AddComponent<HorizontalLayoutGroup>();
-                hlg.padding = new RectOffset(12, 12, 4, 4);
-                hlg.spacing = 10;
-                hlg.childAlignment = TextAnchor.MiddleLeft;
-                hlg.childControlWidth = true;
-                hlg.childControlHeight = true;
-                hlg.childForceExpandWidth = true;
-                hlg.childForceExpandHeight = false;
+                rbg.color = UIColors.Default.RowBg;
+                var hlg = UIPrimitiveFactory.AddRowHLG(row);
 
-                var nameT = AddText(row.transform, quest.Data.DisplayName, 15, ColorText);
+                var nameT = UIPrimitiveFactory.AddThemedText(row.transform, quest.Data.DisplayName, 15, UIColors.Default.Text);
                 nameT.alignment = TextAlignmentOptions.MidlineLeft;
                 var nle = nameT.gameObject.AddComponent<LayoutElement>();
                 nle.preferredWidth = 180;
 
                 string progress = quest.IsComplete() ? "COMPLETE" : $"{quest.GetProgress():P0}";
-                Color pColor = quest.IsComplete() ? ColorOk : ColorMuted;
-                var progT = AddText(row.transform, progress, 14, pColor);
+                Color pColor = quest.IsComplete() ? UIColors.Default.Ok : UIColors.Default.Muted;
+                var progT = UIPrimitiveFactory.AddThemedText(row.transform, progress, 14, pColor);
                 progT.alignment = TextAlignmentOptions.MidlineRight;
 
                 var btn = row.AddComponent<Button>();
@@ -308,7 +280,7 @@ namespace HollowGround.UI
         {
             if (_selectedQuest == null || QuestManager.Instance == null) return;
             QuestManager.Instance.AcceptQuest(_selectedQuest.Data);
-            ToastUI.Show($"Quest accepted: {_selectedQuest.Data.DisplayName}", ColorOk);
+            ToastUI.Show($"Quest accepted: {_selectedQuest.Data.DisplayName}", UIColors.Default.Ok);
             _detailPanel.SetActive(false);
             _selectedQuest = null;
             RefreshList();
@@ -318,7 +290,7 @@ namespace HollowGround.UI
         {
             if (_selectedQuest == null || QuestManager.Instance == null) return;
             QuestManager.Instance.TurnInQuest(_selectedQuest.Data);
-            ToastUI.Show($"Quest turned in: {_selectedQuest.Data.DisplayName}", ColorGold);
+            ToastUI.Show($"Quest turned in: {_selectedQuest.Data.DisplayName}", UIColors.Default.Gold);
             _detailPanel.SetActive(false);
             _selectedQuest = null;
             RefreshList();
@@ -338,9 +310,9 @@ namespace HollowGround.UI
             btnImg.color = new Color(0.2f, 0.2f, 0.22f, 1f);
             var btn = btnObj.AddComponent<Button>();
             btn.targetGraphic = btnImg;
-            var btnLabel = AddText(btnObj.transform, label, 14, ColorText);
+            var btnLabel = UIPrimitiveFactory.AddThemedText(btnObj.transform, label, 14, UIColors.Default.Text);
             btnLabel.alignment = TextAlignmentOptions.Center;
-            StretchFull(btnLabel.rectTransform);
+            UIPrimitiveFactory.StretchFull(btnLabel.rectTransform);
             btn.onClick.AddListener(() => onClick());
             return btn;
         }
@@ -357,32 +329,11 @@ namespace HollowGround.UI
             btnImg.color = color;
             var btn = btnObj.AddComponent<Button>();
             btn.targetGraphic = btnImg;
-            var btnLabel = AddText(btnObj.transform, label, 15, Color.black);
+            var btnLabel = UIPrimitiveFactory.AddThemedText(btnObj.transform, label, 15, Color.black);
             btnLabel.alignment = TextAlignmentOptions.Center;
-            StretchFull(btnLabel.rectTransform);
+            UIPrimitiveFactory.StretchFull(btnLabel.rectTransform);
             btn.onClick.AddListener(() => onClick());
             return btn;
-        }
-
-        private static TMP_Text AddText(Transform parent, string text, float size, Color color)
-        {
-            var go = new GameObject("T", typeof(RectTransform));
-            go.transform.SetParent(parent, false);
-            var tmp = go.AddComponent<TextMeshProUGUI>();
-            tmp.text = text;
-            tmp.fontSize = size;
-            tmp.alignment = TextAlignmentOptions.MidlineLeft;
-            tmp.color = color;
-            tmp.raycastTarget = false;
-            return tmp;
-        }
-
-        private static void StretchFull(RectTransform rt)
-        {
-            rt.anchorMin = Vector2.zero;
-            rt.anchorMax = Vector2.one;
-            rt.offsetMin = Vector2.zero;
-            rt.offsetMax = Vector2.zero;
         }
     }
 }

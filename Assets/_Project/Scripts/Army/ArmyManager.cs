@@ -1,12 +1,12 @@
 using System.Collections.Generic;
+using HollowGround.Core;
 using HollowGround.Resources;
 using UnityEngine;
 
 namespace HollowGround.Army
 {
-    public class ArmyManager : MonoBehaviour
+    public class ArmyManager : Singleton<ArmyManager>
     {
-        public static ArmyManager Instance { get; private set; }
 
         private readonly Dictionary<TroopType, int> _troops = new();
         private readonly List<TrainingQueueEntry> _trainingQueue = new();
@@ -20,8 +20,7 @@ namespace HollowGround.Army
         public event System.Action<TrainingQueueEntry> OnTrainingStarted;
         public event System.Action<TrainingQueueEntry> OnTrainingCompleted;
 
-        [System.Serializable]
-        public class TrainingQueueEntry
+        [System.Serializable]        public class TrainingQueueEntry
         {
             public TroopData Data;
             public int Amount;
@@ -31,14 +30,9 @@ namespace HollowGround.Army
             public float Progress => TotalTime > 0 ? 1f - (RemainingTime / TotalTime) : 0f;
         }
 
-        private void Awake()
+        protected override void Awake()
         {
-            if (Instance != null && Instance != this)
-            {
-                Destroy(gameObject);
-                return;
-            }
-            Instance = this;
+            base.Awake();
 
             foreach (TroopType type in System.Enum.GetValues(typeof(TroopType)))
             {
@@ -168,7 +162,6 @@ namespace HollowGround.Army
             int power = 0;
             foreach (var kvp in _troops)
             {
-                // Temel güç = birlik sayısı * varsayılan atak gücü
                 power += kvp.Value * 10;
             }
             power = Mathf.CeilToInt(power * Morale);

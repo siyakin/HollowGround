@@ -13,9 +13,8 @@ using UnityEngine;
 
 namespace HollowGround.Core
 {
-    public class SaveSystem : MonoBehaviour
+    public class SaveSystem : Singleton<SaveSystem>
     {
-        public static SaveSystem Instance { get; private set; }
 
         private const string SaveFolder = "Saves";
         private const string FileExtension = ".json";
@@ -25,16 +24,6 @@ namespace HollowGround.Core
         public event System.Action OnSaveCompleted;
         public event System.Action<SaveData> OnLoadCompleted;
         public event System.Action<string> OnSaveFailed;
-
-        private void Awake()
-        {
-            if (Instance != null && Instance != this)
-            {
-                Destroy(gameObject);
-                return;
-            }
-            Instance = this;
-        }
 
         private void Update()
         {

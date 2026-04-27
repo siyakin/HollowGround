@@ -6,7 +6,7 @@ namespace HollowGround.Editor
 #if UNITY_EDITOR
     public static class GhostMaterialCreator
     {
-        [MenuItem("Tools/HollowGround/Create Ghost Materials")]
+        [MenuItem("HollowGround/Create Ghost Materials")]
         public static void CreateGhostMaterials()
         {
             string folder = "Assets/_Project/Materials/Ghost";

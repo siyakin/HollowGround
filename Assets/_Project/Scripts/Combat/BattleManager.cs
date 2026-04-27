@@ -1,14 +1,14 @@
 using System;
 using System.Collections.Generic;
 using HollowGround.Army;
+using HollowGround.Core;
 using HollowGround.Resources;
 using UnityEngine;
 
 namespace HollowGround.Combat
 {
-    public class BattleManager : MonoBehaviour
+    public class BattleManager : Singleton<BattleManager>
     {
-        public static BattleManager Instance { get; private set; }
 
         private readonly List<ActiveExpedition> _expeditions = new();
 
@@ -16,8 +16,7 @@ namespace HollowGround.Combat
         public event System.Action<ActiveExpedition> OnExpeditionArrived;
         public event System.Action<BattleReport> OnBattleCompleted;
 
-        [System.Serializable]
-        public class ActiveExpedition
+        [System.Serializable]        public class ActiveExpedition
         {
             public string Name;
             public BattleTarget Target;
@@ -39,16 +38,6 @@ namespace HollowGround.Combat
             public int TotalAttackerPower;
             public int TotalDefenderPower;
             public float PowerRatio;
-        }
-
-        private void Awake()
-        {
-            if (Instance != null && Instance != this)
-            {
-                Destroy(gameObject);
-                return;
-            }
-            Instance = this;
         }
 
         private void Update()

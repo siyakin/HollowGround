@@ -60,4 +60,28 @@ namespace HollowGround.Combat
             return result;
         }
     }
+
+    public class MutantWaveData
+    {
+        public string DisplayName;
+        public int WaveNumber;
+        public string Description;
+        public int MutantCount;
+        public int MutantPower;
+
+        private static readonly Dictionary<ResourceType, int> DefaultPenalties = new()
+        {
+            { ResourceType.Food, 30 },
+            { ResourceType.Metal, 20 }
+        };
+
+        private static readonly Dictionary<ResourceType, int> DefaultRewards = new()
+        {
+            { ResourceType.TechPart, 5 },
+            { ResourceType.Food, 25 }
+        };
+
+        public Dictionary<ResourceType, int> GetPenaltyMap() => DefaultPenalties;
+        public Dictionary<ResourceType, int> GetRewardMap() => DefaultRewards;
+    }
 }

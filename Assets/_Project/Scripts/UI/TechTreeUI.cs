@@ -429,13 +429,6 @@ namespace HollowGround.UI
             bool canStart = ResearchManager.Instance != null &&
                             ResearchManager.Instance.CanStartResearch(tech);
 
-            var dbgCosts = tech.GetCost();
-            string dbgCost = string.Join(", ", dbgCosts.Select(c => $"{c.Key}={c.Value}"));
-            string dbgHave = ResourceManager.Instance != null
-                ? string.Join(", ", dbgCosts.Select(c => $"{c.Key}={ResourceManager.Instance.Get(c.Key)}"))
-                : "RM null";
-            Debug.Log($"[TechTree] {tech.DisplayName} | Cost: {dbgCost} | Have: {dbgHave} | canStart={canStart}");
-
             _detailResearchBtn.gameObject.SetActive(true);
             _detailResearchBtn.interactable = canStart;
             var btnImg = _detailResearchBtn.GetComponent<Image>();

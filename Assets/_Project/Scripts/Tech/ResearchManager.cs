@@ -5,12 +5,11 @@ using UnityEngine;
 
 namespace HollowGround.Tech
 {
-    public class ResearchManager : MonoBehaviour
+    public class ResearchManager : Singleton<ResearchManager>
     {
-        public static ResearchManager Instance { get; private set; }
-
         private TechNode _currentResearch;
         private float _researchTimer;
+        private TechNode[] _cachedTechNodes;
 
         public TechNode CurrentResearch => _currentResearch;
         public bool IsResearching => _currentResearch != null;
@@ -20,15 +19,7 @@ namespace HollowGround.Tech
         public event System.Action<TechNode> OnResearchCompleted;
         public event System.Action<float> OnResearchProgressChanged;
 
-        private void Awake()
-        {
-            if (Instance != null && Instance != this)
-            {
-                Destroy(gameObject);
-                return;
-            }
-            Instance = this;
-        }
+        private TechNode[] AllTechNodes => _cachedTechNodes ??= UnityEngine.Resources.LoadAll<TechNode>("TechNodes");
 
         private void Update()
         {
@@ -52,14 +43,12 @@ namespace HollowGround.Tech
 
         public bool CanStartResearch(TechNode node)
         {
-            if (node == null) { Debug.Log("[Research] FAIL: node null"); return false; }
-            if (_currentResearch != null) { Debug.Log($"[Research] FAIL: busy with {_currentResearch.DisplayName}"); return false; }
-            if (!node.CanResearch()) { Debug.Log($"[Research] FAIL: CanResearch false for {node.DisplayName}"); return false; }
+            if (node == null) return false;
+            if (_currentResearch != null) return false;
+            if (!node.CanResearch()) return false;
 
-            if (ResourceManager.Instance == null) { Debug.Log("[Research] FAIL: RM null"); return false; }
-            bool afford = ResourceManager.Instance.CanAfford(node.GetCost());
-            Debug.Log($"[Research] {node.DisplayName} afford={afford}");
-            return afford;
+            if (ResourceManager.Instance == null) return false;
+            return ResourceManager.Instance.CanAfford(node.GetCost());
         }
 
         public bool StartResearch(TechNode node)
@@ -92,11 +81,6 @@ namespace HollowGround.Tech
 
         private void ApplyBonuses(TechNode node)
         {
-            Debug.Log($"[Research] Completed '{node.DisplayName}'. " +
-                $"Bonuses — Production: +{node.ProductionBonus:P0}, " +
-                $"Training: +{node.TrainingSpeedBonus:P0}, " +
-                $"Expedition: +{node.ExpeditionSpeedBonus:P0}, " +
-                $"Defense: +{node.DefenseBonus:P0}");
         }
 
         public float GetTotalProductionBonus()
@@ -129,10 +113,9 @@ namespace HollowGround.Tech
 
         public List<TechNode> GetAvailableTechs()
         {
-            var allTechs = UnityEngine.Resources.LoadAll<TechNode>("TechNodes");
             var available = new List<TechNode>();
 
-            foreach (var tech in allTechs)
+            foreach (var tech in AllTechNodes)
             {
                 if (tech.CanResearch() && !tech.IsResearched)
                     available.Add(tech);
@@ -143,10 +126,9 @@ namespace HollowGround.Tech
 
         public List<TechNode> GetResearchedTechs()
         {
-            var allTechs = UnityEngine.Resources.LoadAll<TechNode>("TechNodes");
             var researched = new List<TechNode>();
 
-            foreach (var tech in allTechs)
+            foreach (var tech in AllTechNodes)
             {
                 if (tech.IsResearched)
                     researched.Add(tech);

@@ -1,13 +1,13 @@
 using System.Collections;
 using System.Collections.Generic;
+using HollowGround.Core;
 using TMPro;
 using UnityEngine;
 
 namespace HollowGround.UI
 {
-    public class ToastUI : MonoBehaviour
+    public class ToastUI : Singleton<ToastUI>
     {
-        public static ToastUI Instance { get; private set; }
 
         [SerializeField] private float _displayDuration = 3f;
         [SerializeField] private float _fadeDuration = 0.5f;
@@ -24,14 +24,9 @@ namespace HollowGround.UI
             public Color Color;
         }
 
-        private void Awake()
+        protected override void Awake()
         {
-            if (Instance != null && Instance != this)
-            {
-                Destroy(gameObject);
-                return;
-            }
-            Instance = this;
+            base.Awake();
 
             var containerObj = new GameObject("ToastContainer", typeof(RectTransform));
             containerObj.transform.SetParent(transform, false);

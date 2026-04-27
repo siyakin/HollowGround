@@ -16,9 +16,15 @@ MonoBehaviour:
   Description: 
   Type: 0
   Category: 0
-  LevelPrefabs:
-  - {fileID: 919132149155446097, guid: 55f6cf9aba9f11e4a9556ea04195d48c, type: 3}
   MaxLevel: 10
+  Models:
+    ConstructModel: {fileID: 919132149155446097, guid: 2aa2b6a6877e23a4798bdaf5e11e6740, type: 3}
+    Level01Model: {fileID: 919132149155446097, guid: a995fdf7b3d1b044e8f8f6e993204534, type: 3}
+    Level03Model: {fileID: 919132149155446097, guid: 289a5ae695294784c826ecf4b9756ff6, type: 3}
+    Level05Model: {fileID: 919132149155446097, guid: 44d817f5a95ff9d4e81a4a68d3ae7906, type: 3}
+    Level10Model: {fileID: 919132149155446097, guid: b92869d6d0249bf4799f325f6a4b25e6, type: 3}
+    DamagedModel: {fileID: 919132149155446097, guid: 8ad367d6c7a3ca04ba3b07920ee59320, type: 3}
+    DestroyedModel: {fileID: 919132149155446097, guid: 85a0f18e8a7d6f248aa94f5fd79689f7, type: 3}
   SizeX: 1
   SizeZ: 1
   BaseCost: []

@@ -12,13 +12,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6c7055fb7298b4c44877c972cfbd95b5, type: 3}
   m_Name: Mine
   m_EditorClassIdentifier: Assembly-CSharp::HollowGround.Buildings.BuildingData
-  DisplayName: "Mine"
-  Description: "Produces metal. Needed for weapons and buildings."
+  DisplayName: Mine
+  Description: Produces metal. Needed for weapons and buildings.
   Type: 4
   Category: 0
-  LevelPrefabs:
-  - {fileID: 919132149155446097, guid: 42469d4ea48ac6546a52d112798af307, type: 3}
   MaxLevel: 10
+  Models:
+    ConstructModel: {fileID: 919132149155446097, guid: bd62486398b51a44ab76985039056a8c, type: 3}
+    Level01Model: {fileID: 919132149155446097, guid: b3cf0f4a89a7a254eb5a37b55194242c, type: 3}
+    Level03Model: {fileID: 919132149155446097, guid: 08d4e88a384f1744d8b3fc837e9338cd, type: 3}
+    Level05Model: {fileID: 919132149155446097, guid: b29e2ed9095cd5a42a2d74aacfa27c8b, type: 3}
+    Level10Model: {fileID: 919132149155446097, guid: 93545f33710a81944b7be34acaa8c3a0, type: 3}
+    DamagedModel: {fileID: 919132149155446097, guid: 708cd9d2d832614429d2ae33fa5a3763, type: 3}
+    DestroyedModel: {fileID: 919132149155446097, guid: 48b84d7fe45abc047a4183002443f27c, type: 3}
   SizeX: 2
   SizeZ: 2
   BaseCost:

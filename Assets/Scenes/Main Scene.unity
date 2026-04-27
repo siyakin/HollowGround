@@ -1992,7 +1992,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 960, y: -467.22192}
+  m_AnchoredPosition: {x: 957.5819, y: -511.39117}
   m_SizeDelta: {x: 160, y: 30}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &210991051
@@ -3372,6 +3372,7 @@ GameObject:
   - component: {fileID: 304089454}
   - component: {fileID: 304089456}
   - component: {fileID: 304089455}
+  - component: {fileID: 304089457}
   m_Layer: 5
   m_Name: ProgressLabel
   m_TagString: Untagged
@@ -3420,15 +3421,15 @@ MonoBehaviour:
       m_Calls: []
   m_text: '%0'
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 773d13c282d1ec1458a5e3da07f63db1, type: 2}
+  m_sharedMaterial: {fileID: 6121361207246008853, guid: 773d13c282d1ec1458a5e3da07f63db1, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4278190080
-  m_fontColor: {r: 0, g: 0, b: 0, a: 1}
+    rgba: 4294967295
+  m_fontColor: {r: 1, g: 1, b: 1, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -3445,8 +3446,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 14
-  m_fontSizeBase: 14
+  m_fontSize: 22
+  m_fontSizeBase: 22
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -3498,6 +3499,19 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 304089453}
   m_CullTransparentMesh: 1
+--- !u!114 &304089457
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 304089453}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: af14f1c705e62974b9d555a85001655e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::HollowGround.UI.UIThemeTag
+  styleType: 0
 --- !u!1 &327631834
 GameObject:
   m_ObjectHideFlags: 0
@@ -3830,6 +3844,7 @@ GameObject:
   - component: {fileID: 343324346}
   - component: {fileID: 343324345}
   - component: {fileID: 343324344}
+  - component: {fileID: 343324347}
   m_Layer: 5
   m_Name: UpgradeButton
   m_TagString: Untagged
@@ -3878,13 +3893,13 @@ MonoBehaviour:
     m_SelectOnRight: {fileID: 0}
   m_Transition: 1
   m_Colors:
-    m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
-    m_HighlightedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
-    m_PressedColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 1}
-    m_SelectedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
-    m_DisabledColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 0.5019608}
+    m_NormalColor: {r: 0.13, g: 0.17, b: 0.1, a: 0.95}
+    m_HighlightedColor: {r: 0.83, g: 0.52, b: 0.04, a: 1}
+    m_PressedColor: {r: 0.55, g: 0.32, b: 0.02, a: 1}
+    m_SelectedColor: {r: 0.83, g: 0.52, b: 0.04, a: 1}
+    m_DisabledColor: {r: 0.2, g: 0.2, b: 0.18, a: 0.5}
     m_ColorMultiplier: 1
-    m_FadeDuration: 0.1
+    m_FadeDuration: 0.12
   m_SpriteState:
     m_HighlightedSprite: {fileID: 0}
     m_PressedSprite: {fileID: 0}
@@ -3951,6 +3966,19 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 343324342}
   m_CullTransparentMesh: 1
+--- !u!114 &343324347
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 343324342}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: af14f1c705e62974b9d555a85001655e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::HollowGround.UI.UIThemeTag
+  styleType: 0
 --- !u!1 &355263028
 GameObject:
   m_ObjectHideFlags: 0
@@ -5710,7 +5738,6 @@ GameObject:
   - component: {fileID: 500211551}
   - component: {fileID: 500211553}
   - component: {fileID: 500211554}
-  - component: {fileID: 500211555}
   m_Layer: 5
   m_Name: BuildingInfo
   m_TagString: Untagged
@@ -5760,7 +5787,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 0, g: 0, b: 0, a: 0.8627451}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -5808,6 +5835,8 @@ MonoBehaviour:
   _upgradeButton: {fileID: 343324344}
   _upgradeCostText: {fileID: 521907136}
   _demolishButton: {fileID: 2091081821}
+  _repairButton: {fileID: 0}
+  _repairCostText: {fileID: 0}
 --- !u!114 &500211554
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5834,19 +5863,6 @@ MonoBehaviour:
   m_ChildScaleWidth: 0
   m_ChildScaleHeight: 0
   m_ReverseArrangement: 0
---- !u!114 &500211555
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 500211549}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: af14f1c705e62974b9d555a85001655e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::HollowGround.UI.UIThemeTag
-  styleType: 0
 --- !u!1 &503864148
 GameObject:
   m_ObjectHideFlags: 0
@@ -6034,7 +6050,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: -29.999817}
+  m_AnchoredPosition: {x: 0, y: -29.999939}
   m_SizeDelta: {x: 0, y: -60}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &511085931
@@ -6112,6 +6128,7 @@ GameObject:
   - component: {fileID: 521907135}
   - component: {fileID: 521907137}
   - component: {fileID: 521907136}
+  - component: {fileID: 521907138}
   m_Layer: 5
   m_Name: UpgradeCostText
   m_TagString: Untagged
@@ -6160,15 +6177,15 @@ MonoBehaviour:
       m_Calls: []
   m_text: Maliyet
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 773d13c282d1ec1458a5e3da07f63db1, type: 2}
+  m_sharedMaterial: {fileID: 6121361207246008853, guid: 773d13c282d1ec1458a5e3da07f63db1, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4278190080
-  m_fontColor: {r: 0, g: 0, b: 0, a: 1}
+    rgba: 4294967295
+  m_fontColor: {r: 1, g: 1, b: 1, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -6185,8 +6202,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 12
-  m_fontSizeBase: 12
+  m_fontSize: 22
+  m_fontSizeBase: 22
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -6238,6 +6255,19 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 521907134}
   m_CullTransparentMesh: 1
+--- !u!114 &521907138
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 521907134}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: af14f1c705e62974b9d555a85001655e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::HollowGround.UI.UIThemeTag
+  styleType: 0
 --- !u!1 &526145606
 GameObject:
   m_ObjectHideFlags: 0
@@ -6274,7 +6304,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 1724, y: -467.22192}
+  m_AnchoredPosition: {x: 1719.6475, y: -511.39117}
   m_SizeDelta: {x: 160, y: 30}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &526145608
@@ -6656,6 +6686,7 @@ GameObject:
   - component: {fileID: 541811991}
   - component: {fileID: 541811993}
   - component: {fileID: 541811992}
+  - component: {fileID: 541811994}
   m_Layer: 5
   m_Name: NameText
   m_TagString: Untagged
@@ -6711,7 +6742,7 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4278190080
+    rgba: 4294967295
   m_fontColor: {r: 1, g: 1, b: 1, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
@@ -6782,6 +6813,19 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 541811990}
   m_CullTransparentMesh: 1
+--- !u!114 &541811994
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 541811990}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: af14f1c705e62974b9d555a85001655e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::HollowGround.UI.UIThemeTag
+  styleType: 0
 --- !u!1 &581329299
 GameObject:
   m_ObjectHideFlags: 0
@@ -6818,7 +6862,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 1342, y: -467.22192}
+  m_AnchoredPosition: {x: 1338.6147, y: -511.39117}
   m_SizeDelta: {x: 160, y: 30}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &581329301
@@ -7213,6 +7257,7 @@ GameObject:
   m_Component:
   - component: {fileID: 624837546}
   - component: {fileID: 624837547}
+  - component: {fileID: 624837548}
   m_Layer: 5
   m_Name: ProductionSlider
   m_TagString: Untagged
@@ -7293,6 +7338,19 @@ MonoBehaviour:
   m_OnValueChanged:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &624837548
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 624837545}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: af14f1c705e62974b9d555a85001655e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::HollowGround.UI.UIThemeTag
+  styleType: 0
 --- !u!1 &628982439
 GameObject:
   m_ObjectHideFlags: 0
@@ -7541,7 +7599,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 578, y: -467.22192}
+  m_AnchoredPosition: {x: 576.5492, y: -511.39117}
   m_SizeDelta: {x: 160, y: 30}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &686223189
@@ -13855,6 +13913,7 @@ GameObject:
   - component: {fileID: 1210006061}
   - component: {fileID: 1210006063}
   - component: {fileID: 1210006062}
+  - component: {fileID: 1210006064}
   m_Layer: 5
   m_Name: LevelText
   m_TagString: Untagged
@@ -13903,15 +13962,15 @@ MonoBehaviour:
       m_Calls: []
   m_text: Seviye 1
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 773d13c282d1ec1458a5e3da07f63db1, type: 2}
+  m_sharedMaterial: {fileID: 6121361207246008853, guid: 773d13c282d1ec1458a5e3da07f63db1, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4278190080
-  m_fontColor: {r: 0, g: 0, b: 0, a: 1}
+    rgba: 4294967295
+  m_fontColor: {r: 1, g: 1, b: 1, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -13928,8 +13987,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 18
-  m_fontSizeBase: 18
+  m_fontSize: 22
+  m_fontSizeBase: 22
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -13981,6 +14040,19 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1210006060}
   m_CullTransparentMesh: 1
+--- !u!114 &1210006064
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1210006060}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: af14f1c705e62974b9d555a85001655e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::HollowGround.UI.UIThemeTag
+  styleType: 0
 --- !u!1 &1217549213
 GameObject:
   m_ObjectHideFlags: 0
@@ -14518,7 +14590,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 196, y: -467.22192}
+  m_AnchoredPosition: {x: 195.51639, y: -511.39117}
   m_SizeDelta: {x: 160, y: 30}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1252469398
@@ -17149,15 +17221,15 @@ MonoBehaviour:
       m_Calls: []
   m_text: "Y\xFCkselt"
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 773d13c282d1ec1458a5e3da07f63db1, type: 2}
+  m_sharedMaterial: {fileID: 6121361207246008853, guid: 773d13c282d1ec1458a5e3da07f63db1, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4281479730
-  m_fontColor: {r: 0.19607843, g: 0.19607843, b: 0.19607843, a: 1}
+    rgba: 4294967295
+  m_fontColor: {r: 1, g: 1, b: 1, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -17174,8 +17246,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 24
-  m_fontSizeBase: 24
+  m_fontSize: 22
+  m_fontSizeBase: 22
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -19051,6 +19123,7 @@ GameObject:
   - component: {fileID: 1646747109}
   - component: {fileID: 1646747111}
   - component: {fileID: 1646747110}
+  - component: {fileID: 1646747112}
   m_Layer: 5
   m_Name: StateText
   m_TagString: Untagged
@@ -19099,15 +19172,15 @@ MonoBehaviour:
       m_Calls: []
   m_text: Active
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 773d13c282d1ec1458a5e3da07f63db1, type: 2}
+  m_sharedMaterial: {fileID: 6121361207246008853, guid: 773d13c282d1ec1458a5e3da07f63db1, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4278190080
-  m_fontColor: {r: 0, g: 0, b: 0, a: 1}
+    rgba: 4294967295
+  m_fontColor: {r: 1, g: 1, b: 1, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -19124,8 +19197,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 14
-  m_fontSizeBase: 14
+  m_fontSize: 22
+  m_fontSizeBase: 22
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -19177,6 +19250,19 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1646747108}
   m_CullTransparentMesh: 1
+--- !u!114 &1646747112
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1646747108}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: af14f1c705e62974b9d555a85001655e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::HollowGround.UI.UIThemeTag
+  styleType: 0
 --- !u!1 &1672401447
 GameObject:
   m_ObjectHideFlags: 0
@@ -19468,17 +19554,17 @@ MonoBehaviour:
     NameText: {fileID: 0}
     CostText: {fileID: 0}
     LockedOverlay: {fileID: 0}
-  - Data: {fileID: 11400000, guid: 22b564c6fcc92e8458426588582eeb1b, type: 2}
+  - Data: {fileID: 11400000, guid: 98859062d6564024ba906829a7c1cf0c, type: 2}
     Button: {fileID: 1572639210}
     NameText: {fileID: 0}
     CostText: {fileID: 0}
     LockedOverlay: {fileID: 0}
-  - Data: {fileID: 11400000, guid: 935447bb9737c7d4b967a063257457ba, type: 2}
+  - Data: {fileID: 11400000, guid: 2c516f1374bb96f44b22dbc109bfcc2d, type: 2}
     Button: {fileID: 708275818}
     NameText: {fileID: 0}
     CostText: {fileID: 0}
     LockedOverlay: {fileID: 0}
-  - Data: {fileID: 11400000, guid: 98859062d6564024ba906829a7c1cf0c, type: 2}
+  - Data: {fileID: 11400000, guid: 22b564c6fcc92e8458426588582eeb1b, type: 2}
     Button: {fileID: 194913892}
     NameText: {fileID: 0}
     CostText: {fileID: 0}
@@ -20541,15 +20627,15 @@ MonoBehaviour:
       m_Calls: []
   m_text: "Y\u0131k"
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 773d13c282d1ec1458a5e3da07f63db1, type: 2}
+  m_sharedMaterial: {fileID: 6121361207246008853, guid: 773d13c282d1ec1458a5e3da07f63db1, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4281479730
-  m_fontColor: {r: 0.19607843, g: 0.19607843, b: 0.19607843, a: 1}
+    rgba: 4294967295
+  m_fontColor: {r: 1, g: 1, b: 1, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -20566,8 +20652,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 24
-  m_fontSizeBase: 24
+  m_fontSize: 22
+  m_fontSizeBase: 22
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -21316,7 +21402,7 @@ RectTransform:
   m_AnchorMin: {x: 1, y: 0.5}
   m_AnchorMax: {x: 1, y: 0.5}
   m_AnchoredPosition: {x: -10, y: 0}
-  m_SizeDelta: {x: 350, y: 500}
+  m_SizeDelta: {x: 10, y: 10}
   m_Pivot: {x: 1, y: 0.5}
 --- !u!114 &1925069627
 MonoBehaviour:
@@ -22710,6 +22796,7 @@ GameObject:
   - component: {fileID: 2012368394}
   - component: {fileID: 2012368396}
   - component: {fileID: 2012368395}
+  - component: {fileID: 2012368397}
   m_Layer: 5
   m_Name: ProductionText
   m_TagString: Untagged
@@ -22758,15 +22845,15 @@ MonoBehaviour:
       m_Calls: []
   m_text: "\xDCretim: 10 Food"
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 773d13c282d1ec1458a5e3da07f63db1, type: 2}
+  m_sharedMaterial: {fileID: 6121361207246008853, guid: 773d13c282d1ec1458a5e3da07f63db1, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4278190080
-  m_fontColor: {r: 0, g: 0, b: 0, a: 1}
+    rgba: 4294967295
+  m_fontColor: {r: 1, g: 1, b: 1, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -22783,8 +22870,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 16
-  m_fontSizeBase: 16
+  m_fontSize: 22
+  m_fontSizeBase: 22
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -22836,6 +22923,19 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2012368393}
   m_CullTransparentMesh: 1
+--- !u!114 &2012368397
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2012368393}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: af14f1c705e62974b9d555a85001655e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::HollowGround.UI.UIThemeTag
+  styleType: 0
 --- !u!1 &2019396540
 GameObject:
   m_ObjectHideFlags: 0
@@ -23907,6 +24007,7 @@ GameObject:
   - component: {fileID: 2091081823}
   - component: {fileID: 2091081822}
   - component: {fileID: 2091081821}
+  - component: {fileID: 2091081824}
   m_Layer: 5
   m_Name: DemolishButton
   m_TagString: Untagged
@@ -23955,13 +24056,13 @@ MonoBehaviour:
     m_SelectOnRight: {fileID: 0}
   m_Transition: 1
   m_Colors:
-    m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
-    m_HighlightedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
-    m_PressedColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 1}
-    m_SelectedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
-    m_DisabledColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 0.5019608}
+    m_NormalColor: {r: 0.13, g: 0.17, b: 0.1, a: 0.95}
+    m_HighlightedColor: {r: 0.83, g: 0.52, b: 0.04, a: 1}
+    m_PressedColor: {r: 0.55, g: 0.32, b: 0.02, a: 1}
+    m_SelectedColor: {r: 0.83, g: 0.52, b: 0.04, a: 1}
+    m_DisabledColor: {r: 0.2, g: 0.2, b: 0.18, a: 0.5}
     m_ColorMultiplier: 1
-    m_FadeDuration: 0.1
+    m_FadeDuration: 0.12
   m_SpriteState:
     m_HighlightedSprite: {fileID: 0}
     m_PressedSprite: {fileID: 0}
@@ -24028,6 +24129,19 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2091081819}
   m_CullTransparentMesh: 1
+--- !u!114 &2091081824
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2091081819}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: af14f1c705e62974b9d555a85001655e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::HollowGround.UI.UIThemeTag
+  styleType: 0
 --- !u!1 &2109595419
 GameObject:
   m_ObjectHideFlags: 0

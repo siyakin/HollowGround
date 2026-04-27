@@ -11,19 +11,9 @@ namespace HollowGround.UI
 {
     public class TrainingPanelUI : MonoBehaviour
     {
-        private static readonly Color PanelBg = new(0.08f, 0.09f, 0.11f, 0.92f);
-        private static readonly Color RowBg = new(0.14f, 0.15f, 0.17f, 1f);
-        private static readonly Color ColorOk = new(0.35f, 0.8f, 0.4f, 1f);
-        private static readonly Color ColorWarn = new(0.95f, 0.55f, 0.2f, 1f);
-        private static readonly Color ColorDanger = new(0.9f, 0.3f, 0.3f, 1f);
-        private static readonly Color ColorText = new(0.95f, 0.95f, 0.95f, 1f);
-        private static readonly Color ColorMuted = new(0.65f, 0.65f, 0.7f, 1f);
-        private static readonly Color ColorGold = new(1f, 0.85f, 0.3f, 1f);
-
         private readonly List<TroopRow> _rows = new();
         private TMP_Text _statusText;
         private TMP_Text _armySummaryText;
-        private TMP_FontAsset _themeFont;
         private bool _built;
 
         private class TroopRow
@@ -33,23 +23,6 @@ namespace HollowGround.UI
             public TMP_Text Label;
             public TMP_Text CostLabel;
             public TMP_Text CountLabel;
-        }
-
-        private TMP_FontAsset ThemeFont
-        {
-            get
-            {
-                if (_themeFont != null) return _themeFont;
-#if UNITY_EDITOR
-                var theme = UnityEditor.AssetDatabase.LoadAssetAtPath<UIThemeSO>("Assets/_Project/ScriptableObjects/UITheme.asset");
-#else
-                var theme = UnityEngine.Resources.LoadAll<UIThemeSO>("").Length > 0
-                    ? UnityEngine.Resources.LoadAll<UIThemeSO>("")[0] : null;
-#endif
-                if (theme != null && theme.defaultFont != null)
-                    _themeFont = theme.defaultFont;
-                return _themeFont;
-            }
         }
 
         private void OnEnable()
@@ -114,40 +87,26 @@ namespace HollowGround.UI
             var oldCg = GetComponent<CanvasGroup>();
             if (oldCg != null) DestroyImmediate(oldCg);
 
-            var bg = gameObject.AddComponent<Image>();
-            bg.color = PanelBg;
-            bg.raycastTarget = true;
+            UIPrimitiveFactory.SetupPanelBackground(gameObject, UIColors.Default);
 
-            var cg = gameObject.AddComponent<CanvasGroup>();
-            cg.interactable = true;
-            cg.blocksRaycasts = true;
+            var vlg = UIPrimitiveFactory.AddStandardVLG(gameObject);
 
-            var vlg = gameObject.AddComponent<VerticalLayoutGroup>();
-            vlg.padding = new RectOffset(20, 20, 15, 15);
-            vlg.spacing = 8;
-            vlg.childAlignment = TextAnchor.UpperCenter;
-            vlg.childControlWidth = true;
-            vlg.childControlHeight = false;
-            vlg.childForceExpandWidth = true;
-            vlg.childForceExpandHeight = false;
-
-            var headerText = AddThemedText(transform, "ARMY TRAINING", 26, ColorGold);
+            var headerText = UIPrimitiveFactory.AddThemedText(transform, "ARMY TRAINING", 26, UIColors.Default.Gold);
             headerText.alignment = TextAlignmentOptions.Center;
             var headerLE = headerText.gameObject.AddComponent<LayoutElement>();
             headerLE.preferredHeight = 40;
 
             var allTroops = UnityEngine.Resources.LoadAll<TroopData>("Troops").ToList();
-            Debug.Log($"[TrainingPanelUI] Found {allTroops.Count} troop types");
 
             foreach (var troop in allTroops)
                 BuildRow(transform, troop);
 
-            _armySummaryText = AddThemedText(transform, "", 18, ColorOk);
+            _armySummaryText = UIPrimitiveFactory.AddThemedText(transform, "", 18, UIColors.Default.Ok);
             _armySummaryText.alignment = TextAlignmentOptions.Center;
             var summaryLE = _armySummaryText.gameObject.AddComponent<LayoutElement>();
             summaryLE.preferredHeight = 30;
 
-            _statusText = AddThemedText(transform, "No active training", 16, ColorMuted);
+            _statusText = UIPrimitiveFactory.AddThemedText(transform, "No active training", 16, UIColors.Default.Muted);
             _statusText.alignment = TextAlignmentOptions.Center;
             var statusLE = _statusText.gameObject.AddComponent<LayoutElement>();
             statusLE.preferredHeight = 30;
@@ -165,18 +124,11 @@ namespace HollowGround.UI
             le.minHeight = 60;
 
             var bg = row.AddComponent<Image>();
-            bg.color = RowBg;
+            bg.color = UIColors.Default.RowBg;
 
-            var hlg = row.AddComponent<HorizontalLayoutGroup>();
-            hlg.padding = new RectOffset(15, 15, 8, 8);
-            hlg.spacing = 12;
-            hlg.childAlignment = TextAnchor.MiddleLeft;
-            hlg.childControlWidth = true;
-            hlg.childControlHeight = true;
-            hlg.childForceExpandWidth = true;
-            hlg.childForceExpandHeight = false;
+            var hlg = UIPrimitiveFactory.AddRowHLG(row);
 
-            var nameLabel = AddThemedText(row.transform, troop.DisplayName, 18, ColorText);
+            var nameLabel = UIPrimitiveFactory.AddThemedText(row.transform, troop.DisplayName, 18, UIColors.Default.Text);
             nameLabel.alignment = TextAlignmentOptions.MidlineLeft;
             var nameLE = nameLabel.gameObject.AddComponent<LayoutElement>();
             nameLE.minWidth = 120;
@@ -185,13 +137,13 @@ namespace HollowGround.UI
             var cost = troop.GetTrainingCost();
             var parts = new List<string>();
             foreach (var kvp in cost) parts.Add($"{kvp.Key}:{kvp.Value}");
-            var costLabel = AddThemedText(row.transform, string.Join(" ", parts), 15, ColorMuted);
+            var costLabel = UIPrimitiveFactory.AddThemedText(row.transform, string.Join(" ", parts), 15, UIColors.Default.Muted);
             costLabel.alignment = TextAlignmentOptions.MidlineLeft;
             var costLE = costLabel.gameObject.AddComponent<LayoutElement>();
             costLE.minWidth = 100;
             costLE.preferredWidth = 180;
 
-            var countLabel = AddThemedText(row.transform, "x0", 20, ColorText);
+            var countLabel = UIPrimitiveFactory.AddThemedText(row.transform, "x0", 20, UIColors.Default.Text);
             countLabel.alignment = TextAlignmentOptions.Center;
             var countLE = countLabel.gameObject.AddComponent<LayoutElement>();
             countLE.minWidth = 60;
@@ -204,13 +156,13 @@ namespace HollowGround.UI
             btnLE.preferredWidth = 140;
             btnLE.minHeight = 42;
             var btnImg = btnObj.AddComponent<Image>();
-            btnImg.color = ColorOk;
+            btnImg.color = UIColors.Default.Ok;
             var btn = btnObj.AddComponent<Button>();
             btn.targetGraphic = btnImg;
 
-            var btnLabel = AddThemedText(btnObj.transform, "TRAIN", 17, Color.black);
+            var btnLabel = UIPrimitiveFactory.AddThemedText(btnObj.transform, "TRAIN", 17, Color.black);
             btnLabel.alignment = TextAlignmentOptions.Center;
-            StretchFull(btnLabel.rectTransform);
+            UIPrimitiveFactory.StretchFull(btnLabel.rectTransform);
 
             btn.onClick.AddListener(() => TrainTroop(troop));
 
@@ -221,20 +173,20 @@ namespace HollowGround.UI
         {
             if (ArmyManager.Instance == null)
             {
-                ToastUI.Show("Army system not available!", Color.red);
+                ToastUI.Show("Army system not available!", UIColors.Default.Danger);
                 return;
             }
 
             if (BuildingManager.Instance == null || BuildingManager.Instance.GetCommandCenterLevel() < 1)
             {
-                ToastUI.Show("Build a Command Center first!", ColorWarn);
+                ToastUI.Show("Build a Command Center first!", UIColors.Default.Warn);
                 return;
             }
 
             var barracks = BuildingManager.Instance.GetBuildingsOfType(BuildingType.Barracks);
             if (barracks == null || barracks.Count == 0)
             {
-                ToastUI.Show("Build a Barracks first!", ColorWarn);
+                ToastUI.Show("Build a Barracks first!", UIColors.Default.Warn);
                 return;
             }
 
@@ -246,19 +198,19 @@ namespace HollowGround.UI
             }
             if (!hasActive)
             {
-                ToastUI.Show($"Need Barracks Lv.{troop.BarracksLevelRequired}!", ColorWarn);
+                ToastUI.Show($"Need Barracks Lv.{troop.BarracksLevelRequired}!", UIColors.Default.Warn);
                 return;
             }
 
             if (ArmyManager.Instance.GetTrainingQueue().Count >= 3)
             {
-                ToastUI.Show("Training queue full! (max 3)", ColorWarn);
+                ToastUI.Show("Training queue full! (max 3)", UIColors.Default.Warn);
                 return;
             }
 
             if (!ArmyManager.Instance.CanAffordTraining(troop, 1))
             {
-                ToastUI.Show("Not enough resources!", ColorDanger);
+                ToastUI.Show("Not enough resources!", UIColors.Default.Danger);
                 return;
             }
 
@@ -289,36 +241,14 @@ namespace HollowGround.UI
 
         private void HandleTrainingStarted(ArmyManager.TrainingQueueEntry entry)
         {
-            ToastUI.Show($"{entry.Data.DisplayName} training started", ColorOk);
+            ToastUI.Show($"{entry.Data.DisplayName} training started", UIColors.Default.Ok);
             RefreshAll();
         }
 
         private void HandleTrainingCompleted(ArmyManager.TrainingQueueEntry entry)
         {
-            ToastUI.Show($"{entry.Data.DisplayName} ready!", ColorOk);
+            ToastUI.Show($"{entry.Data.DisplayName} ready!", UIColors.Default.Ok);
             RefreshAll();
-        }
-
-        private TMP_Text AddThemedText(Transform parent, string text, float size, Color color)
-        {
-            var go = new GameObject("T", typeof(RectTransform));
-            go.transform.SetParent(parent, false);
-            var tmp = go.AddComponent<TextMeshProUGUI>();
-            tmp.text = text;
-            tmp.fontSize = size;
-            tmp.alignment = TextAlignmentOptions.MidlineLeft;
-            tmp.color = color;
-            tmp.raycastTarget = false;
-            if (ThemeFont != null) tmp.font = ThemeFont;
-            return tmp;
-        }
-
-        private static void StretchFull(RectTransform rt)
-        {
-            rt.anchorMin = Vector2.zero;
-            rt.anchorMax = Vector2.one;
-            rt.offsetMin = Vector2.zero;
-            rt.offsetMax = Vector2.zero;
         }
     }
 }

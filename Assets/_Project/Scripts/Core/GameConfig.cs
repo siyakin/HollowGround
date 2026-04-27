@@ -48,9 +48,8 @@ namespace HollowGround.Core
             get
             {
                 if (_instance != null) return _instance;
-                _instance = UnityEngine.Resources.LoadAll<T>("").Length > 0
-                    ? UnityEngine.Resources.LoadAll<T>("")[0]
-                    : null;
+                var results = UnityEngine.Resources.LoadAll<T>("");
+                _instance = results.Length > 0 ? results[0] : null;
                 return _instance;
             }
         }

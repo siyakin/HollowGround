@@ -48,9 +48,8 @@ namespace HollowGround.Core
         }
     }
 
-    public class AudioManager : MonoBehaviour
+    public class AudioManager : Singleton<AudioManager>
     {
-        public static AudioManager Instance { get; private set; }
 
         [SerializeField] private AudioConfig _config;
         [SerializeField] private AudioSource _musicSource;
@@ -63,16 +62,10 @@ namespace HollowGround.Core
         private readonly List<AudioSource> _sfxPool = new();
         private int _poolIndex;
 
-        private void Awake()
+        protected override void Awake()
         {
-            if (Instance != null && Instance != this)
-            {
-                Destroy(gameObject);
-                return;
-            }
-            Instance = this;
+            base.Awake();
             DontDestroyOnLoad(gameObject);
-
             InitializeSFXPool();
         }
 

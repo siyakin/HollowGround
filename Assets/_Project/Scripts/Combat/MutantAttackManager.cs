@@ -10,9 +10,8 @@ using UnityEngine;
 
 namespace HollowGround.Combat
 {
-    public class MutantAttackManager : MonoBehaviour
+    public class MutantAttackManager : Singleton<MutantAttackManager>
     {
-        public static MutantAttackManager Instance { get; private set; }
 
         [Header("Settings")]
         [SerializeField] private float _baseAttackInterval = 600f;
@@ -26,7 +25,7 @@ namespace HollowGround.Combat
         private float _warningDuration = 30f;
         private float _warningTimer;
 
-        private MutantWave _pendingWave;
+        private MutantWaveData _pendingWave;
 
         public int CurrentWave => _currentWaveIndex;
         public bool IsWarningActive => _warningActive;
@@ -34,20 +33,10 @@ namespace HollowGround.Combat
         public float WarningTimeRemaining => _warningTimer;
         public bool IsUnderAttack { get; private set; }
 
-        public event System.Action<MutantWave> OnWaveWarning;
-        public event System.Action<MutantWave> OnWaveStarted;
-        public event System.Action<MutantWave, bool> OnWaveEnded;
+        public event System.Action<MutantWaveData> OnWaveWarning;
+        public event System.Action<MutantWaveData> OnWaveStarted;
+        public event System.Action<MutantWaveData, bool> OnWaveEnded;
         public event System.Action<float> OnAttackTimerChanged;
-
-        private void Awake()
-        {
-            if (Instance != null && Instance != this)
-            {
-                Destroy(gameObject);
-                return;
-            }
-            Instance = this;
-        }
 
         private void Update()
         {
@@ -97,29 +86,27 @@ namespace HollowGround.Combat
             _warningTimer = _warningDuration;
             _pendingWave = GenerateWave(_currentWaveIndex);
             OnWaveWarning?.Invoke(_pendingWave);
-            UI.ToastUI.Show($"WARNING: {_pendingWave.MutantCount} mutants approaching in {_warningDuration:F0}s!", new Color(0.95f, 0.55f, 0.1f, 1f));
         }
 
-        private void ExecuteWave(MutantWave wave)
+        private void ExecuteWave(MutantWaveData wave)
         {
             _warningActive = false;
             IsUnderAttack = true;
 
             OnWaveStarted?.Invoke(wave);
-            UI.ToastUI.Show($"MUTANT ATTACK! {wave.MutantCount} enemies! (Power: {wave.MutantPower})", new Color(0.9f, 0.3f, 0.3f, 1f));
 
             int defenderPower = CalculateDefensePower();
             int attackerPower = wave.MutantPower;
             bool victory = defenderPower >= attackerPower;
 
             float ratio = attackerPower > 0 ? (float)defenderPower / attackerPower : 999f;
+            int damagedCount = 0;
 
             if (victory)
             {
                 int survivorRate = Mathf.Clamp(Mathf.CeilToInt(ratio * 40), 30, 100);
                 float troopLoss = (100 - survivorRate) / 100f;
                 ApplyTroopLosses(troopLoss);
-
                 GrantRewards(wave);
 
                 if (QuestManager.Instance != null)
@@ -129,28 +116,25 @@ namespace HollowGround.Combat
             {
                 ApplyPenalties(wave);
                 ApplyTroopLosses(0.6f);
-                ApplyBuildingDamage();
+                damagedCount = ApplyBuildingDamage();
             }
 
             _currentWaveIndex++;
             IsUnderAttack = false;
             ResetTimer();
             OnWaveEnded?.Invoke(wave, victory);
-
-            if (victory)
-                UI.ToastUI.Show($"Victory! Wave {wave.WaveNumber} repelled! Resources gained.", new Color(0.35f, 0.8f, 0.4f, 1f));
-            else
-                UI.ToastUI.Show($"Defeat! Buildings damaged. Rebuild and prepare for next wave!", new Color(0.9f, 0.3f, 0.3f, 1f));
         }
 
-        private MutantWave GenerateWave(int waveIndex)
+        private MutantWaveData GenerateWave(int waveIndex)
         {
-            var wave = ScriptableObject.CreateInstance<MutantWave>();
-            wave.DisplayName = $"Mutant Wave {waveIndex + 1}";
-            wave.WaveNumber = waveIndex + 1;
-            wave.MutantCount = 5 + waveIndex * 3;
-            wave.MutantPower = Mathf.CeilToInt(_baseWavePower * Mathf.Pow(_powerGrowthFactor, waveIndex));
-            wave.Description = $"{wave.MutantCount} mutants approaching with power {wave.MutantPower}.";
+            var wave = new MutantWaveData
+            {
+                DisplayName = $"Mutant Wave {waveIndex + 1}",
+                WaveNumber = waveIndex + 1,
+                MutantCount = 5 + waveIndex * 3,
+                MutantPower = Mathf.CeilToInt(_baseWavePower * Mathf.Pow(_powerGrowthFactor, waveIndex)),
+                Description = $"{5 + waveIndex * 3} mutants approaching with power {Mathf.CeilToInt(_baseWavePower * Mathf.Pow(_powerGrowthFactor, waveIndex))}."
+            };
             return wave;
         }
 
@@ -163,7 +147,7 @@ namespace HollowGround.Combat
 
             if (BuildingManager.Instance != null)
             {
-                int walls = BuildingManager.Instance.GetBuildingCount(BuildingType.Barracks);
+                int walls = BuildingManager.Instance.GetBuildingCount(BuildingType.Walls);
                 power += walls * 20;
             }
 
@@ -192,7 +176,7 @@ namespace HollowGround.Combat
             }
         }
 
-        private void ApplyPenalties(MutantWave wave)
+        private void ApplyPenalties(MutantWaveData wave)
         {
             if (ResourceManager.Instance == null) return;
 
@@ -205,7 +189,7 @@ namespace HollowGround.Combat
             }
         }
 
-        private void GrantRewards(MutantWave wave)
+        private void GrantRewards(MutantWaveData wave)
         {
             if (ResourceManager.Instance == null) return;
 
@@ -214,23 +198,34 @@ namespace HollowGround.Combat
                 ResourceManager.Instance.Add(kvp.Key, kvp.Value);
         }
 
-        private void ApplyBuildingDamage()
+        private int ApplyBuildingDamage()
         {
-            if (BuildingManager.Instance == null) return;
+            if (BuildingManager.Instance == null) return 0;
 
             var buildings = BuildingManager.Instance.AllBuildings;
-            if (buildings.Count == 0) return;
+            if (buildings.Count == 0) return 0;
 
             int damageCount = Mathf.Max(1, buildings.Count / 4);
             var rng = new System.Random();
+            var toDamage = new List<Building>(buildings);
+            int actuallyDamaged = 0;
 
-            for (int i = 0; i < damageCount && buildings.Count > 0; i++)
+            for (int i = 0; i < damageCount && toDamage.Count > 0; i++)
             {
-                int idx = rng.Next(buildings.Count);
-                var b = buildings[idx];
-                if (b.Data.Type != BuildingType.CommandCenter)
-                    b.Demolish();
+                int idx = rng.Next(toDamage.Count);
+                var b = toDamage[idx];
+                toDamage.RemoveAt(idx);
+
+                if (b.Data.Type == BuildingType.CommandCenter) continue;
+
+                if (b.State != BuildingState.Damaged && b.State != BuildingState.Destroyed)
+                {
+                    b.ApplyDamage();
+                    actuallyDamaged++;
+                }
             }
+
+            return actuallyDamaged;
         }
     }
 }

@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using HollowGround.Buildings;
+using HollowGround.Grid;
 using HollowGround.Resources;
 using TMPro;
 using UnityEngine;
@@ -26,8 +27,14 @@ namespace HollowGround.UI
         [SerializeField] private Button _upgradeButton;
         [SerializeField] private TMP_Text _upgradeCostText;
         [SerializeField] private Button _demolishButton;
+        [SerializeField] private Button _repairButton;
+        [SerializeField] private TMP_Text _repairCostText;
 
         private Building _current;
+        private UnityEngine.Camera _cam;
+        private const float ActionBarHeight = 70f;
+        private const float TopBarHeight = 50f;
+        private const float ScreenMargin = 15f;
 
         private void Start()
         {
@@ -44,7 +51,8 @@ namespace HollowGround.UI
             if (_demolishButton != null)
                 _demolishButton.onClick.AddListener(OnDemolishClicked);
 
-            Debug.Log($"[BuildingInfoUI] OnEnable. Upgrade={_upgradeButton != null}, Demolish={_demolishButton != null}");
+            if (_repairButton != null)
+                _repairButton.onClick.AddListener(OnRepairClicked);
         }
 
         private void OnDisable()
@@ -54,6 +62,9 @@ namespace HollowGround.UI
 
             if (_demolishButton != null)
                 _demolishButton.onClick.RemoveListener(OnDemolishClicked);
+
+            if (_repairButton != null)
+                _repairButton.onClick.RemoveListener(OnRepairClicked);
         }
 
         private void OnDestroy()
@@ -103,6 +114,7 @@ namespace HollowGround.UI
         {
             _current = building;
             gameObject.SetActive(true);
+            SmartPosition(building);
             RefreshDisplay();
         }
 
@@ -123,7 +135,17 @@ namespace HollowGround.UI
                 _levelText.text = $"Level {_current.Level}";
 
             if (_stateText != null)
+            {
                 _stateText.text = _current.State.ToString();
+                _stateText.color = _current.State switch
+                {
+                    BuildingState.Damaged => new Color(0.9f, 0.3f, 0.2f),
+                    BuildingState.Destroyed => new Color(0.6f, 0.1f, 0.1f),
+                    BuildingState.Constructing => new Color(0.9f, 0.7f, 0.2f),
+                    BuildingState.Upgrading => new Color(0.3f, 0.7f, 0.9f),
+                    _ => Color.white
+                };
+            }
 
             if (_productionGroup != null)
                 _productionGroup.SetActive(_current.Data.HasProduction);
@@ -135,6 +157,7 @@ namespace HollowGround.UI
             }
 
             UpdateUpgradeButton();
+            UpdateRepairButton();
         }
 
         private void UpdateProgress()
@@ -193,10 +216,121 @@ namespace HollowGround.UI
 
         public void OnDemolishClicked()
         {
-            Debug.Log($"[BuildingInfoUI] Demolish clicked! Current={_current != null}");
             if (_current == null) return;
             _current.Demolish();
             HideInfo();
+        }
+
+        private void UpdateRepairButton()
+        {
+            if (_repairButton == null) return;
+
+            bool isDamaged = _current.State == BuildingState.Damaged;
+            _repairButton.gameObject.SetActive(isDamaged);
+
+            if (isDamaged && _repairCostText != null)
+            {
+                var costs = _current.Data.GetCostForLevel(_current.Level);
+                var parts = new List<string>();
+                foreach (var kvp in costs)
+                    parts.Add($"{kvp.Key}: {Mathf.CeilToInt(kvp.Value * 0.5f)}");
+                _repairCostText.text = string.Join("  ", parts);
+            }
+        }
+
+        public void OnRepairClicked()
+        {
+            if (_current == null) return;
+            _current.Repair();
+            RefreshDisplay();
+        }
+
+        private void SmartPosition(Building building)
+        {
+            if (_cam == null)
+                _cam = UnityEngine.Camera.main;
+            if (_cam == null) return;
+
+            var rt = GetComponent<RectTransform>();
+            if (rt == null) return;
+
+            Canvas canvas = GetComponentInParent<Canvas>();
+            if (canvas == null) return;
+
+            var canvasRt = canvas.GetComponent<RectTransform>();
+            float canvasW = canvasRt.rect.width;
+            float canvasH = canvasRt.rect.height;
+            float panelW = rt.rect.width;
+            float panelH = rt.rect.height;
+            float halfPW = panelW * 0.5f;
+            float halfPH = panelH * 0.5f;
+            float spacing = 20f;
+
+            float cellSize = GridSystem.Instance != null ? GridSystem.Instance.CellSize : 2f;
+            float bw = building.Data.SizeX * cellSize;
+            float bd = building.Data.SizeZ * cellSize;
+            float bh = 5f;
+            Vector3 center = building.transform.position + new Vector3(0f, bh * 0.5f, 0f);
+            Vector3 ext = new Vector3(bw * 0.5f, bh * 0.5f, bd * 0.5f);
+
+            Vector3[] corners = new Vector3[8];
+            int idx = 0;
+            for (int sx = -1; sx <= 1; sx += 2)
+                for (int sy = -1; sy <= 1; sy += 2)
+                    for (int sz = -1; sz <= 1; sz += 2)
+                        corners[idx++] = center + Vector3.Scale(new Vector3(sx, sy, sz), ext);
+
+            float minSX = float.MaxValue, maxSX = float.MinValue;
+            float minSY = float.MaxValue, maxSY = float.MinValue;
+            foreach (var c in corners)
+            {
+                Vector2 sp = _cam.WorldToScreenPoint(c);
+                minSX = Mathf.Min(minSX, sp.x);
+                maxSX = Mathf.Max(maxSX, sp.x);
+                minSY = Mathf.Min(minSY, sp.y);
+                maxSY = Mathf.Max(maxSY, sp.y);
+            }
+
+            float screenMidX = (minSX + maxSX) * 0.5f;
+            float screenMidY = (minSY + maxSY) * 0.5f;
+
+            Vector2 canvasMid;
+            RectTransformUtility.ScreenPointToLocalPointInRectangle(canvasRt, new Vector2(screenMidX, screenMidY), null, out canvasMid);
+
+            Vector2 canvasMin;
+            RectTransformUtility.ScreenPointToLocalPointInRectangle(canvasRt, new Vector2(minSX, minSY), null, out canvasMin);
+            Vector2 canvasMax;
+            RectTransformUtility.ScreenPointToLocalPointInRectangle(canvasRt, new Vector2(maxSX, maxSY), null, out canvasMax);
+
+            float buildingRight = canvasMax.x + spacing;
+            float buildingLeft = canvasMin.x - spacing;
+            float buildingTop = canvasMax.y + spacing;
+            float buildingBottom = canvasMin.y - spacing;
+
+            float safeLeft = -canvasW * 0.5f + spacing;
+            float safeRight = canvasW * 0.5f - spacing;
+            float safeTop = canvasH * 0.5f - TopBarHeight - spacing;
+            float safeBottom = -canvasH * 0.5f + ActionBarHeight + spacing;
+
+            float targetX = buildingRight + halfPW;
+            float targetY = canvasMid.y;
+
+            if (targetX + halfPW > safeRight)
+                targetX = buildingLeft - halfPW;
+
+            if (targetX - halfPW < safeLeft)
+            {
+                targetX = canvasMid.x;
+                targetY = buildingTop + halfPH;
+                if (targetY + halfPH > safeTop)
+                    targetY = buildingBottom - halfPH;
+            }
+
+            targetY = Mathf.Clamp(targetY, safeBottom + halfPH, safeTop - halfPH);
+
+            rt.anchorMin = new Vector2(0.5f, 0.5f);
+            rt.anchorMax = new Vector2(0.5f, 0.5f);
+            rt.anchoredPosition = new Vector2(targetX, targetY);
         }
     }
 }

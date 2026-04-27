@@ -1,14 +1,13 @@
 using System.Collections.Generic;
 using System.Linq;
+using HollowGround.Core;
 using HollowGround.Resources;
 using UnityEngine;
 
 namespace HollowGround.Quests
 {
-    public class QuestManager : MonoBehaviour
+    public class QuestManager : Singleton<QuestManager>
     {
-        public static QuestManager Instance { get; private set; }
-
         private readonly List<QuestInstance> _quests = new();
 
         public event System.Action<QuestInstance> OnQuestAccepted;
@@ -16,16 +15,6 @@ namespace HollowGround.Quests
         public event System.Action<QuestInstance> OnQuestCompleted;
         public event System.Action<QuestInstance> OnQuestTurnedIn;
         public event System.Action OnQuestListChanged;
-
-        private void Awake()
-        {
-            if (Instance != null && Instance != this)
-            {
-                Destroy(gameObject);
-                return;
-            }
-            Instance = this;
-        }
 
         public void LoadQuests(List<QuestData> questPool)
         {

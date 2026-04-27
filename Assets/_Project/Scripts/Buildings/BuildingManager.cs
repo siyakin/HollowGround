@@ -1,14 +1,13 @@
 using System.Collections.Generic;
 using System.Linq;
+using HollowGround.Core;
 using HollowGround.Resources;
 using UnityEngine;
 
 namespace HollowGround.Buildings
 {
-    public class BuildingManager : MonoBehaviour
+    public class BuildingManager : Singleton<BuildingManager>
     {
-        public static BuildingManager Instance { get; private set; }
-
         private readonly List<Building> _buildings = new();
         private Building _commandCenter;
 
@@ -20,16 +19,6 @@ namespace HollowGround.Buildings
         public event System.Action<Building> OnBuildingAdded;
         public event System.Action<Building> OnBuildingRemoved;
         public event System.Action<int> OnCommandCenterLevelChanged;
-
-        private void Awake()
-        {
-            if (Instance != null && Instance != this)
-            {
-                Destroy(gameObject);
-                return;
-            }
-            Instance = this;
-        }
 
         public void RegisterBuilding(Building building)
         {

@@ -12,13 +12,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6c7055fb7298b4c44877c972cfbd95b5, type: 3}
   m_Name: Su Kuyusu
   m_EditorClassIdentifier: Assembly-CSharp::HollowGround.Buildings.BuildingData
-  DisplayName: "Water Well"
-  Description: "Produces water. Essential for survival."
+  DisplayName: Water Well
+  Description: Produces water. Essential for survival.
   Type: 2
   Category: 0
-  LevelPrefabs:
-  - {fileID: 919132149155446097, guid: 93e3ef7c2780a294b8dc3bb53fdd340c, type: 3}
   MaxLevel: 10
+  Models:
+    ConstructModel: {fileID: 919132149155446097, guid: d7868faff57a3fb4a8a5fc586a491204, type: 3}
+    Level01Model: {fileID: 919132149155446097, guid: fdda0219aa762d1469ffe1bdf84ac963, type: 3}
+    Level03Model: {fileID: 919132149155446097, guid: 056719daf281d334fb8336771d171269, type: 3}
+    Level05Model: {fileID: 919132149155446097, guid: 00863c4d828131c4b91c77d2b534adf5, type: 3}
+    Level10Model: {fileID: 919132149155446097, guid: c4d7b9e11568f64499985cb633565147, type: 3}
+    DamagedModel: {fileID: 919132149155446097, guid: 7134a4e9f1d5ed84abc8acb196a29e66, type: 3}
+    DestroyedModel: {fileID: 919132149155446097, guid: b7a394299c181444084a3afcb4c454a3, type: 3}
   SizeX: 1
   SizeZ: 1
   BaseCost:

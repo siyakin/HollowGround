@@ -34,10 +34,10 @@ namespace HollowGround.Editor
             created += SetupFactionTradePanel(canvas);
             created += SetupQuestLogPanel(canvas);
 
+            WireUIManager(canvas);
+
             EditorSceneManager.MarkAllScenesDirty();
             Debug.Log($"[SceneSetup] {created} UI panel created/verified.");
-
-            WireUIManager(canvas);
         }
 
         static void WireUIManager(Canvas canvas)
@@ -68,8 +68,17 @@ namespace HollowGround.Editor
         static void WirePanel(SerializedObject so, Canvas canvas, string field, string panelName)
         {
             Transform t = canvas.transform.Find(panelName);
-            if (t != null)
-                so.FindProperty(field).objectReferenceValue = t.gameObject;
+            if (t == null) return;
+            var prop = so.FindProperty(field);
+            if (prop != null)
+                prop.objectReferenceValue = t.gameObject;
+        }
+
+        static void DestroyExisting(Canvas canvas, string panelName)
+        {
+            Transform existing = canvas.transform.Find(panelName);
+            if (existing != null)
+                Object.DestroyImmediate(existing.gameObject);
         }
 
         static Canvas FindOrCreateCanvas()
@@ -136,7 +145,8 @@ namespace HollowGround.Editor
         }
 
         static TMP_Text MakeLabel(Transform parent, string objName, string text,
-            Vector2 aMin, Vector2 aMax, Vector2 oMin, Vector2 oMax, Color color, int fontSize)
+            Vector2 aMin, Vector2 aMax, Vector2 oMin, Vector2 oMax, Color color, int fontSize,
+            UIStyleType styleTag = UIStyleType.LabelText)
         {
             GameObject go = MakeChild(parent, objName, aMin, aMax, oMin, oMax);
             TMP_Text tmp = go.AddComponent<TextMeshProUGUI>();
@@ -144,6 +154,7 @@ namespace HollowGround.Editor
             tmp.color = color;
             tmp.fontSize = fontSize;
             tmp.alignment = TextAlignmentOptions.Left;
+            go.AddComponent<UIThemeTag>().styleType = styleTag;
             return tmp;
         }
 
@@ -167,7 +178,8 @@ namespace HollowGround.Editor
         }
 
         static Button MakeButton(Transform parent, string objName, string label,
-            Vector2 aMin, Vector2 aMax, Vector2 oMin, Vector2 oMax, Color bgColor)
+            Vector2 aMin, Vector2 aMax, Vector2 oMin, Vector2 oMax, Color bgColor,
+            UIStyleType styleTag = UIStyleType.ConfirmButton)
         {
             GameObject go = MakeChild(parent, objName, aMin, aMax, oMin, oMax, bgColor);
             Button btn = go.AddComponent<Button>();
@@ -187,6 +199,7 @@ namespace HollowGround.Editor
             btn.colors = cb;
 
             MakeText(go.transform, label, Color.white, 16);
+            go.AddComponent<UIThemeTag>().styleType = styleTag;
             return btn;
         }
 
@@ -226,7 +239,9 @@ namespace HollowGround.Editor
 
         static void SetSerializedField(SerializedObject so, string field, Object value)
         {
-            so.FindProperty(field).objectReferenceValue = value;
+            var prop = so.FindProperty(field);
+            if (prop != null)
+                prop.objectReferenceValue = value;
         }
 
         static GameObject CreateQuestItemPrefab()
@@ -381,6 +396,7 @@ namespace HollowGround.Editor
 
         static int SetupBuildingInfoPanel(Canvas canvas)
         {
+            DestroyExisting(canvas, "BuildingInfoPanel");
             GameObject panel = CreatePanel(canvas, "BuildingInfoPanel", false);
             var infoUI = panel.GetComponent<BuildingInfoUI>() ?? panel.AddComponent<BuildingInfoUI>();
 
@@ -390,19 +406,22 @@ namespace HollowGround.Editor
             RectTransform prt = panel.GetComponent<RectTransform>();
             prt.anchorMin = new Vector2(0.5f, 0.5f);
             prt.anchorMax = new Vector2(0.5f, 0.5f);
-            prt.sizeDelta = new Vector2(350, 450);
+            prt.sizeDelta = new Vector2(350, 500);
             prt.anchoredPosition = new Vector2(300, 0);
 
             MakeChild(panel.transform, "Header",
                 new Vector2(0, 1), new Vector2(1, 1), new Vector2(10, -50), new Vector2(-10, -10));
             var nameText = MakeLabel(panel.transform, "NameText", "Building Name",
-                new Vector2(0, 1), new Vector2(1, 1), new Vector2(20, -45), new Vector2(-20, -15), Color.white, 22);
+                new Vector2(0, 1), new Vector2(1, 1), new Vector2(20, -45), new Vector2(-20, -15), Color.white, 22,
+                UIStyleType.HeaderText);
 
             var levelText = MakeLabel(panel.transform, "LevelText", "Level 1",
-                new Vector2(0, 1), new Vector2(1, 1), new Vector2(20, -75), new Vector2(-20, -50), LabelTextColor, 16);
+                new Vector2(0, 1), new Vector2(1, 1), new Vector2(20, -75), new Vector2(-20, -50), LabelTextColor, 16,
+                UIStyleType.LabelText);
 
             var stateText = MakeLabel(panel.transform, "StateText", "Constructing",
-                new Vector2(0, 1), new Vector2(1, 1), new Vector2(20, -100), new Vector2(-20, -80), WarningColor, 14);
+                new Vector2(0, 1), new Vector2(1, 1), new Vector2(20, -100), new Vector2(-20, -80), WarningColor, 14,
+                UIStyleType.WarningText);
 
             var progressSlider = MakeSlider(panel.transform, "ProgressSlider",
                 new Vector2(0, 1), new Vector2(1, 1), new Vector2(20, -140), new Vector2(-20, -120));
@@ -414,21 +433,31 @@ namespace HollowGround.Editor
                 new Vector2(0, 0.5f), new Vector2(1, 0.5f), new Vector2(10, -20), new Vector2(-10, 40));
 
             var productionText = MakeLabel(productionGroup.transform, "ProductionText", "10 Food / 5dk",
-                new Vector2(0, 0.5f), new Vector2(1, 1), new Vector2(10, 5), new Vector2(-10, -5), BodyTextColor, 14);
+                new Vector2(0, 0.5f), new Vector2(1, 1), new Vector2(10, 5), new Vector2(-10, -5), BodyTextColor, 14,
+                UIStyleType.BodyText);
 
             var productionSlider = MakeSlider(productionGroup.transform, "ProductionSlider",
                 new Vector2(0, 0), new Vector2(1, 0.4f), new Vector2(0, 0), new Vector2(0, 0));
 
             var upgradeBtn = MakeButton(panel.transform, "UpgradeButton", "UPGRADE",
                 new Vector2(0, 0), new Vector2(1, 0), new Vector2(20, 60), new Vector2(-20, 95),
-                new Color(0.13f, 0.17f, 0.10f, 0.95f));
+                new Color(0.13f, 0.17f, 0.10f, 0.95f), UIStyleType.ConfirmButton);
 
             var upgradeCostText = MakeLabel(panel.transform, "UpgradeCostText", "Cost: -",
-                new Vector2(0, 0), new Vector2(1, 0), new Vector2(20, 100), new Vector2(-20, 80), LabelTextColor, 12);
+                new Vector2(0, 0), new Vector2(1, 0), new Vector2(20, 100), new Vector2(-20, 80), LabelTextColor, 12,
+                UIStyleType.CostText);
 
             var demolishBtn = MakeButton(panel.transform, "DemolishButton", "DEMOLISH",
                 new Vector2(0, 0), new Vector2(1, 0), new Vector2(20, 15), new Vector2(-20, 50),
-                new Color(0.35f, 0.07f, 0.07f, 0.95f));
+                new Color(0.35f, 0.07f, 0.07f, 0.95f), UIStyleType.DangerButton);
+
+            var repairBtn = MakeButton(panel.transform, "RepairButton", "REPAIR",
+                new Vector2(0, 0), new Vector2(1, 0), new Vector2(20, 105), new Vector2(-20, 140),
+                new Color(0.13f, 0.25f, 0.10f, 0.95f), UIStyleType.ConfirmButton);
+
+            var repairCostText = MakeLabel(panel.transform, "RepairCostText", "Repair: -",
+                new Vector2(0, 0), new Vector2(1, 0), new Vector2(20, 145), new Vector2(-20, 125), LabelTextColor, 12,
+                UIStyleType.CostText);
 
             SerializedObject so = new SerializedObject(infoUI);
             SetSerializedField(so, "_nameText", nameText);
@@ -442,6 +471,8 @@ namespace HollowGround.Editor
             SetSerializedField(so, "_upgradeButton", upgradeBtn);
             SetSerializedField(so, "_upgradeCostText", upgradeCostText);
             SetSerializedField(so, "_demolishButton", demolishBtn);
+            SetSerializedField(so, "_repairButton", repairBtn);
+            SetSerializedField(so, "_repairCostText", repairCostText);
             so.ApplyModifiedProperties();
 
             EditorUtility.SetDirty(infoUI);
@@ -454,6 +485,7 @@ namespace HollowGround.Editor
 
         static int SetupToastPanel(Canvas canvas)
         {
+            DestroyExisting(canvas, "ToastPanel");
             GameObject panel = CreatePanel(canvas, "ToastPanel", false);
             var toastUI = panel.GetComponent<ToastUI>() ?? panel.AddComponent<ToastUI>();
 
@@ -513,6 +545,7 @@ namespace HollowGround.Editor
 
         static int SetupTechTreePanel(Canvas canvas)
         {
+            DestroyExisting(canvas, "TechTreePanel");
             GameObject panel = CreatePanel(canvas, "TechTreePanel", false);
             var techUI = panel.GetComponent<TechTreeUI>() ?? panel.AddComponent<TechTreeUI>();
 
@@ -550,16 +583,20 @@ namespace HollowGround.Editor
                 new Color(0.08f, 0.08f, 0.06f, 0.96f));
 
             var detailName = MakeLabel(detailPanel.transform, "DetailName", "Tech Name",
-                new Vector2(0, 1), new Vector2(1, 1), new Vector2(10, -35), new Vector2(-10, -5), Color.white, 20);
+                new Vector2(0, 1), new Vector2(1, 1), new Vector2(10, -35), new Vector2(-10, -5), Color.white, 20,
+                UIStyleType.HeaderText);
 
             var detailDesc = MakeLabel(detailPanel.transform, "DetailDesc", "Description",
-                new Vector2(0, 0.5f), new Vector2(1, 0.7f), new Vector2(10, 10), new Vector2(-10, -10), BodyTextColor, 14);
+                new Vector2(0, 0.5f), new Vector2(1, 0.7f), new Vector2(10, 10), new Vector2(-10, -10), BodyTextColor, 14,
+                UIStyleType.BodyText);
 
             var detailCost = MakeLabel(detailPanel.transform, "DetailCost", "Cost: -",
-                new Vector2(0, 0.3f), new Vector2(1, 0.5f), new Vector2(10, 0), new Vector2(-10, 0), WarningColor, 13);
+                new Vector2(0, 0.3f), new Vector2(1, 0.5f), new Vector2(10, 0), new Vector2(-10, 0), WarningColor, 13,
+                UIStyleType.CostText);
 
             var detailBonuses = MakeLabel(detailPanel.transform, "DetailBonuses", "Bonuses: -",
-                new Vector2(0, 0.15f), new Vector2(1, 0.35f), new Vector2(10, 0), new Vector2(-10, 0), BonusColor, 13);
+                new Vector2(0, 0.15f), new Vector2(1, 0.35f), new Vector2(10, 0), new Vector2(-10, 0), BonusColor, 13,
+                UIStyleType.BodyText);
 
             Button researchBtn = MakeButton(detailPanel.transform, "ResearchBtn", "RESEARCH",
                 new Vector2(0.2f, 0), new Vector2(0.8f, 0), new Vector2(0, 15), new Vector2(0, 50),
@@ -597,11 +634,16 @@ namespace HollowGround.Editor
                     cardBtn.targetGraphic = cardImg;
 
                     var cardName = MakeLabel(cardGO.transform, "NameText", techData.DisplayName,
-                        new Vector2(0, 0.6f), new Vector2(1, 1), new Vector2(5, 0), new Vector2(-5, 0), Color.white, 14);
+                        new Vector2(0, 0.6f), new Vector2(1, 1), new Vector2(5, 0), new Vector2(-5, 0), Color.white, 14,
+                        UIStyleType.HeaderText);
+
                     var cardDesc = MakeLabel(cardGO.transform, "DescText", "",
-                        new Vector2(0, 0.3f), new Vector2(1, 0.6f), new Vector2(5, 0), new Vector2(-5, 0), BodyTextColor, 11);
+                        new Vector2(0, 0.3f), new Vector2(1, 0.6f), new Vector2(5, 0), new Vector2(-5, 0), BodyTextColor, 11,
+                        UIStyleType.BodyText);
+
                     var cardCost = MakeLabel(cardGO.transform, "CostText", "",
-                        new Vector2(0, 0.1f), new Vector2(0.6f, 0.3f), new Vector2(5, 0), new Vector2(-5, 0), WarningColor, 11);
+                        new Vector2(0, 0.1f), new Vector2(0.6f, 0.3f), new Vector2(5, 0), new Vector2(-5, 0), WarningColor, 11,
+                        UIStyleType.CostText);
                     var cardStatus = MakeLabel(cardGO.transform, "StatusText", "Locked",
                         new Vector2(0.6f, 0.1f), new Vector2(1, 0.3f), new Vector2(5, 0), new Vector2(-5, 0), LabelTextColor, 11);
 
@@ -640,6 +682,7 @@ namespace HollowGround.Editor
 
         static int SetupFactionTradePanel(Canvas canvas)
         {
+            DestroyExisting(canvas, "FactionTradePanel");
             GameObject panel = CreatePanel(canvas, "FactionTradePanel", false);
             var tradeUI = panel.GetComponent<FactionTradeUI>() ?? panel.AddComponent<FactionTradeUI>();
 
@@ -676,13 +719,16 @@ namespace HollowGround.Editor
                 new Color(0.08f, 0.08f, 0.06f, 0.6f));
 
             var factionNameText = MakeLabel(tradePanel.transform, "FactionName", "Faction",
-                new Vector2(0, 1), new Vector2(1, 1), new Vector2(10, -35), new Vector2(-10, -5), Color.white, 20);
+                new Vector2(0, 1), new Vector2(1, 1), new Vector2(10, -35), new Vector2(-10, -5), Color.white, 20,
+                UIStyleType.HeaderText);
 
             var factionRelationText = MakeLabel(tradePanel.transform, "FactionRelation", "Relation: Neutral",
-                new Vector2(0, 0.85f), new Vector2(1, 0.95f), new Vector2(10, 0), new Vector2(-10, 0), WarningColor, 14);
+                new Vector2(0, 0.85f), new Vector2(1, 0.95f), new Vector2(10, 0), new Vector2(-10, 0), WarningColor, 14,
+                UIStyleType.WarningText);
 
             var factionDescText = MakeLabel(tradePanel.transform, "FactionDesc", "Description",
-                new Vector2(0, 0.75f), new Vector2(1, 0.85f), new Vector2(10, 0), new Vector2(-10, 0), BodyTextColor, 13);
+                new Vector2(0, 0.75f), new Vector2(1, 0.85f), new Vector2(10, 0), new Vector2(-10, 0), BodyTextColor, 13,
+                UIStyleType.BodyText);
 
             GameObject sellContainer = new("SellOffersContainer");
             sellContainer.transform.SetParent(tradePanel.transform, false);
@@ -712,7 +758,7 @@ namespace HollowGround.Editor
 
             var closeBtn = MakeButton(panel.transform, "CloseTradeBtn", "CLOSE",
                 new Vector2(0.4f, 0), new Vector2(0.6f, 0), new Vector2(0, 15), new Vector2(0, 50),
-                new Color(0.18f, 0.18f, 0.16f, 0.95f));
+                new Color(0.18f, 0.18f, 0.16f, 0.95f), UIStyleType.DangerButton);
 
             GameObject offerItemPrefab = CreateOfferItemPrefab();
 
@@ -745,9 +791,12 @@ namespace HollowGround.Editor
                     var slotBg = slotGO.GetComponent<Image>();
                     slotBtn.targetGraphic = slotBg;
                     MakeLabel(slotGO.transform, "FactionName", factionData.DisplayName,
-                        new Vector2(0, 0.5f), new Vector2(1, 1), new Vector2(8, 0), new Vector2(-8, 0), Color.white, 14);
+                        new Vector2(0, 0.5f), new Vector2(1, 1), new Vector2(8, 0), new Vector2(-8, 0), Color.white, 14,
+                        UIStyleType.HeaderText);
+
                     MakeLabel(slotGO.transform, "RelationText", "Neutral",
-                        new Vector2(0, 0), new Vector2(1, 0.5f), new Vector2(8, 0), new Vector2(-8, 0), WarningColor, 11);
+                        new Vector2(0, 0), new Vector2(1, 0.5f), new Vector2(8, 0), new Vector2(-8, 0), WarningColor, 11,
+                        UIStyleType.WarningText);
 
                     int idx = i;
                     slotBtn.onClick.AddListener(() => { });
@@ -773,6 +822,7 @@ namespace HollowGround.Editor
 
         static int SetupQuestLogPanel(Canvas canvas)
         {
+            DestroyExisting(canvas, "QuestLogPanel");
             GameObject panel = CreatePanel(canvas, "QuestLogPanel", false);
             var questUI = panel.GetComponent<QuestLogUI>() ?? panel.AddComponent<QuestLogUI>();
 
@@ -789,15 +839,16 @@ namespace HollowGround.Editor
                 new Vector2(0, 1), new Vector2(1, 1), new Vector2(10, -50), new Vector2(-10, -10), ActionBar);
 
             var tabLabel = MakeLabel(tabBar.transform, "TabLabel", "Active Quests",
-                new Vector2(0.1f, 0), new Vector2(0.9f, 1), new Vector2(10, 0), new Vector2(-10, 0), Color.white, 18);
+                new Vector2(0.1f, 0), new Vector2(0.9f, 1), new Vector2(10, 0), new Vector2(-10, 0), Color.white, 18,
+                UIStyleType.HeaderText);
 
             var prevBtn = MakeButton(tabBar.transform, "PrevBtn", "<",
                 new Vector2(0, 0), new Vector2(0.1f, 1), new Vector2(0, 0), new Vector2(0, 0),
-                new Color(0.18f, 0.18f, 0.16f, 0.95f));
+                new Color(0.18f, 0.18f, 0.16f, 0.95f), UIStyleType.TabButton);
 
             var nextBtn = MakeButton(tabBar.transform, "NextBtn", ">",
                 new Vector2(0.9f, 0), new Vector2(1, 1), new Vector2(0, 0), new Vector2(0, 0),
-                new Color(0.18f, 0.18f, 0.16f, 0.95f));
+                new Color(0.18f, 0.18f, 0.16f, 0.95f), UIStyleType.TabButton);
 
             GameObject questListContainer = new("QuestListContainer");
             questListContainer.transform.SetParent(panel.transform, false);
@@ -819,16 +870,20 @@ namespace HollowGround.Editor
                 new Color(0.08f, 0.08f, 0.06f, 0.6f));
 
             var detailName = MakeLabel(detailPanel.transform, "DetailName", "Quest Name",
-                new Vector2(0, 1), new Vector2(1, 1), new Vector2(10, -35), new Vector2(-10, -5), Color.white, 20);
+                new Vector2(0, 1), new Vector2(1, 1), new Vector2(10, -35), new Vector2(-10, -5), Color.white, 20,
+                UIStyleType.HeaderText);
 
             var detailDesc = MakeLabel(detailPanel.transform, "DetailDesc", "Description",
-                new Vector2(0, 0.6f), new Vector2(1, 0.85f), new Vector2(10, 0), new Vector2(-10, 0), BodyTextColor, 14);
+                new Vector2(0, 0.6f), new Vector2(1, 0.85f), new Vector2(10, 0), new Vector2(-10, 0), BodyTextColor, 14,
+                UIStyleType.BodyText);
 
             var detailObjectives = MakeLabel(detailPanel.transform, "DetailObjectives", "Objectives",
-                new Vector2(0, 0.3f), new Vector2(1, 0.6f), new Vector2(10, 0), new Vector2(-10, 0), WarningColor, 14);
+                new Vector2(0, 0.3f), new Vector2(1, 0.6f), new Vector2(10, 0), new Vector2(-10, 0), WarningColor, 14,
+                UIStyleType.WarningText);
 
             var detailRewards = MakeLabel(detailPanel.transform, "DetailRewards", "Rewards",
-                new Vector2(0, 0.15f), new Vector2(1, 0.3f), new Vector2(10, 0), new Vector2(-10, 0), BonusColor, 14);
+                new Vector2(0, 0.15f), new Vector2(1, 0.3f), new Vector2(10, 0), new Vector2(-10, 0), BonusColor, 14,
+                UIStyleType.BodyText);
 
             var acceptBtn = MakeButton(detailPanel.transform, "AcceptBtn", "ACCEPT",
                 new Vector2(0.1f, 0), new Vector2(0.5f, 0), new Vector2(0, 10), new Vector2(0, 45),
@@ -840,7 +895,7 @@ namespace HollowGround.Editor
 
             var closeBtn = MakeButton(panel.transform, "CloseBtn", "CLOSE",
                 new Vector2(0.35f, 0), new Vector2(0.65f, 0), new Vector2(0, 10), new Vector2(0, 45),
-                new Color(0.18f, 0.18f, 0.16f, 0.95f));
+                new Color(0.18f, 0.18f, 0.16f, 0.95f), UIStyleType.DangerButton);
 
             GameObject questItemPrefab = CreateQuestItemPrefab();
 

@@ -1,11 +1,11 @@
+using HollowGround.Core;
 using UnityEngine;
 using UnityEngine.UI;
 
 namespace HollowGround.UI
 {
-    public class UIManager : MonoBehaviour
+    public class UIManager : Singleton<UIManager>
     {
-        public static UIManager Instance { get; private set; }
 
         [SerializeField] private GameObject _resourceBarPanel;
         [SerializeField] private GameObject _buildMenuPanel;
@@ -23,16 +23,6 @@ namespace HollowGround.UI
         [SerializeField] private GameObject _saveMenuPanel;
 
         private bool _saveBtnCreated;
-
-        private void Awake()
-        {
-            if (Instance != null && Instance != this)
-            {
-                Destroy(gameObject);
-                return;
-            }
-            Instance = this;
-        }
 
         private void Start()
         {

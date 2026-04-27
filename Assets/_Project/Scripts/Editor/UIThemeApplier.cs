@@ -17,9 +17,9 @@ namespace HollowGround.Editor
             var theme = AssetDatabase.LoadAssetAtPath<UIThemeSO>(THEME_PATH);
             if (theme == null)
             {
-                EditorUtility.DisplayDialog("Hata",
-                    $"UITheme asset bulunamadı:\n{THEME_PATH}\n\nÖnce 'HollowGround > Create UI Theme Asset' menüsünü çalıştır.",
-                    "Tamam");
+                EditorUtility.DisplayDialog("Error",
+                    $"UITheme asset not found:\n{THEME_PATH}\n\nRun 'HollowGround > Create UI Theme Asset' first.",
+                    "OK");
                 return;
             }
 
@@ -32,7 +32,7 @@ namespace HollowGround.Editor
             }
 
             EditorSceneManager.MarkAllScenesDirty();
-            Debug.Log($"[UITheme] {count} element güncellendi.");
+            Debug.Log($"[UITheme] {count} elements updated.");
         }
 
         [MenuItem("HollowGround/Create UI Theme Asset")]
@@ -49,7 +49,7 @@ namespace HollowGround.Editor
             AssetDatabase.CreateAsset(theme, THEME_PATH);
             AssetDatabase.SaveAssets();
             Selection.activeObject = theme;
-            Debug.Log("[UITheme] Asset oluşturuldu: " + THEME_PATH);
+            Debug.Log("[UITheme] Asset created: " + THEME_PATH);
         }
 
         static void Apply(UIThemeTag tag, UIThemeSO theme)

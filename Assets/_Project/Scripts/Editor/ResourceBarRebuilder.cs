@@ -25,7 +25,6 @@ namespace HollowGround.Editor
             new(0.95f, 0.9f, 0.15f)
         };
 
-        [MenuItem("HollowGround/Rebuild ResourceBar")]
         public static void Rebuild()
         {
             var canvas = Object.FindAnyObjectByType<Canvas>();

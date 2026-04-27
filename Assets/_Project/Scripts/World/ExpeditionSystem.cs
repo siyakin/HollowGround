@@ -2,13 +2,13 @@ using System;
 using System.Collections.Generic;
 using HollowGround.Army;
 using HollowGround.Combat;
+using HollowGround.Core;
 using UnityEngine;
 
 namespace HollowGround.World
 {
-    public class ExpeditionSystem : MonoBehaviour
+    public class ExpeditionSystem : Singleton<ExpeditionSystem>
     {
-        public static ExpeditionSystem Instance { get; private set; }
 
         private readonly List<ActiveExpedition> _expeditions = new();
 
@@ -30,16 +30,6 @@ namespace HollowGround.World
             public float RemainingTime;
             public bool IsReturning;
             public float Progress => TravelTime > 0 ? 1f - (RemainingTime / TravelTime) : 1f;
-        }
-
-        private void Awake()
-        {
-            if (Instance != null && Instance != this)
-            {
-                Destroy(gameObject);
-                return;
-            }
-            Instance = this;
         }
 
         private void Update()

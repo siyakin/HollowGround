@@ -12,13 +12,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6c7055fb7298b4c44877c972cfbd95b5, type: 3}
   m_Name: Town House
   m_EditorClassIdentifier: Assembly-CSharp::HollowGround.Buildings.BuildingData
-  DisplayName: "Shelter"
-  Description: "Increases population capacity."
+  DisplayName: Shelter
+  Description: Increases population capacity.
   Type: 13
   Category: 2
-  LevelPrefabs:
-  - {fileID: 919132149155446097, guid: 1ff83487850e3c843b1cd2aedfb4beb9, type: 3}
   MaxLevel: 10
+  Models:
+    ConstructModel: {fileID: 919132149155446097, guid: 26acb768bb77dd94abdc6b918e40062e, type: 3}
+    Level01Model: {fileID: 919132149155446097, guid: da71ad72f1d1e2049a109e1872cdd2cf, type: 3}
+    Level03Model: {fileID: 919132149155446097, guid: 93c5eb846033842429fa9142551a9ba8, type: 3}
+    Level05Model: {fileID: 919132149155446097, guid: 55559014c49196047b96e4bfbe9d7578, type: 3}
+    Level10Model: {fileID: 919132149155446097, guid: 464ff96ce7fc10e4c9d1282c902d496e, type: 3}
+    DamagedModel: {fileID: 919132149155446097, guid: dc163f68441db2c4faaffe70d268d1d8, type: 3}
+    DestroyedModel: {fileID: 919132149155446097, guid: 25c8f9c89b19e8d4aa9b916a6f54508a, type: 3}
   SizeX: 2
   SizeZ: 2
   BaseCost:

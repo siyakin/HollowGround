@@ -1,14 +1,14 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using HollowGround.Core;
 using HollowGround.Resources;
 using UnityEngine;
 
 namespace HollowGround.Heroes
 {
-    public class HeroManager : MonoBehaviour
+    public class HeroManager : Singleton<HeroManager>
     {
-        public static HeroManager Instance { get; private set; }
 
         private readonly List<Hero> _heroes = new();
 
@@ -19,16 +19,6 @@ namespace HollowGround.Heroes
         public event Action<Hero> OnHeroRemoved;
         public event Action<Hero> OnHeroLevelUp;
         public event Action OnHeroesChanged;
-
-        private void Awake()
-        {
-            if (Instance != null && Instance != this)
-            {
-                Destroy(gameObject);
-                return;
-            }
-            Instance = this;
-        }
 
         private void Update()
         {
@@ -88,6 +78,10 @@ namespace HollowGround.Heroes
             return true;
         }
 
+        private HeroData[] _cachedHeroData;
+
+        private HeroData[] AllHeroData => _cachedHeroData ??= UnityEngine.Resources.LoadAll<HeroData>("Heroes");
+
         public HeroData GetRandomHeroByRarity()
         {
             float roll = UnityEngine.Random.value;
@@ -99,14 +93,10 @@ namespace HollowGround.Heroes
             else if (roll < 0.99f) rarity = HeroRarity.Epic;
             else rarity = HeroRarity.Legendary;
 
-            var allData = UnityEngine.Resources.LoadAll<HeroData>("Heroes");
-            var matching = allData.Where(h => h.Rarity == rarity).ToList();
+            var matching = System.Linq.Enumerable.Where(AllHeroData, h => h.Rarity == rarity).ToList();
 
             if (matching.Count == 0)
-            {
-                allData = UnityEngine.Resources.LoadAll<HeroData>("Heroes");
-                matching = allData.ToList();
-            }
+                matching = AllHeroData.ToList();
 
             if (matching.Count == 0) return null;
 

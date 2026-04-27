@@ -35,7 +35,6 @@ namespace HollowGround.Editor
             "btnShelter"
         };
 
-        [MenuItem("HollowGround/Fix BuildMenu")]
         public static void Fix()
         {
             var menu = UnityEngine.Object.FindAnyObjectByType<BuildMenuUI>(FindObjectsInactive.Include);

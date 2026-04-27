@@ -12,13 +12,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6c7055fb7298b4c44877c972cfbd95b5, type: 3}
   m_Name: Jenerator
   m_EditorClassIdentifier: Assembly-CSharp::HollowGround.Buildings.BuildingData
-  DisplayName: "Generator"
-  Description: "Produces energy. Needed for advanced buildings."
+  DisplayName: Generator
+  Description: Produces energy. Needed for advanced buildings.
   Type: 12
   Category: 0
-  LevelPrefabs:
-  - {fileID: 919132149155446097, guid: c30c7aed8491ca44b9e4f93d0685b0a3, type: 3}
   MaxLevel: 10
+  Models:
+    ConstructModel: {fileID: 919132149155446097, guid: b0ac94ed96d9cd44ab14a7769f9d800a, type: 3}
+    Level01Model: {fileID: 919132149155446097, guid: f5e95c1a2aa7bd64fb8ddf64d8edf68b, type: 3}
+    Level03Model: {fileID: 919132149155446097, guid: abcffc47048d64349adc20e26140c369, type: 3}
+    Level05Model: {fileID: 919132149155446097, guid: 960b3c938ff406d4b88d706839370aac, type: 3}
+    Level10Model: {fileID: 919132149155446097, guid: 163ce92114d9dac419b7abf71c4716f1, type: 3}
+    DamagedModel: {fileID: 919132149155446097, guid: 86791018253c4f843b1eb659753c7656, type: 3}
+    DestroyedModel: {fileID: 919132149155446097, guid: 0cf02793cd45f00419e6c3af9bb57884, type: 3}
   SizeX: 1
   SizeZ: 1
   BaseCost:

@@ -16,9 +16,15 @@ MonoBehaviour:
   Description: Produces food. Regular timer-based production.
   Type: 1
   Category: 0
-  LevelPrefabs:
-  - {fileID: 919132149155446097, guid: a55b239280dcca5458ce1b03f441de60, type: 3}
   MaxLevel: 10
+  Models:
+    ConstructModel: {fileID: 919132149155446097, guid: f93cf988788b93b478470bc2f3b99c2d, type: 3}
+    Level01Model: {fileID: 919132149155446097, guid: c5da3c8dcfe4d324db7bcb5e1bb9490c, type: 3}
+    Level03Model: {fileID: 919132149155446097, guid: c3da56f1b84ff514294fb6dde4477907, type: 3}
+    Level05Model: {fileID: 919132149155446097, guid: aca4313165a03404393915774380e142, type: 3}
+    Level10Model: {fileID: 919132149155446097, guid: 9628b7aeb0fe7594f9575f178f98515f, type: 3}
+    DamagedModel: {fileID: 919132149155446097, guid: 36e89d87a24dc5b438bdef96b9e85911, type: 3}
+    DestroyedModel: {fileID: 919132149155446097, guid: 4ebfcf0584fd2ec4f90bc7cb4e4687e4, type: 3}
   SizeX: 2
   SizeZ: 2
   BaseCost:

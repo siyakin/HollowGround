@@ -12,13 +12,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6c7055fb7298b4c44877c972cfbd95b5, type: 3}
   m_Name: Depo
   m_EditorClassIdentifier: Assembly-CSharp::HollowGround.Buildings.BuildingData
-  DisplayName: "Storage"
-  Description: "Increases resource storage capacity."
+  DisplayName: Storage
+  Description: Increases resource storage capacity.
   Type: 14
   Category: 0
-  LevelPrefabs:
-  - {fileID: 919132149155446097, guid: 03e37f1dbaaa6ba40ba6256c15678221, type: 3}
   MaxLevel: 10
+  Models:
+    ConstructModel: {fileID: 919132149155446097, guid: 8a088bb898d7c30489b3a68e569867d0, type: 3}
+    Level01Model: {fileID: 919132149155446097, guid: 4aa9f9bd29e730e4ba3e410ffca65ff9, type: 3}
+    Level03Model: {fileID: 919132149155446097, guid: 97011d6fd3d731c4a988dc64144d54d1, type: 3}
+    Level05Model: {fileID: 919132149155446097, guid: 1c6480e28fc369746abd1e174313ba0e, type: 3}
+    Level10Model: {fileID: 919132149155446097, guid: 6c5d321d0d30e644783000b40914fb0d, type: 3}
+    DamagedModel: {fileID: 919132149155446097, guid: 0f8bd5556af3dc047a647c6f64893b37, type: 3}
+    DestroyedModel: {fileID: 919132149155446097, guid: fcdb64558b9402d48a370263209323de, type: 3}
   SizeX: 1
   SizeZ: 1
   BaseCost:

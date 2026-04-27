@@ -11,9 +11,8 @@ using UnityEngine;
 
 namespace HollowGround.Core
 {
-    public class SessionLogger : MonoBehaviour
+    public class SessionLogger : Singleton<SessionLogger>
     {
-        public static SessionLogger Instance { get; private set; }
 
         private StringBuilder _sb;
         private string _filePath;
@@ -21,16 +20,6 @@ namespace HollowGround.Core
         private int _logCount;
         private float _lastFlush;
         private const float FlushInterval = 2f;
-
-        private void Awake()
-        {
-            if (Instance != null && Instance != this)
-            {
-                Destroy(gameObject);
-                return;
-            }
-            Instance = this;
-        }
 
         private void Start()
         {
@@ -235,6 +224,8 @@ namespace HollowGround.Core
             building.OnUpgradeComplete += OnBuildingUpgradeComplete;
             building.OnProduced += OnBuildingProduced;
             building.OnDestroyed += OnBuildingDestroyed;
+            building.OnDamaged += OnBuildingDamaged;
+            building.OnRepaired += OnBuildingRepaired;
         }
 
         private void OnBuildingRemoved(Building building)
@@ -244,6 +235,8 @@ namespace HollowGround.Core
             building.OnUpgradeComplete -= OnBuildingUpgradeComplete;
             building.OnProduced -= OnBuildingProduced;
             building.OnDestroyed -= OnBuildingDestroyed;
+            building.OnDamaged -= OnBuildingDamaged;
+            building.OnRepaired -= OnBuildingRepaired;
         }
 
         private void OnBuildingConstructionComplete(Building building)
@@ -266,6 +259,16 @@ namespace HollowGround.Core
             Log($"BUILDING DESTROYED: {building.Data.DisplayName} at {building.GridOrigin}");
         }
 
+        private void OnBuildingDamaged(Building building)
+        {
+            Log($"BUILDING DAMAGED: {building.Data.DisplayName} at {building.GridOrigin} | State: {building.State}");
+        }
+
+        private void OnBuildingRepaired(Building building)
+        {
+            Log($"BUILDING REPAIRED: {building.Data.DisplayName} at {building.GridOrigin} | Level {building.Level}");
+        }
+
         private void OnResourceChanged(ResourceType type, int newVal)
         {
             Log($"RESOURCE: {type} = {newVal}");
@@ -286,17 +289,17 @@ namespace HollowGround.Core
             Log($"TROOPS: {type} count = {count}");
         }
 
-        private void OnWaveWarning(MutantWave wave)
+        private void OnWaveWarning(MutantWaveData wave)
         {
-            Log($"⚠ MUTANT WARNING: {wave.DisplayName} | Power: {wave.MutantPower} | Count: {wave.MutantCount}");
+            Log($"WARNING: MUTANT WARNING: {wave.DisplayName} | Power: {wave.MutantPower} | Count: {wave.MutantCount}");
         }
 
-        private void OnWaveStarted(MutantWave wave)
+        private void OnWaveStarted(MutantWaveData wave)
         {
-            Log($"⚔ MUTANT ATTACK: {wave.DisplayName} | Power: {wave.MutantPower}");
+            Log($"MUTANT ATTACK: {wave.DisplayName} | Power: {wave.MutantPower}");
         }
 
-        private void OnWaveEnded(MutantWave wave, bool victory)
+        private void OnWaveEnded(MutantWaveData wave, bool victory)
         {
             string result = victory ? "VICTORY" : "DEFEAT";
             Log($" MUTANT WAVE {result}: {wave.DisplayName} | Survived");

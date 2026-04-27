@@ -2,26 +2,14 @@ using UnityEngine;
 
 namespace HollowGround.Core
 {
-    public class TimeManager : MonoBehaviour
+    public class TimeManager : Singleton<TimeManager>
     {
-        public static TimeManager Instance { get; private set; }
-
         public float GameTime { get; private set; }
         public int GameSpeed { get; private set; } = 1;
         public bool IsPaused => GameSpeed == 0;
 
         public event System.Action<int> OnSpeedChanged;
         public event System.Action<float> OnGameTimeChanged;
-
-        private void Awake()
-        {
-            if (Instance != null && Instance != this)
-            {
-                Destroy(gameObject);
-                return;
-            }
-            Instance = this;
-        }
 
         private void Update()
         {

@@ -3,16 +3,13 @@ using System.Linq;
 using HollowGround.Core;
 using HollowGround.Grid;
 using HollowGround.Resources;
-using HollowGround.UI;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
 namespace HollowGround.Buildings
 {
-    public class BuildingPlacer : MonoBehaviour
+    public class BuildingPlacer : Singleton<BuildingPlacer>
     {
-        public static BuildingPlacer Instance { get; private set; }
-
         [SerializeField] private LayerMask _groundMask;
         [SerializeField] private Material _validMaterial;
         [SerializeField] private Material _invalidMaterial;
@@ -23,6 +20,8 @@ namespace HollowGround.Buildings
         private int _rotation;
         private bool _isValidPlacement;
         private UnityEngine.Camera _cam;
+        private Vector2Int _cachedCoords;
+        private Vector3 _cachedWorldPos;
 
         public bool IsPlacing => _isPlacing;
         public BuildingData CurrentBuilding => _currentBuilding;
@@ -31,14 +30,9 @@ namespace HollowGround.Buildings
         public event System.Action<Building> OnPlacementCompleted;
         public event System.Action OnPlacementCancelled;
 
-        private void Awake()
+        protected override void Awake()
         {
-            if (Instance != null && Instance != this)
-            {
-                Destroy(gameObject);
-                return;
-            }
-            Instance = this;
+            base.Awake();
             ResolveCamera();
         }
 
@@ -70,6 +64,8 @@ namespace HollowGround.Buildings
             _isPlacing = true;
             _rotation = 0;
             _isValidPlacement = false;
+            _cachedCoords = new Vector2Int(-1, -1);
+            _cachedWorldPos = Vector3.zero;
 
             GameObject prefab = buildingData.GetPrefabForLevel(1);
             if (prefab != null)
@@ -109,16 +105,17 @@ namespace HollowGround.Buildings
             Ray ray = _cam.ScreenPointToRay(mousePos);
             if (!Physics.Raycast(ray, out RaycastHit hit, Mathf.Infinity, _groundMask)) return;
 
-            Vector3 snapped = GridSystem.Instance.SnapToGrid(hit.point);
+            _cachedCoords = GridSystem.Instance.GetGridCoordinates(hit.point);
+            Vector3 snapped = GridSystem.Instance.GetWorldPosition(_cachedCoords.x, _cachedCoords.y);
             (int sx, int sz) = GetRotatedSize();
             float offsetX = (sx - 1) * GridSystem.Instance.CellSize * 0.5f;
             float offsetZ = (sz - 1) * GridSystem.Instance.CellSize * 0.5f;
-            _ghostObject.transform.position = new Vector3(snapped.x + offsetX, snapped.y, snapped.z + offsetZ);
+            _cachedWorldPos = new Vector3(snapped.x + offsetX, snapped.y, snapped.z + offsetZ);
+            _ghostObject.transform.position = _cachedWorldPos;
 
             _ghostObject.transform.rotation = Quaternion.Euler(0, _rotation * 90f, 0);
 
-            var coords = GridSystem.Instance.GetGridCoordinates(hit.point);
-            _isValidPlacement = GridSystem.Instance.IsAreaBuildable(coords.x, coords.y, sx, sz);
+            _isValidPlacement = GridSystem.Instance.IsAreaBuildable(_cachedCoords.x, _cachedCoords.y, sx, sz);
 
             SetGhostMaterial(_isValidPlacement ? _validMaterial : _invalidMaterial);
         }
@@ -154,26 +151,30 @@ namespace HollowGround.Buildings
             if (!GridSystem.Instance.IsAreaBuildable(coords.x, coords.y, sx, sz)) return;
 
             var costs = _currentBuilding.GetCostForLevel(1);
-            Debug.Log($"[BuildingPlacer] Placing {_currentBuilding.DisplayName}, costs: {string.Join(", ", costs.Select(c => $"{c.Key}={c.Value}"))}");
-
-            if (BuildingManager.Instance != null && !BuildingManager.Instance.CanAffordBuilding(_currentBuilding, 1))
-            {
-                ToastUI.Show("Not enough resources!", Color.red);
-                return;
-            }
 
             var rm = ResourceManager.Instance;
             if (rm != null && !rm.SpendMultiple(costs))
-            {
-                ToastUI.Show("Not enough resources!", Color.red);
                 return;
-            }
 
             string buildingName = _currentBuilding.DisplayName;
 
             GameObject buildingObj = new(buildingName);
-            buildingObj.transform.position = _ghostObject.transform.position;
-            buildingObj.transform.rotation = _ghostObject.transform.rotation;
+
+            if (_ghostObject != null)
+            {
+                buildingObj.transform.position = _ghostObject.transform.position;
+                buildingObj.transform.rotation = _ghostObject.transform.rotation;
+            }
+            else
+            {
+                if (_cam == null) return;
+                Vector2 placePos = Mouse.current.position.ReadValue();
+                Ray placeRay = _cam.ScreenPointToRay(placePos);
+                if (Physics.Raycast(placeRay, out RaycastHit placeHit, Mathf.Infinity, _groundMask))
+                {
+                    buildingObj.transform.position = GridSystem.Instance.SnapToGrid(placeHit.point);
+                }
+            }
 
             Building building = buildingObj.AddComponent<Building>();
             building.Initialize(_currentBuilding, coords);
@@ -189,11 +190,6 @@ namespace HollowGround.Buildings
 
             GameManager.Instance.SetState(GameState.Playing);
             OnPlacementCompleted?.Invoke(building);
-
-            if (ToastUI.Instance != null)
-                ToastUI.Show($"{buildingName} placed!", Color.green);
-            else
-                Debug.Log($"[Toast] {buildingName} placed!");
         }
 
         private (int x, int z) GetRotatedSize()

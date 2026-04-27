@@ -1,13 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using HollowGround.Core;
 using UnityEngine;
 
 namespace HollowGround.World
 {
-    public class WorldMap : MonoBehaviour
+    public class WorldMap : Singleton<WorldMap>
     {
-        public static WorldMap Instance { get; private set; }
 
         [Header("Map Settings")]
         [SerializeField] private int _mapWidth = 10;
@@ -28,16 +28,6 @@ namespace HollowGround.World
 
         public event Action<MapNodeData> OnNodeExplored;
         public event Action OnMapUpdated;
-
-        private void Awake()
-        {
-            if (Instance != null && Instance != this)
-            {
-                Destroy(gameObject);
-                return;
-            }
-            Instance = this;
-        }
 
         public void Initialize(List<MapNodeData> nodes)
         {

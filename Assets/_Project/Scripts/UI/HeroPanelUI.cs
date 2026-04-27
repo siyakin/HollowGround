@@ -8,13 +8,6 @@ namespace HollowGround.UI
 {
     public class HeroPanelUI : MonoBehaviour
     {
-        private static readonly Color PanelBg = new(0.08f, 0.09f, 0.11f, 0.92f);
-        private static readonly Color RowBg = new(0.14f, 0.15f, 0.17f, 1f);
-        private static readonly Color ColorSummon = new(0.3f, 0.6f, 0.95f, 1f);
-        private static readonly Color ColorText = new(0.95f, 0.95f, 0.95f, 1f);
-        private static readonly Color ColorMuted = new(0.65f, 0.65f, 0.7f, 1f);
-        private static readonly Color ColorGold = new(1f, 0.85f, 0.3f, 1f);
-
         private TMP_Text _headerText;
         private TMP_Text _summonCostText;
         private Transform _listContainer;
@@ -49,20 +42,11 @@ namespace HollowGround.UI
             var oldImages = GetComponents<Image>();
             foreach (var img in oldImages) DestroyImmediate(img);
 
-            var bg = gameObject.AddComponent<Image>();
-            bg.color = PanelBg;
-            bg.raycastTarget = true;
+            UIPrimitiveFactory.SetupPanelBackground(gameObject, UIColors.Default);
 
-            var vlg = gameObject.AddComponent<VerticalLayoutGroup>();
-            vlg.padding = new RectOffset(20, 20, 15, 15);
-            vlg.spacing = 8;
-            vlg.childAlignment = TextAnchor.UpperCenter;
-            vlg.childControlWidth = true;
-            vlg.childControlHeight = false;
-            vlg.childForceExpandWidth = true;
-            vlg.childForceExpandHeight = false;
+            var vlg = UIPrimitiveFactory.AddStandardVLG(gameObject);
 
-            _headerText = AddText(transform, "HEROES", 20, ColorGold);
+            _headerText = UIPrimitiveFactory.AddThemedText(transform, "HEROES", 20, UIColors.Default.Gold);
             _headerText.alignment = TextAlignmentOptions.Center;
             var headerLE = _headerText.gameObject.AddComponent<LayoutElement>();
             headerLE.preferredHeight = 35;
@@ -85,17 +69,11 @@ namespace HollowGround.UI
             var summonLE = summonRow.AddComponent<LayoutElement>();
             summonLE.preferredHeight = 45;
             var summonBg = summonRow.AddComponent<Image>();
-            summonBg.color = RowBg;
-            var summonHLG = summonRow.AddComponent<HorizontalLayoutGroup>();
-            summonHLG.padding = new RectOffset(15, 15, 5, 5);
-            summonHLG.spacing = 15;
+            summonBg.color = UIColors.Default.RowBg;
+            var summonHLG = UIPrimitiveFactory.AddRowHLG(summonRow, new RectOffset(15, 15, 5, 5), 15);
             summonHLG.childAlignment = TextAnchor.MiddleCenter;
-            summonHLG.childControlWidth = true;
-            summonHLG.childControlHeight = true;
-            summonHLG.childForceExpandWidth = true;
-            summonHLG.childForceExpandHeight = false;
 
-            _summonCostText = AddText(summonRow.transform, "Summon: 100 TechPart", 15, ColorMuted);
+            _summonCostText = UIPrimitiveFactory.AddThemedText(summonRow.transform, "Summon: 100 TechPart", 15, UIColors.Default.Muted);
             _summonCostText.alignment = TextAlignmentOptions.MidlineLeft;
             var costLE = _summonCostText.gameObject.AddComponent<LayoutElement>();
             costLE.preferredWidth = 180;
@@ -107,12 +85,12 @@ namespace HollowGround.UI
             btnLE.preferredWidth = 140;
             btnLE.minHeight = 35;
             var btnImg = btnObj.AddComponent<Image>();
-            btnImg.color = ColorSummon;
+            btnImg.color = UIColors.Summon;
             var btn = btnObj.AddComponent<Button>();
             btn.targetGraphic = btnImg;
-            var btnLabel = AddText(btnObj.transform, "SUMMON", 15, Color.white);
+            var btnLabel = UIPrimitiveFactory.AddThemedText(btnObj.transform, "SUMMON", 15, Color.white);
             btnLabel.alignment = TextAlignmentOptions.Center;
-            StretchFull(btnLabel.rectTransform);
+            UIPrimitiveFactory.StretchFull(btnLabel.rectTransform);
 
             btn.onClick.AddListener(OnSummonClicked);
 
@@ -129,7 +107,7 @@ namespace HollowGround.UI
             var heroes = HeroManager.Instance.AllHeroes;
             if (heroes.Count == 0)
             {
-                var empty = AddText(_listContainer, "No heroes yet. Summon one!", 15, ColorMuted);
+                var empty = UIPrimitiveFactory.AddThemedText(_listContainer, "No heroes yet. Summon one!", 15, UIColors.Default.Muted);
                 empty.alignment = TextAlignmentOptions.Center;
                 return;
             }
@@ -141,33 +119,26 @@ namespace HollowGround.UI
                 var le = row.AddComponent<LayoutElement>();
                 le.preferredHeight = 40;
                 var rbg = row.AddComponent<Image>();
-                rbg.color = RowBg;
-                var hlg = row.AddComponent<HorizontalLayoutGroup>();
-                hlg.padding = new RectOffset(12, 12, 4, 4);
-                hlg.spacing = 10;
-                hlg.childAlignment = TextAnchor.MiddleLeft;
-                hlg.childControlWidth = true;
-                hlg.childControlHeight = true;
-                hlg.childForceExpandWidth = true;
-                hlg.childForceExpandHeight = false;
+                rbg.color = UIColors.Default.RowBg;
+                var hlg = UIPrimitiveFactory.AddRowHLG(row);
 
-                var nameT = AddText(row.transform, $"{hero.Data.DisplayName} Lv{hero.Level}", 15, ColorText);
+                var nameT = UIPrimitiveFactory.AddThemedText(row.transform, $"{hero.Data.DisplayName} Lv{hero.Level}", 15, UIColors.Default.Text);
                 nameT.alignment = TextAlignmentOptions.MidlineLeft;
                 var nle = nameT.gameObject.AddComponent<LayoutElement>();
                 nle.preferredWidth = 150;
 
-                var rarityColor = GetRarityColor(hero.Data.Rarity);
-                var rarT = AddText(row.transform, hero.Data.Rarity.ToString(), 14, rarityColor);
+                var rarityColor = UIColors.GetRarityColor(hero.Data.Rarity);
+                var rarT = UIPrimitiveFactory.AddThemedText(row.transform, hero.Data.Rarity.ToString(), 14, rarityColor);
                 rarT.alignment = TextAlignmentOptions.MidlineLeft;
                 var rle = rarT.gameObject.AddComponent<LayoutElement>();
                 rle.preferredWidth = 80;
 
-                var roleT = AddText(row.transform, hero.Data.Role.ToString(), 14, ColorMuted);
+                var roleT = UIPrimitiveFactory.AddThemedText(row.transform, hero.Data.Role.ToString(), 14, UIColors.Default.Muted);
                 roleT.alignment = TextAlignmentOptions.MidlineLeft;
                 var roleLE = roleT.gameObject.AddComponent<LayoutElement>();
                 roleLE.preferredWidth = 80;
 
-                var statT = AddText(row.transform, $"ATK:{hero.CurrentAttack} DEF:{hero.CurrentDefense}", 13, ColorMuted);
+                var statT = UIPrimitiveFactory.AddThemedText(row.transform, $"ATK:{hero.CurrentAttack} DEF:{hero.CurrentDefense}", 13, UIColors.Default.Muted);
                 statT.alignment = TextAlignmentOptions.MidlineRight;
             }
 
@@ -181,52 +152,18 @@ namespace HollowGround.UI
             var data = HeroManager.Instance.GetRandomHeroByRarity();
             if (data == null)
             {
-                ToastUI.Show("No hero data found!", Color.red);
+                ToastUI.Show("No hero data found!", UIColors.Default.Danger);
                 return;
             }
 
             if (!HeroManager.Instance.CanSummon(data))
             {
-                ToastUI.Show($"Need {data.SummonCost} {data.SummonResource}!", Color.red);
+                ToastUI.Show($"Need {data.SummonCost} {data.SummonResource}!", UIColors.Default.Danger);
                 return;
             }
 
             HeroManager.Instance.SummonHero(data);
-            ToastUI.Show($"Summoned: {data.DisplayName} ({data.Rarity})!", GetRarityColor(data.Rarity));
-        }
-
-        private static Color GetRarityColor(HeroRarity rarity)
-        {
-            return rarity switch
-            {
-                HeroRarity.Common => ColorMuted,
-                HeroRarity.Uncommon => new Color(0.3f, 0.9f, 0.3f, 1f),
-                HeroRarity.Rare => new Color(0.3f, 0.6f, 1f, 1f),
-                HeroRarity.Epic => new Color(0.7f, 0.3f, 0.9f, 1f),
-                HeroRarity.Legendary => ColorGold,
-                _ => ColorMuted
-            };
-        }
-
-        private static TMP_Text AddText(Transform parent, string text, float size, Color color)
-        {
-            var go = new GameObject("T", typeof(RectTransform));
-            go.transform.SetParent(parent, false);
-            var tmp = go.AddComponent<TextMeshProUGUI>();
-            tmp.text = text;
-            tmp.fontSize = size;
-            tmp.alignment = TextAlignmentOptions.MidlineLeft;
-            tmp.color = color;
-            tmp.raycastTarget = false;
-            return tmp;
-        }
-
-        private static void StretchFull(RectTransform rt)
-        {
-            rt.anchorMin = Vector2.zero;
-            rt.anchorMax = Vector2.one;
-            rt.offsetMin = Vector2.zero;
-            rt.offsetMax = Vector2.zero;
+            ToastUI.Show($"Summoned: {data.DisplayName} ({data.Rarity})!", UIColors.GetRarityColor(data.Rarity));
         }
     }
 }

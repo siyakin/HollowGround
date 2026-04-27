@@ -32,6 +32,7 @@ Tek kisi PvE: Sehir kurma + ordu yonetimi + hero sistemi + dunya kesfi.
 - Sistemler birbirini **event** ile haber verir, direkt cagri yok
 - Veriler **ScriptableObject** ile tanimlanir
 - UI panelleri `UIManager.ToggleXxx()` ile acilir/kapanir
+- Kodla yaratilan her UI elementine (Button, Label, Panel) **UIThemeTag** eklenmeli — `MakeButton` ve `MakeLabel` helper'lari otomatik ekler, semantic tag'i parametre olarak ver (orn: `UIStyleType.HeaderText`, `UIStyleType.DangerButton`)
 
 ---
 
@@ -193,6 +194,39 @@ Tum sistemler playtest edildi, 13/13 test gecti:
 - Camera.main null olabilir → BuildingPlacer _cam ile cache edilir
 - GameInitializer artık ground oluşturmaz, sadece kamerayı merkezler
 
+### Bina Modelleri (Blender → Unity)
+- Rehber: `Docs/BLENDER_MODELING_GUIDE.md` — olculer, renk paleti, seviye stratejisi
+- Prompt serisi: `Docs/BLENDER_PROMPTS.md` — her bina icin kopyala-yapistir prompt'lar
+- Blender Z-up, Unity Y-up. FBX export: -Z forward, Y up, Apply Transform ON
+- Grid cell: 2m. 1x1 footprint max 1.9x1.9m, 2x2 footprint max 3.9x3.9m
+- Her bina: L01, L03, L05, L10 (active) + Construct + Damaged + Destroyed = 7 model
+- Vertex color: R=rust, G=moss, B=dirt. Materyaller: 6-8 slot Principled BSDF
+- **15 bina x 7 model = 105 FBX tamamlandi** (CC, Farm, Mine, Barracks, WaterWell, Generator, WoodFactory, Hospital, Storage, Shelter, Walls, WatchTower, Workshop, ResearchLab, TradeCenter)
+- **Claude** Blender modelleme icin en basarili model, **Grok 4.3** parametrik yaklasimda iyi
+- Tum bina spec'leri: `Docs/BuildingSpecs/` klasorunde (her bina icin ayri .md)
+- Bina rehberi: `Docs/BUILDING_GUIDE.md` (oyuncu + tasarim referans)
+- FBX import: `Assets/_Project/Models/Buildings/{BuildingName}/` altina
+
+### Bina Model Sistemi (Faz 12 — Tamamlandi) ✅
+- **BuildingData.BuildingModels** struct: 7 GameObject slot (Construct, L01, L03, L05, L10, Damaged, Destroyed)
+- **Level threshold**: L01 (lv1-2), L03 (lv3-4), L05 (lv5-9), L10 (lv10)
+- **State-based model swap**: Building.cs `UpdateModel()` state'e gore dogru modeli instantiate eder
+  - Constructing → ConstructModel (fallback: L01)
+  - Active/Upgrading → LevelModels (threshold'a gore)
+  - Damaged → DamagedModel (fallback: level model)
+  - Destroyed → DestroyedModel (2.5sn gosterim → otomatik kaldirma)
+- **Z-fighting fix**: Model `localPosition.y = 0.015f` (1.5cm offset)
+- **Ghost placement fix**: BuildingPlacer `_cachedCoords` / `_cachedWorldPos` ile ghost ve yerlestirme uyumu
+- **Hasar/Tamir sistemi**: `ApplyDamage()` → Damaged state, `Repair()` → kaynak harcayip Active'e donme
+- **MutantAttackManager**: Yenilgi durumunda `ApplyBuildingDamage()` hasar sayisini dondurur, toast ile REPAIR uyari
+- **BuildingInfoUI**: SmartPosition (bina ekran pozisyonuna gore panel konumlanir, binayi ortemez), Repair butonu, state renk kodlamasi
+- **SessionLogger**: OnDamaged/OnRepaired eventleri loglaniyor
+- **Editor araçları**:
+  - `HollowGround/FBX/Configure All Building FBX Imports` — 105 FBX toplu import ayari
+  - `HollowGround/Models/Bind All Building Models` — FBX → BuildingData SO otomatik baglama
+  - `HollowGround/Models/Show Binding Report` — her bina icin 7/7 durum raporu
+- **UIThemeTag**: MakeLabel/MakeButton helper'lari otomatik UIThemeTag ekler (HeaderText, DangerButton, CostText, vs.)
+
 ### Gorsel/Polish (Editor isi, script gerektirmez)
 - Post-processing (bloom 0.2, vignette 0.2, filmgrain kapalı) — PostProcessingSetup runtime
 - Atmosfer efektleri varsayılan kapalı (dust/fog particles) — AtmosphereEffects inspector'dan açılır
@@ -226,6 +260,11 @@ Tum sistemler playtest edildi, 13/13 test gecti:
 15. BuildingPlacer'da Camera.main null dönebilir → `_cam` field ile Awake'de cache et
 16. AtmosphereEffects varsayılanları agresif olmamalı: fog density 0.004, dust/fog particles kapalı
 17. GroundManager + GameInitializer aynı anda ground üretmez — sadece bir tanesi yapmalı
+18. Unity 6000.4'te `ModelImporter.normals`, `tangents`, `importColors`, `generateColliders`, `generateSecondaryUVSet`, `materialLocation`, `normalSmoothingSource` kaldırılmış — `SerializedProperty` ile erişilmeli
+19. BuildingPlacer ghost pozisyonu ile yerlestirme koordinati farkli olabilir → `_cachedCoords` / `_cachedWorldPos` ile ghost frame'indeki koordinat kullanilmali
+20. MutantAttackManager defeat'te `ApplyBuildingDamage()` → hasarli bina uretimi durur, kullanici Repair ile geri donmeli. SessionLogger'a OnDamaged/OnRepaired eklenmeli
+21. `Setup UI Panels` sadece kendi olusturdugu panelleri siler (`DestroyExisting`), diger paneller (ResourceBar, BuildMenu, vs.) dokunulmaz
+22. 1x1 binalar ground plane ile z-fighting yapar → model `localPosition.y = 0.015f` offset
 
 ---
 
@@ -242,7 +281,7 @@ Tum sistemler playtest edildi, 13/13 test gecti:
 
 ## Dengeleme Kaynaklari
 
-Tum dengeleme degerleri `BALANCE.md` dosyasinda:
+Tum dengeleme degerleri `Docs/BALANCE.md` dosyasinda:
 - Bina maliyetleri ve uretim oranlari (seviye 1-5 ornekleri)
 - Asker egitim maliyeti ve guc referansi
 - Mutant dalga gucleri (1-10)
@@ -251,3 +290,68 @@ Tum dengeleme degerleri `BALANCE.md` dosyasinda:
 - Teknoloji arastirma maliyetleri
 - Quest odul referansi
 - Kaynak baslangic degerleri
+
+---
+
+## Mimari Kurallar (Architecture Rules)
+
+Bu kurallar tekrarlanan hataları ve gereksiz kod tekrarını önlemek için Faz 11 sonrası eklenmiştir.
+
+### Manager Singleton Pattern
+- Tüm Manager'lar `Singleton<T>` base class'ından inherit olmalıdır: `public class XxxManager : Singleton<XxxManager>`
+- `Awake()` override gerekirse `protected override void Awake() { base.Awake(); ... }` şeklinde yazılmalı
+- Kendi `Instance` property'si YAZILMAZ — `Singleton<T>` otomatik sağlar
+- `DontDestroyOnLoad` gerekirse override Awake içinde `base.Awake()` sonrası eklenir
+
+### UI Primitif Kodlama
+- Yeni UI panel oluştururken `UIPrimitiveFactory` static metodları kullanılmalı:
+  - `UIPrimitiveFactory.CreateUIObject()` — UI GameObject oluşturma
+  - `UIPrimitiveFactory.AddThemedText()` — Theme font'lı TMP_Text
+  - `UIPrimitiveFactory.AddText()` — Fontsuz TMP_Text
+  - `UIPrimitiveFactory.AddImage()` — Image component
+  - `UIPrimitiveFactory.CreateButton()` — Tam buton (bg + label + onClick)
+  - `UIPrimitiveFactory.StretchFull()` — RectTransform stretch
+  - `UIPrimitiveFactory.SetAnchors()` — Anchor ayarı
+  - `UIPrimitiveFactory.SetupPanelBackground()` — Panel bg + CanvasGroup temizleme
+  - `UIPrimitiveFactory.AddStandardVLG()` — Standart VerticalLayoutGroup
+  - `UIPrimitiveFactory.AddRowHLG()` — Satır HorizontalLayoutGroup
+  - `UIPrimitiveFactory.AddLayoutElement()` — LayoutElement ekleme
+- **ASLA** `AddText`, `StretchFull`, `CreateUIObject` gibi metodları panel script'lerde tekrar tanımlama
+
+### Renk Tanımları
+- Tüm UI renkleri `UIColors` static class'ında tanımlanır
+- `UIColors.Default.PanelBg`, `UIColors.Default.Ok`, `UIColors.Default.Gold` vb.
+- Panel script'lerde `static readonly Color` tanımı YAPILMAZ
+- Hero rarity renkleri: `UIColors.GetRarityColor(rarity)`
+- Map node renkleri: `UIColors.GetNodeColor(type)`
+
+### Domain→UI Ayrımı
+- Domain logic (Building, MutantAttackManager, BattleManager vs.) **ASLA** doğrudan `ToastUI.Show()` çağırmaz
+- Domain sınıfları event fırlatır: `OnConstructionComplete`, `OnDamaged`, `OnWaveWarning` vb.
+- Toast mesajları UI katmanında (SessionLogger, UI paneller) event subscription ile gösterilir
+- Sadece UI script'ler (TrainingPanelUI, UIManager vs.) ToastUI çağırabilir
+
+### Resources.LoadAll Kullanımı
+- `Resources.LoadAll<T>()` her çağrıda disk I/O yapar → Update/tick içinde YASAK
+- Cache pattern: `private T[] _cachedData; private T[] AllData => _cachedData ??= Resources.LoadAll<T>("path");`
+- `GameConfig.Instance` zaten singleton SO'dur, her frame erişimi güvenlidir
+
+### Editor Factory Costs Helper
+- `CostEntryHelper.Costs(params object[])` merkezi utility kullanılmalı
+- BuildingDataFactory, TroopDataFactory, TechNodeFactory'de lokal `Costs()` metodu YAZILMAZ
+
+### Runtime ScriptableObject Oluşturma
+- `ScriptableObject.CreateInstance<T>()` runtime'da YASAK (save/load ile uyumsuz)
+- Runtime verileri için plain C# class/struct kullanılır
+- SO'lar sadece editörde tasarım verisi için kullanılır
+- Örnek: `MutantWaveData` (plain class) vs `MutantWave` (SO, editör only)
+
+### Ölü Kod (Dead Code)
+- Kullanılmayan script dosyaları projede tutulmaz
+- `GameEvent.cs` kaldırıldı — C# `event Action<T>` kullanılıyor
+- `PlacementValidator.cs` kaldırıldı — `GridSystem` direkt kullanılıyor
+
+### Hard-coded Magic Numbers
+- Birlik gücü çarpanı: `TroopData.BaseAttack` üzerinden hesaplanmalı, `* 10` hard-code YASAK
+- Bina tamir/para iadesi oranları `BuildingData` veya `GameConfig` SO'da tanımlanmalı
+- `Resources.LoadAll<T>("")` ile boş string path YASAK — spesifik klasör yolu verilmeli

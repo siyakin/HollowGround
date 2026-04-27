@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using HollowGround.Army;
 using HollowGround.Buildings;
+using HollowGround.Core;
 using HollowGround.Resources;
 using UnityEditor;
 using UnityEngine;
@@ -47,6 +48,14 @@ namespace HollowGround.Editor
             Debug.Log("[TroopDataFactory] 5 TroopData SOs created in " + Folder);
         }
 
+        private static List<BuildingData.CostEntry> Costs(params object[] pairs)
+        {
+            var list = new List<BuildingData.CostEntry>();
+            for (int i = 0; i < pairs.Length - 1; i += 2)
+                list.Add(new BuildingData.CostEntry { Type = (ResourceType)pairs[i], Amount = (int)pairs[i + 1] });
+            return list;
+        }
+
         private static void Create(string name, string desc,
             TroopType type, TroopRole role,
             int hp, int atk, int def, float spd,
@@ -73,20 +82,6 @@ namespace HollowGround.Editor
             data.TrainingCost = costs;
 
             AssetDatabase.CreateAsset(data, path);
-        }
-
-        private static List<BuildingData.CostEntry> Costs(params object[] pairs)
-        {
-            var list = new List<BuildingData.CostEntry>();
-            for (int i = 0; i < pairs.Length - 1; i += 2)
-            {
-                list.Add(new BuildingData.CostEntry
-                {
-                    Type = (ResourceType)pairs[i],
-                    Amount = (int)pairs[i + 1]
-                });
-            }
-            return list;
         }
     }
 }

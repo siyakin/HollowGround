@@ -1,10 +1,10 @@
+using HollowGround.Core;
 using UnityEngine;
 
 namespace HollowGround.Grid
 {
-    public class GridSystem : MonoBehaviour
+    public class GridSystem : Singleton<GridSystem>
     {
-        public static GridSystem Instance { get; private set; }
 
         [Header("Grid Settings")]
         [SerializeField] private int _width = 50;
@@ -18,15 +18,9 @@ namespace HollowGround.Grid
 
         private GridCell[,] _cells;
 
-        private void Awake()
+        protected override void Awake()
         {
-            if (Instance != null && Instance != this)
-            {
-                Destroy(gameObject);
-                return;
-            }
-            Instance = this;
-
+            base.Awake();
             InitializeGrid();
         }
 

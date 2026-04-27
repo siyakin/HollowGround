@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using HollowGround.Core;
 using HollowGround.Grid;
 using HollowGround.Resources;
-using HollowGround.UI;
 using UnityEngine;
 
 namespace HollowGround.Buildings
@@ -14,7 +13,8 @@ namespace HollowGround.Buildings
         Constructing,
         Active,
         Upgrading,
-        Damaged
+        Damaged,
+        Destroyed
     }
 
     public class Building : MonoBehaviour
@@ -30,11 +30,16 @@ namespace HollowGround.Buildings
 
         private float _productionTimer;
         private GameObject _currentModel;
+        private float _destroyedTimer;
+        private const float DestroyedDisplayDuration = 2.5f;
+        private const float GroundYOffset = 0.015f;
 
         public event Action<Building> OnConstructionComplete;
         public event Action<Building> OnUpgradeComplete;
         public event Action<Building, ResourceType, int> OnProduced;
         public event Action<Building> OnDestroyed;
+        public event Action<Building> OnDamaged;
+        public event Action<Building> OnRepaired;
 
         public void Initialize(BuildingData data, Vector2Int gridOrigin)
         {
@@ -66,6 +71,9 @@ namespace HollowGround.Buildings
                 case BuildingState.Upgrading:
                     TickUpgrade();
                     break;
+                case BuildingState.Destroyed:
+                    TickDestroyed();
+                    break;
             }
         }
 
@@ -81,7 +89,7 @@ namespace HollowGround.Buildings
                 ConstructionProgress = 1f;
                 State = BuildingState.Active;
                 OnConstructionComplete?.Invoke(this);
-                ToastUI.Show($"{_data.DisplayName} construction complete!", Color.green);
+                UpdateModel();
             }
         }
 
@@ -187,12 +195,78 @@ namespace HollowGround.Buildings
             if (_currentModel != null)
                 Destroy(_currentModel);
 
-            GameObject prefab = _data.GetPrefabForLevel(Level);
+            GameObject prefab = _data.GetModelForState(State, Level);
             if (prefab != null)
             {
                 _currentModel = Instantiate(prefab, transform);
-                _currentModel.transform.localPosition = Vector3.zero;
+                _currentModel.transform.localPosition = new Vector3(0f, GroundYOffset, 0f);
+                _currentModel.transform.localRotation = Quaternion.identity;
             }
+        }
+
+        private void TickDestroyed()
+        {
+            _destroyedTimer += Time.deltaTime;
+            if (_destroyedTimer >= DestroyedDisplayDuration)
+                RemoveBuilding();
+        }
+
+        public void ApplyDamage()
+        {
+            if (State == BuildingState.Destroyed) return;
+
+            if (State == BuildingState.Damaged)
+            {
+                SetDestroyed();
+                return;
+            }
+
+            State = BuildingState.Damaged;
+            UpdateModel();
+            OnDamaged?.Invoke(this);
+        }
+
+        private void SetDestroyed()
+        {
+            State = BuildingState.Destroyed;
+            _destroyedTimer = 0f;
+            UpdateModel();
+
+            var col = GetComponent<Collider>();
+            if (col != null)
+                col.enabled = false;
+        }
+
+        public bool Repair()
+        {
+            if (State != BuildingState.Damaged) return false;
+
+            var costs = _data.GetCostForLevel(Level);
+            float repairRatio = 0.5f;
+            var repairCosts = new Dictionary<ResourceType, int>();
+            foreach (var kvp in costs)
+                repairCosts[kvp.Key] = Mathf.CeilToInt(kvp.Value * repairRatio);
+
+            if (ResourceManager.Instance == null || !ResourceManager.Instance.CanAfford(repairCosts))
+            {
+                return false;
+            }
+
+            ResourceManager.Instance.SpendMultiple(repairCosts);
+            State = BuildingState.Active;
+            UpdateModel();
+            OnRepaired?.Invoke(this);
+            return true;
+        }
+
+        private void RemoveBuilding()
+        {
+            var gridSystem = GridSystem.Instance;
+            if (gridSystem != null)
+                gridSystem.FreeCells(GridOrigin.x, GridOrigin.y, _data.SizeX, _data.SizeZ);
+
+            OnDestroyed?.Invoke(this);
+            Destroy(gameObject);
         }
 
         private void ApplyLevelEffects()

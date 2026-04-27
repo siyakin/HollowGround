@@ -1,11 +1,11 @@
 using System.Collections.Generic;
+using HollowGround.Core;
 using UnityEngine;
 
 namespace HollowGround.Resources
 {
-    public class ResourceManager : MonoBehaviour
+    public class ResourceManager : Singleton<ResourceManager>
     {
-        public static ResourceManager Instance { get; private set; }
 
         [System.Serializable]
         public class ResourceAmount
@@ -34,15 +34,9 @@ namespace HollowGround.Resources
         public event System.Action<ResourceType, int> OnResourceChanged;
         public event System.Action OnAllResourcesChanged;
 
-        private void Awake()
+        protected override void Awake()
         {
-            if (Instance != null && Instance != this)
-            {
-                Destroy(gameObject);
-                return;
-            }
-            Instance = this;
-
+            base.Awake();
             InitializeResources();
         }
 

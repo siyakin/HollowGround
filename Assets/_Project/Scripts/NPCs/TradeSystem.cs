@@ -1,25 +1,14 @@
 using System.Collections.Generic;
+using HollowGround.Core;
 using HollowGround.NPCs;
 using HollowGround.Resources;
 using UnityEngine;
 
 namespace HollowGround.NPCs
 {
-    public class TradeSystem : MonoBehaviour
+    public class TradeSystem : Singleton<TradeSystem>
     {
-        public static TradeSystem Instance { get; private set; }
-
         public event System.Action<FactionData> OnTradeCompleted;
-
-        private void Awake()
-        {
-            if (Instance != null && Instance != this)
-            {
-                Destroy(gameObject);
-                return;
-            }
-            Instance = this;
-        }
 
         public bool CanBuyFrom(FactionData faction, FactionData.TradeOffer offer)
         {

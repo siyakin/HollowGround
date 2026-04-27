@@ -61,23 +61,23 @@ namespace HollowGround.UI
             gameObject.SetActive(true);
 
             if (_resultTitle != null)
-                _resultTitle.text = report.Victory ? "<color=green>ZAFER!</color>" : "<color=red>YENİLGİ</color>";
+                _resultTitle.text = report.Victory ? "<color=green>VICTORY!</color>" : "<color=red>DEFEAT</color>";
 
             if (_targetName != null)
-                _targetName.text = $"Hedef: {report.TargetName}";
+                _targetName.text = $"Target: {report.TargetName}";
 
             if (_attackerPowerText != null)
-                _attackerPowerText.text = $"Atak Gücü: {report.TotalAttackerPower}";
+                _attackerPowerText.text = $"Attack Power: {report.TotalAttackerPower}";
 
             if (_defenderPowerText != null)
-                _defenderPowerText.text = $"Savunma Gücü: {report.TotalDefenderPower}";
+                _defenderPowerText.text = $"Defense Power: {report.TotalDefenderPower}";
 
             if (_lossesText != null)
             {
                 var parts = new List<string>();
                 foreach (var kvp in report.AttackerLosses)
                     if (kvp.Value > 0) parts.Add($"{kvp.Key}: -{kvp.Value}");
-                _lossesText.text = parts.Count > 0 ? string.Join("  ", parts) : "Kayıp yok";
+                _lossesText.text = parts.Count > 0 ? string.Join("  ", parts) : "No losses";
             }
 
             if (_survivorsText != null)
@@ -85,7 +85,7 @@ namespace HollowGround.UI
                 var parts = new List<string>();
                 foreach (var kvp in report.Survivors)
                     if (kvp.Value > 0) parts.Add($"{kvp.Key}: {kvp.Value}");
-                _survivorsText.text = parts.Count > 0 ? string.Join("  ", parts) : "Hayatta kalan yok";
+                _survivorsText.text = parts.Count > 0 ? string.Join("  ", parts) : "No survivors";
             }
 
             if (_lootText != null)
@@ -99,7 +99,7 @@ namespace HollowGround.UI
                 }
                 else
                 {
-                    _lootText.text = report.Victory ? "Ganimet yok" : "-";
+                    _lootText.text = report.Victory ? "No loot" : "-";
                 }
             }
         }
@@ -118,7 +118,7 @@ namespace HollowGround.UI
 
             var current = expeditions[0];
             if (_expeditionLabel != null)
-                _expeditionLabel.text = $"{current.Name} ({current.RemainingTime:F0}sn)";
+                _expeditionLabel.text = $"{current.Name} ({current.RemainingTime:F0}s)";
 
             if (_expeditionProgress != null)
                 _expeditionProgress.value = current.Progress;

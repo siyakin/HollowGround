@@ -12,13 +12,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6c7055fb7298b4c44877c972cfbd95b5, type: 3}
   m_Name: Building Green
   m_EditorClassIdentifier: Assembly-CSharp::HollowGround.Buildings.BuildingData
-  DisplayName: "Wood Factory"
-  Description: "Produces wood. Essential building material."
+  DisplayName: Wood Factory
+  Description: Produces wood. Essential building material.
   Type: 3
   Category: 0
-  LevelPrefabs:
-  - {fileID: 919132149155446097, guid: e1445a0f5e1b1d84aa24aee6289468cd, type: 3}
   MaxLevel: 10
+  Models:
+    ConstructModel: {fileID: 919132149155446097, guid: 08eecabde4a115346ade26221dbfa16e, type: 3}
+    Level01Model: {fileID: 919132149155446097, guid: 2116f9769e2f02e4b882acb81664a1b2, type: 3}
+    Level03Model: {fileID: 919132149155446097, guid: 50ce42c5f826def42b553513a0c2724e, type: 3}
+    Level05Model: {fileID: 919132149155446097, guid: 4628f6d6ef278ae4a97397dd6343c7fb, type: 3}
+    Level10Model: {fileID: 919132149155446097, guid: 8365d6e12213ea24ab7daa0e697dfe3c, type: 3}
+    DamagedModel: {fileID: 919132149155446097, guid: 92ed65ad00f6b014d93fe076316790b1, type: 3}
+    DestroyedModel: {fileID: 919132149155446097, guid: bb6bdf089dac4cb4abe26cb6e910d39d, type: 3}
   SizeX: 2
   SizeZ: 2
   BaseCost:
