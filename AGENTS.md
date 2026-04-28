@@ -164,7 +164,7 @@ Tum sistemler playtest edildi, 13/13 test gecti:
 | 10 | Gorev Sistemi | ✅ QuestLogUI, 5 quest SO, ACCEPT/TURN IN |
 | 11 | Mutant Saldirisi | ✅ Warning toast, attack, bina yikimi, session log |
 | 12 | Save/Load | ✅ F5 QuickSave, F9 QuickLoad, JSON |
-| 13 | Zaman Kontrolu | ✅ TimeDisplayUI, hiz degisimi |
+| 13 | Zaman Kontrolu | ✅ ResourceBarUI _timeText, hiz degisimi |
 
 **Playtest'te eklenen/duzeltilen sistemler:**
 - GameConfig SO — DevMode, DisableMutantAttacks, BoostStartingResources, SessionLog toggle
@@ -221,6 +221,7 @@ Tum sistemler playtest edildi, 13/13 test gecti:
 - Snake/zigzag pattern (2 LineRenderer: H+V), camera-relative culling (30 hucre)
 - Smooth fade-in/out (0.3s), bina footprint highlight (yesil/kirmizi, rotation destekli)
 - `BuildingPlacer.CurrentRotation` property eklendi
+- Grid lines hucre koselerine cizilir (WorldPos = center - halfCell), footprint highlight merkez bazli
 
 **Weather System + Atmosfer:**
 - `WeatherSystem.cs` — 5 hava durumu: Clear, LightRain, HeavyRain, DustStorm, RadiationStorm
@@ -356,6 +357,9 @@ Tum sistemler playtest edildi, 13/13 test gecti:
 24. `SessionLogger.SubscribeEvents()` SessionLog kapalıyken de çağrılmalı — yoksa event-driven toast'lar çalışmaz
 25. `Singleton<T>.Destroy(gameObject)` tüm manager'lar aynı GO üzerinde olduğu için güvenli — duplicate GO'yu tamamen siler. `Destroy(this)` sadece component siler, Instance referansı kopar
 26. `UIPrimitiveFactory.AddThemedText()` TMP_Text `richText = true` varsayılan — renkli maliyet metni çalışır
+27. `BuildMenuUI.SelectBuilding()` paneli `gameObject.SetActive(false)` ile kapatırsa PanelManager state'i bozulur → `UIManager.Instance.ToggleBuildMenu()` kullanılmalı
+28. `GridOverlayRenderer.WorldPos()` hucre merkezi değil köşe vermeli: `GetWorldPosition(x,z) - halfCell`. Footprint highlight `GetWorldPosition` direkt kullanmalı (zaten merkez verir), ekstra offset YASAK
+29. `TimeDisplayUI.cs` kaldirildi — zaman gosterimi ResourceBarUI'da `_timeText` SerializeField uzerinden. UI text'leri runtime'da otomatik olusturmak YERINE manuel SerializeField ile baglamak tercih edilir
 
 ---
 
@@ -462,3 +466,18 @@ Bu kurallar tekrarlanan hataları ve gereksiz kod tekrarını önlemek için Faz
 - Built-in `Particles/Standard Unlit` URP'de pembe/magenta gorunur — YASAK
 - `ApplyURPParticleMaterial(ps)` helper her `AddComponent<ParticleSystem>()` sonrasi cagrilmali
 - Fire/ember gibi parlak efektler icin additive blend (`_Blend=2, DstBlend=One`) kullanilmali
+
+### UI Panel Kapatma Kurallari
+- Panel'i `gameObject.SetActive(false)` ile dogrudan kapatmak YASAK — PanelManager state'i bozulur
+- Panel kapatma her zaman `UIManager.ToggleXxx()` veya `PanelManager.CloseCurrent()` uzerinden yapilmali
+- Ornek: `BuildMenuUI.SelectBuilding()` → `UIManager.Instance.ToggleBuildMenu()` kullanir
+
+### ResourceBarUI
+- `_timeText`, `_populationText`, `_levelText` SerializeField — sahnede manuel olusturulur, Inspector'dan baglanir
+- `CompactSpacing()` runtime'da HorizontalLayoutGroup spacing=8 yapar
+- `TimeDisplayUI.cs` kaldirildi — zaman gosterimi ResourceBarUI'da `_timeText` uzerinden
+
+### GridOverlayRenderer Offset Kurallari
+- `WorldPos(x, z)` hucre koselerini dondurur: `GetWorldPosition(x,z) - halfCell`
+- Footprint highlight: `GetWorldPosition(cx, cz)` direkt kullanilir (center), ekstra offset YASAK
+- `GetWorldPosition` zaten hucre merkezi dondurur: `origin + (x + 0.5) * cellSize`

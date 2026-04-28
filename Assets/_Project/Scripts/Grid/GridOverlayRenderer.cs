@@ -130,7 +130,8 @@ namespace HollowGround.Grid
             _cellHighlight.SetActive(true);
             GridCell gridCell = _gridSystem.GetCell(cell.x, cell.y);
             float cs = _gridSystem.CellSize;
-            Vector3 pos = _gridSystem.GetWorldPosition(cell.x, cell.y) + new Vector3(cs * 0.5f, YPos, cs * 0.5f);
+            Vector3 pos = _gridSystem.GetWorldPosition(cell.x, cell.y);
+            pos.y = YPos;
             _cellHighlight.transform.position = pos;
             _cellHighlight.transform.localScale = new Vector3(cs * 0.95f, cs * 0.95f, 1f);
             _cellHighlightRenderer.material = gridCell.IsBuildable ? _validMat : _invalidMat;
@@ -165,7 +166,8 @@ namespace HollowGround.Grid
                     bool valid = _gridSystem.IsValidCoordinate(cx, cz) && _gridSystem.GetCell(cx, cz).IsBuildable;
 
                     GameObject q = _footprintHighlights[idx++];
-                    Vector3 pos = _gridSystem.GetWorldPosition(cx, cz) + new Vector3(cs * 0.5f, YPos, cs * 0.5f);
+                    Vector3 pos = _gridSystem.GetWorldPosition(cx, cz);
+                    pos.y = YPos;
                     q.transform.position = pos;
                     q.transform.localScale = new Vector3(cs * 0.95f, cs * 0.95f, 1f);
                     q.GetComponent<MeshRenderer>().material = valid ? _validMat : _invalidMat;
@@ -235,9 +237,9 @@ namespace HollowGround.Grid
 
         private Vector3 WorldPos(int x, int z)
         {
-            Vector3 p = _gridSystem.GetWorldPosition(x, z);
-            p.y = YPos;
-            return p;
+            Vector3 center = _gridSystem.GetWorldPosition(x, z);
+            float halfCell = _gridSystem.CellSize * 0.5f;
+            return new Vector3(center.x - halfCell, YPos, center.z - halfCell);
         }
 
         private LineRenderer CreateLineRenderer(string lrName)

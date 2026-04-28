@@ -1,8 +1,12 @@
 using System;
 using System.Collections.Generic;
+using HollowGround.Army;
+using HollowGround.Core;
+using HollowGround.Heroes;
 using HollowGround.Resources;
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace HollowGround.UI
 {
@@ -18,6 +22,7 @@ namespace HollowGround.UI
         [SerializeField] private List<ResourceSlot> _slots = new();
         [SerializeField] private TMP_Text _levelText;
         [SerializeField] private TMP_Text _populationText;
+        [SerializeField] private TMP_Text _timeText;
 
         private Dictionary<ResourceType, ResourceSlot> _slotMap;
 
@@ -26,6 +31,8 @@ namespace HollowGround.UI
             _slotMap = new Dictionary<ResourceType, ResourceSlot>();
             foreach (var slot in _slots)
                 _slotMap[slot.Type] = slot;
+
+            CompactSpacing();
         }
 
         private void Start()
@@ -45,20 +52,53 @@ namespace HollowGround.UI
             UnsubscribeEvents();
         }
 
+        private void Update()
+        {
+            UpdateTime();
+        }
+
+        private void CompactSpacing()
+        {
+            var hlg = GetComponentInChildren<HorizontalLayoutGroup>();
+            if (hlg != null)
+            {
+                hlg.spacing = 8;
+                hlg.padding = new RectOffset(8, 8, 2, 2);
+                hlg.childForceExpandWidth = true;
+                hlg.childForceExpandHeight = false;
+            }
+        }
+
         private void SubscribeEvents()
         {
-            if (ResourceManager.Instance == null) return;
-            ResourceManager.Instance.OnResourceChanged -= HandleResourceChanged;
-            ResourceManager.Instance.OnAllResourcesChanged -= RefreshAll;
-            ResourceManager.Instance.OnResourceChanged += HandleResourceChanged;
-            ResourceManager.Instance.OnAllResourcesChanged += RefreshAll;
+            if (ResourceManager.Instance != null)
+            {
+                ResourceManager.Instance.OnResourceChanged -= HandleResourceChanged;
+                ResourceManager.Instance.OnAllResourcesChanged -= RefreshAll;
+                ResourceManager.Instance.OnResourceChanged += HandleResourceChanged;
+                ResourceManager.Instance.OnAllResourcesChanged += RefreshAll;
+            }
+
+            if (ArmyManager.Instance != null)
+                ArmyManager.Instance.OnArmyUpdated += UpdatePopulation;
+
+            if (HeroManager.Instance != null)
+                HeroManager.Instance.OnHeroesChanged += UpdatePopulation;
         }
 
         private void UnsubscribeEvents()
         {
-            if (ResourceManager.Instance == null) return;
-            ResourceManager.Instance.OnResourceChanged -= HandleResourceChanged;
-            ResourceManager.Instance.OnAllResourcesChanged -= RefreshAll;
+            if (ResourceManager.Instance != null)
+            {
+                ResourceManager.Instance.OnResourceChanged -= HandleResourceChanged;
+                ResourceManager.Instance.OnAllResourcesChanged -= RefreshAll;
+            }
+
+            if (ArmyManager.Instance != null)
+                ArmyManager.Instance.OnArmyUpdated -= UpdatePopulation;
+
+            if (HeroManager.Instance != null)
+                HeroManager.Instance.OnHeroesChanged -= UpdatePopulation;
         }
 
         private void HandleResourceChanged(ResourceType type, int amount)
@@ -72,6 +112,7 @@ namespace HollowGround.UI
             foreach (var slot in _slots)
                 UpdateSlot(slot);
             UpdatePopulation();
+            UpdateTime();
         }
 
         private void UpdateSlot(ResourceSlot slot)
@@ -93,10 +134,23 @@ namespace HollowGround.UI
             _                     => type.ToString(),
         };
 
+        private void UpdateTime()
+        {
+            if (_timeText == null || TimeManager.Instance == null) return;
+            int t = Mathf.FloorToInt(TimeManager.Instance.GameTime);
+            int h = t / 3600;
+            int m = (t % 3600) / 60;
+            int s = t % 60;
+            _timeText.text = $"x{TimeManager.Instance.GameSpeed}  {h:D2}:{m:D2}:{s:D2}";
+        }
+
         private void UpdatePopulation()
         {
             if (_populationText == null) return;
-            _populationText.text = "0/0";
+
+            int troops = ArmyManager.Instance != null ? ArmyManager.Instance.TotalTroopCount : 0;
+            int heroes = HeroManager.Instance != null ? HeroManager.Instance.HeroCount : 0;
+            _populationText.text = $"Tro:{troops}  Her:{heroes}";
         }
 
         public void UpdateLevel(int level)

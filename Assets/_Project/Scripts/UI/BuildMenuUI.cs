@@ -139,7 +139,10 @@ namespace HollowGround.UI
             if (BuildingPlacer.Instance != null)
             {
                 BuildingPlacer.Instance.StartPlacement(card.Data);
-                gameObject.SetActive(false);
+                if (UIManager.Instance != null)
+                    UIManager.Instance.ToggleBuildMenu();
+                else
+                    gameObject.SetActive(false);
             }
         }
 

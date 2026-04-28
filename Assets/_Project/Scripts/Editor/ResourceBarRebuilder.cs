@@ -25,6 +25,7 @@ namespace HollowGround.Editor
             new(0.95f, 0.9f, 0.15f)
         };
 
+        [MenuItem("HollowGround/Rebuild Resource Bar")]
         public static void Rebuild()
         {
             var canvas = Object.FindAnyObjectByType<Canvas>();
@@ -33,14 +34,10 @@ namespace HollowGround.Editor
             var oldBar = Object.FindAnyObjectByType<ResourceBarUI>();
             if (oldBar != null) Object.DestroyImmediate(oldBar.gameObject);
 
-            var allTime = Object.FindObjectsByType<TimeDisplayUI>(FindObjectsInactive.Include);
-            foreach (var t in allTime) Object.DestroyImmediate(t.gameObject);
-
             var allToast = Object.FindObjectsByType<ToastUI>(FindObjectsInactive.Include);
             foreach (var t in allToast) Object.DestroyImmediate(t.gameObject);
 
             BuildResourceBar(canvas.transform);
-            BuildTimeDisplay(canvas.transform);
             BuildToastUI(canvas.transform);
 
             Debug.Log("[Rebuild] Done! Press Play.");
@@ -126,24 +123,6 @@ namespace HollowGround.Editor
                 sp.GetArrayElementAtIndex(i).FindPropertyRelative("AmountText").objectReferenceValue = slots[i].AmountText;
             }
             so.ApplyModifiedProperties();
-        }
-
-        private static void BuildTimeDisplay(Transform parent)
-        {
-            var go = new GameObject("TimeDisplay", typeof(RectTransform));
-            go.transform.SetParent(parent, false);
-            go.transform.SetAsLastSibling();
-
-            var rect = go.GetComponent<RectTransform>();
-            rect.anchorMin = new Vector2(1, 1);
-            rect.anchorMax = new Vector2(1, 1);
-            rect.pivot = new Vector2(1, 1);
-            rect.sizeDelta = new Vector2(160, 45);
-            rect.anchoredPosition = new Vector2(-10, -5);
-
-            go.AddComponent<TimeDisplayUI>();
-
-            Selection.activeGameObject = go;
         }
 
         private static void BuildToastUI(Transform parent)
