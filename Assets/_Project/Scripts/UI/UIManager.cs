@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using HollowGround.Buildings;
 using HollowGround.Core;
 using TMPro;
 using UnityEngine;
@@ -7,7 +9,6 @@ namespace HollowGround.UI
 {
     public class UIManager : Singleton<UIManager>
     {
-
         [SerializeField] private GameObject _resourceBarPanel;
         [SerializeField] private GameObject _buildMenuPanel;
         [SerializeField] private GameObject _buildingInfoPanel;
@@ -23,68 +24,121 @@ namespace HollowGround.UI
         [SerializeField] private GameObject _factionTradePanel;
         [SerializeField] private GameObject _saveMenuPanel;
 
-        private bool _saveBtnCreated;
+        private PanelManager _panels;
+        private Dictionary<string, Button> _actionBarButtons;
         private bool _isPaused;
+        private readonly Color _btnNormal = new(0.13f, 0.17f, 0.1f, 0.95f);
+        private readonly Color _btnActive = new(0.35f, 0.55f, 0.2f, 1f);
 
         private void Start()
         {
+            InitPanelManager();
             EnsurePausePanelContent();
+            CacheActionBarButtons();
+            UpdateActionBarHighlights();
         }
 
-        private void EnsurePausePanelContent()
+        private void InitPanelManager()
         {
-            if (_pausePanel == null || _pausePanel.transform.childCount > 0) return;
+            _panels = new PanelManager();
+            _panels.Register("BuildMenu", _buildMenuPanel);
+            _panels.Register("Training", _trainingPanel);
+            _panels.Register("Army", _armyPanel);
+            _panels.Register("Hero", _heroPanel);
+            _panels.Register("WorldMap", _worldMapPanel);
+            _panels.Register("QuestLog", _questLogPanel);
+            _panels.Register("TechTree", _techTreePanel);
+            _panels.Register("FactionTrade", _factionTradePanel);
+            _panels.Register("BattleReport", _battleReportPanel);
+            _panels.Register("BuildingInfo", _buildingInfoPanel);
+            _panels.Register("Toast", _toastPanel);
+            _panels.Register("ResourceBar", _resourceBarPanel);
+            _panels.Register("SaveMenu", _saveMenuPanel);
 
-            var bg = _pausePanel.AddComponent<Image>();
-            bg.color = new Color(0f, 0f, 0f, 0.6f);
-            bg.raycastTarget = true;
-            var cg = _pausePanel.GetComponent<CanvasGroup>();
-            if (cg == null) cg = _pausePanel.AddComponent<CanvasGroup>();
-            cg.interactable = true;
-            cg.blocksRaycasts = true;
+            _panels.OnPanelOpened += _ => UpdateActionBarHighlights();
+            _panels.OnPanelClosed += _ => UpdateActionBarHighlights();
+        }
 
-            var center = UIPrimitiveFactory.CreateUIObject("PauseCenter", _pausePanel.transform);
-            UIPrimitiveFactory.SetAnchors(center, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f));
-            center.sizeDelta = new UnityEngine.Vector2(300f, 280f);
+        private void CacheActionBarButtons()
+        {
+            _actionBarButtons = new Dictionary<string, Button>();
+            var actionBar = FindActionBar();
+            if (actionBar == null) return;
 
-            var panelBg = UIPrimitiveFactory.AddImage(center, UIColors.Default.PanelBg);
-            UIPrimitiveFactory.StretchFull(panelBg.rectTransform);
+            var map = new (string id, string btnName)[]
+            {
+                ("BuildMenu", "BtnBuild"),
+                ("TechTree", "BtnResearch"),
+                ("Training", "BtnArmy"),
+                ("Hero", "BtnHero"),
+                ("QuestLog", "BtnQuest"),
+                ("FactionTrade", "BtnTrade"),
+                ("WorldMap", "BtnMap")
+            };
 
-            var vlg = UIPrimitiveFactory.AddStandardVLG(center.gameObject,
-                new RectOffset(30, 30, 30, 30), 15);
+            foreach (var (id, btnName) in map)
+            {
+                var t = actionBar.transform.Find(btnName);
+                if (t != null)
+                {
+                    var btn = t.GetComponent<Button>();
+                    if (btn != null)
+                        _actionBarButtons[id] = btn;
+                }
+            }
+        }
 
-            var title = UIPrimitiveFactory.AddThemedText(center, "PAUSED", 30,
-                UIColors.Default.Text, TextAlignmentOptions.Center);
-            UIPrimitiveFactory.StretchFull(title.rectTransform);
-            UIPrimitiveFactory.AddLayoutElement(title.gameObject, minHeight: 45);
+        private Transform FindActionBar()
+        {
+            var canvas = GetComponentInParent<Canvas>();
+            if (canvas != null)
+            {
+                var t = canvas.transform.Find("ActionBar");
+                if (t != null) return t;
+            }
 
-            UIPrimitiveFactory.AddLayoutElement(
-                UIPrimitiveFactory.CreateButton(center, "ResumeBtn", "Resume", OnResumeButton,
-                    UIColors.Default.Ok).gameObject,
-                minHeight: 45, preferredHeight: 45);
+            var found = FindAnyObjectByType<Canvas>();
+            if (found != null)
+                return found.transform.Find("ActionBar");
 
-            UIPrimitiveFactory.AddLayoutElement(
-                UIPrimitiveFactory.CreateButton(center, "SaveBtn", "Save / Load", OnSaveGameButton,
-                    UIColors.Default.Gold).gameObject,
-                minHeight: 45, preferredHeight: 45);
+            return null;
+        }
 
-            UIPrimitiveFactory.AddLayoutElement(
-                UIPrimitiveFactory.CreateButton(center, "QuitBtn", "Quit Game", OnQuitButton,
-                    UIColors.Default.Danger).gameObject,
-                minHeight: 45, preferredHeight: 45);
-
-            _pausePanel.SetActive(false);
+        private void UpdateActionBarHighlights()
+        {
+            foreach (var kvp in _actionBarButtons)
+            {
+                if (kvp.Value == null) continue;
+                var img = kvp.Value.image;
+                if (img != null)
+                    img.color = _panels.IsOpen(kvp.Key) ? _btnActive : _btnNormal;
+            }
         }
 
         private void Update()
         {
             if (UnityEngine.InputSystem.Keyboard.current == null) return;
-
             var kb = UnityEngine.InputSystem.Keyboard.current;
 
             if (kb.escapeKey.wasPressedThisFrame)
             {
-                TogglePauseMenu();
+                if (BuildingPlacer.Instance != null && BuildingPlacer.Instance.IsPlacing)
+                    return;
+
+                if (_isPaused)
+                {
+                    if (_saveMenuPanel != null && _saveMenuPanel.activeSelf)
+                    {
+                        _saveMenuPanel.SetActive(false);
+                        if (_pausePanel != null) _pausePanel.SetActive(true);
+                    }
+                    else
+                        TogglePauseMenu();
+                }
+                else if (_panels.IsPanelOpen)
+                    _panels.CloseCurrent();
+                else
+                    TogglePauseMenu();
                 return;
             }
 
@@ -123,13 +177,14 @@ namespace HollowGround.UI
 
             if (_isPaused)
             {
+                _panels.CloseAll();
                 if (GameManager.Instance != null) GameManager.Instance.TogglePause();
                 if (HollowGround.Core.TimeManager.Instance != null) HollowGround.Core.TimeManager.Instance.TogglePause();
                 ShowPausePanel();
             }
             else
             {
-                CloseAllSubPanels();
+                ClosePauseAndSubPanels();
                 if (HollowGround.Core.TimeManager.Instance != null && HollowGround.Core.TimeManager.Instance.IsPaused)
                     HollowGround.Core.TimeManager.Instance.TogglePause();
                 if (GameManager.Instance != null && GameManager.Instance.CurrentState == GameState.Paused)
@@ -139,11 +194,10 @@ namespace HollowGround.UI
 
         private void ShowPausePanel()
         {
-            if (_pausePanel == null) return;
-            _pausePanel.SetActive(true);
+            if (_pausePanel != null) _pausePanel.SetActive(true);
         }
 
-        private void CloseAllSubPanels()
+        private void ClosePauseAndSubPanels()
         {
             if (_pausePanel != null) _pausePanel.SetActive(false);
             if (_saveMenuPanel != null) _saveMenuPanel.SetActive(false);
@@ -152,7 +206,7 @@ namespace HollowGround.UI
         public void OnResumeButton()
         {
             _isPaused = false;
-            CloseAllSubPanels();
+            ClosePauseAndSubPanels();
             if (HollowGround.Core.TimeManager.Instance != null && HollowGround.Core.TimeManager.Instance.IsPaused)
                 HollowGround.Core.TimeManager.Instance.TogglePause();
             if (GameManager.Instance != null && GameManager.Instance.CurrentState == GameState.Paused)
@@ -161,8 +215,9 @@ namespace HollowGround.UI
 
         public void OnSaveGameButton()
         {
-            if (_saveMenuPanel != null)
-                _saveMenuPanel.SetActive(true);
+            if (_saveMenuPanel == null) return;
+            _saveMenuPanel.SetActive(true);
+            if (_isPaused && _pausePanel != null) _pausePanel.SetActive(false);
         }
 
         public void OnQuitButton()
@@ -170,10 +225,39 @@ namespace HollowGround.UI
             Application.Quit();
         }
 
+        public void ShowPauseFromSaveMenu()
+        {
+            if (_isPaused && _pausePanel != null)
+                _pausePanel.SetActive(true);
+        }
+
+        public void ToggleBuildMenu() => _panels?.Toggle("BuildMenu");
+        public void ToggleTrainingPanel() => _panels?.Toggle("Training");
+        public void ToggleArmyPanel() => _panels.Toggle("Army");
+        public void ToggleHeroPanel() => _panels.Toggle("Hero");
+        public void ToggleWorldMap() => _panels.Toggle("WorldMap");
+        public void ToggleQuestLog() => _panels.Toggle("QuestLog");
+        public void ToggleTechTree() => _panels.Toggle("TechTree");
+        public void ToggleFactionTrade() => _panels.Toggle("FactionTrade");
+        public void ToggleBattleReport() => _panels.Toggle("BattleReport");
+
+        public void TogglePause() => TogglePauseMenu();
+
+        public void ToggleSaveMenu()
+        {
+            if (_saveMenuPanel == null) return;
+            bool opening = !_saveMenuPanel.activeSelf;
+            _saveMenuPanel.SetActive(opening);
+            if (opening && _isPaused && _pausePanel != null)
+                _pausePanel.SetActive(false);
+        }
+
+        public void ShowBuildingInfo() => _panels.OpenOverlay("BuildingInfo");
+        public void HideBuildingInfo() => _panels.CloseOverlay("BuildingInfo");
+
         public void TogglePanel(GameObject panel)
         {
-            if (panel == null) return;
-            panel.SetActive(!panel.activeSelf);
+            if (panel != null) panel.SetActive(!panel.activeSelf);
         }
 
         public void ShowPanel(GameObject panel)
@@ -186,71 +270,6 @@ namespace HollowGround.UI
             if (panel != null) panel.SetActive(false);
         }
 
-        public void ToggleBuildMenu()
-        {
-            TogglePanel(_buildMenuPanel);
-        }
-
-        public void ShowBuildingInfo()
-        {
-            ShowPanel(_buildingInfoPanel);
-        }
-
-        public void HideBuildingInfo()
-        {
-            HidePanel(_buildingInfoPanel);
-        }
-
-        public void TogglePause()
-        {
-            TogglePanel(_pausePanel);
-        }
-
-        public void ToggleTrainingPanel()
-        {
-            TogglePanel(_trainingPanel);
-        }
-
-        public void ToggleArmyPanel()
-        {
-            TogglePanel(_armyPanel);
-        }
-
-        public void ToggleBattleReport()
-        {
-            TogglePanel(_battleReportPanel);
-        }
-
-        public void ToggleHeroPanel()
-        {
-            TogglePanel(_heroPanel);
-        }
-
-        public void ToggleWorldMap()
-        {
-            TogglePanel(_worldMapPanel);
-        }
-
-        public void ToggleQuestLog()
-        {
-            TogglePanel(_questLogPanel);
-        }
-
-        public void ToggleTechTree()
-        {
-            TogglePanel(_techTreePanel);
-        }
-
-        public void ToggleFactionTrade()
-        {
-            TogglePanel(_factionTradePanel);
-        }
-
-        public void ToggleSaveMenu()
-        {
-            TogglePanel(_saveMenuPanel);
-        }
-
         public void QuitToMenu()
         {
             UnityEngine.SceneManagement.SceneManager.LoadScene(0);
@@ -259,6 +278,12 @@ namespace HollowGround.UI
         public void QuitGame()
         {
             Application.Quit();
+        }
+
+        private void EnsurePausePanelContent()
+        {
+            if (_pausePanel == null) return;
+            _pausePanel.SetActive(false);
         }
     }
 }

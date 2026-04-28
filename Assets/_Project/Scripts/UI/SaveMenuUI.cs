@@ -154,6 +154,8 @@ namespace HollowGround.UI
         public void CloseSelf()
         {
             gameObject.SetActive(false);
+            if (UIManager.Instance != null)
+                UIManager.Instance.ShowPauseFromSaveMenu();
         }
 
         private void MakeButton(Transform parent, string label, Color color, System.Action onClick)

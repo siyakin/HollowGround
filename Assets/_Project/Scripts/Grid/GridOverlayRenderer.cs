@@ -31,8 +31,10 @@ namespace HollowGround.Grid
         private void Awake()
         {
             _lineMaterial = new Material(Shader.Find("Sprites/Default"));
+            _lineMaterial.color = new Color(_lineColor.r, _lineColor.g, _lineColor.b, 0f);
             _horizontalLR = CreateLineRenderer("HLines");
             _verticalLR = CreateLineRenderer("VLines");
+            SetRenderersActive(false);
 
             _validMat = new Material(Shader.Find("Sprites/Default"));
             _validMat.color = _validCellColor;
@@ -46,24 +48,23 @@ namespace HollowGround.Grid
         {
             if (_gridSystem == null)
                 _gridSystem = FindAnyObjectByType<GridSystem>();
-
-            BuildingPlacer.Instance.OnPlacementStarted += Show;
-            BuildingPlacer.Instance.OnPlacementCancelled += Hide;
-
-            SetRenderersActive(false);
-        }
-
-        private void OnDestroy()
-        {
-            if (BuildingPlacer.Instance != null)
-            {
-                BuildingPlacer.Instance.OnPlacementStarted -= Show;
-                BuildingPlacer.Instance.OnPlacementCancelled -= Hide;
-            }
         }
 
         private void Update()
         {
+            bool shouldShow = BuildingPlacer.Instance != null && BuildingPlacer.Instance.IsPlacing;
+
+            if (shouldShow && _targetAlpha < 1f)
+            {
+                SetRenderersActive(true);
+                _targetAlpha = 1f;
+                _lastCamCell = new Vector2Int(-999, -999);
+            }
+            else if (!shouldShow && _targetAlpha > 0f)
+            {
+                _targetAlpha = 0f;
+            }
+
             if (_currentAlpha != _targetAlpha)
             {
                 _currentAlpha = Mathf.MoveTowards(_currentAlpha, _targetAlpha, Time.deltaTime / _fadeDuration);
@@ -82,18 +83,6 @@ namespace HollowGround.Grid
                 RefreshGridLines();
                 UpdateCellHighlight();
             }
-        }
-
-        private void Show()
-        {
-            SetRenderersActive(true);
-            _targetAlpha = 1f;
-            _lastCamCell = new Vector2Int(-999, -999);
-        }
-
-        private void Hide()
-        {
-            _targetAlpha = 0f;
         }
 
         private void SetRenderersActive(bool active)

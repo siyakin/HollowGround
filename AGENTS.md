@@ -60,7 +60,7 @@ Assets/_Project/
 │   ├── Tech/        TechNode, ResearchManager
 │   ├── NPCs/        FactionData, TradeSystem
 │   ├── Quests/      QuestEnums, QuestData, QuestInstance, QuestManager
-│   ├── UI/          UIManager, ResourceBarUI, BuildMenuUI, BuildingInfoUI,
+│   ├── UI/          UIManager, PanelManager, ResourceBarUI, BuildMenuUI, BuildingInfoUI,
 │   │                ToastUI, TrainingPanelUI, ArmyPanelUI, BattleReportUI,
 │   │                HeroPanelUI, WorldMapUI, TechTreeUI, FactionTradeUI,
 │   │                QuestLogUI, SaveMenuUI, DebugHUD,
@@ -367,6 +367,16 @@ Tum sistemler playtest edildi, 13/13 test gecti:
 - Her butonun `Layout Element`: Min Width 120, Min Height 40
 - Buton onClick baglantisi: Obje surukle → dropdown'dan script/metot sec
 - `BuildMenuUI` gibi component'lerde SerializeField ile referans baglanir
+
+## Panel Yonetim Sistemi (PanelManager)
+
+- **Tek panel kurali**: Ayni anda sadece 1 ana panel acik olabilir. Yeni panel acilirsa onceki otomatik kapanir
+- **PanelManager**: Tum paneller string ID ile kaydedilir, Toggle/OpenOverlay/CloseCurrent ile yonetilir
+- **Overlay paneller**: BuildingInfo, BattleReport, Toast, ResourceBar — diger panellerle eszamanli acilabilir
+- **Panel gecmisi (stack)**: Panel acildiginda onceki panel history'ye eklenir, CloseCurrent ile geri donulur
+- **ESC davranisi**: Panel aciksa → once paneli kapat, panel yoksa → pause menuyu ac
+- **ActionBar highlight**: Aktif panelin butonu yesil (`_btnActive`) renkte, digerleri koyu (`_btnNormal`)
+- **Pause menü**: Tum panelleri kapatir, Save/Quit alt-panel olarak calisir
 
 ---
 

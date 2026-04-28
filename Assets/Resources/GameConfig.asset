@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: GameConfig
   m_EditorClassIdentifier: Assembly-CSharp::HollowGround.Core.GameConfig
   DevMode: 1
-  DisableMutantAttacks: 1
+  DisableMutantAttacks: 0
   EnableSessionLog: 1
   BoostStartingResources: 0
   BoostMultiplier: 10
@@ -29,3 +29,7 @@ MonoBehaviour:
   NormalResearchTimeMultiplier: 1
   NormalExpeditionTimeMultiplier: 1
   NormalMutantAttackIntervalMultiplier: 1
+  DemolishRefundRatio: 0.5
+  RepairCostRatio: 0.5
+  WallDefenseBonus: 20
+  DefeatTroopLossRatio: 0.6
