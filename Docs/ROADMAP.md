@@ -147,6 +147,49 @@ Last War ilhamlı, nükleer savaş sonrası strateji oyunu.
 
 ---
 
+## Faz 12 — Bina Model Sistemi ✅
+
+- [x] 15 bina x 7 model = 105 FBX (Blender ile üretildi)
+- [x] BuildingData.BuildingModels struct — 7 GameObject slot (Construct, L01, L03, L05, L10, Damaged, Destroyed)
+- [x] Level threshold: L01 (lv1-2), L03 (lv3-4), L05 (lv5-9), L10 (lv10)
+- [x] State-based model swap — Building.cs UpdateModel() state'e göre doğru modeli instantiate eder
+- [x] Z-fighting fix — model localPosition.y = 0.015f offset
+- [x] Ghost placement fix — BuildingPlacer _cachedCoords / _cachedWorldPos ile ghost ve yerleştirme uyumu
+- [x] Hasar/Tamir sistemi — ApplyDamage(), Repair(), kaynak harcayıp Active'e dönme
+- [x] Editor araçları — FBX toplu import ayarı, FBX→SO otomatik bağlama, binding raporu
+
+---
+
+## Faz 13 — Refactoring ✅
+
+- [x] Singleton<T> base class — protected set Instance, Destroy(gameObject) duplicate koruması
+- [x] UIPrimitiveFactory — 10+ static metod (CreateUIObject, AddThemedText, CreateButton, vb.)
+- [x] UIColors — merkezi renk tanımları (PanelColors, GetRarityColor, GetNodeColor, GetStateColor, GetResourceColor)
+- [x] CostEntryHelper.Costs() — merkezi maliyet oluşturma utility
+- [x] 4 UI panel UIPrimitiveFactory + UIColors'a taşındı (FactionTrade, SaveMenu, TechTree, WorldMap)
+- [x] Magic numbers → GameConfig SO'ya taşındı (DemolishRefundRatio, RepairCostRatio, WallDefenseBonus, vb.)
+- [x] Ölü kod silindi (GameEvent.cs, PlacementValidator.cs)
+- [x] ToastUI yeniden yazıldı (lazy activation, runtime container)
+- [x] SessionLogger event subscription düzeltmesi
+- [x] 15+ yeni toast mesajı (bina events, kaynak eksik detay, mutant saldırı)
+
+---
+
+## Faz 14 — Visual & Polish ✅
+
+- [x] GridOverlayRenderer — LineRenderer ile grid görselleştirme, snake/zigzag pattern, smooth fade
+- [x] Bina footprint highlight — yeşil/kırmızı, rotation destekli
+- [x] WeatherSystem — 5 hava durumu (Clear, LightRain, HeavyRain, DustStorm, RadiationStorm)
+- [x] Post-processing per-weather (vignette, saturation, color filter, chromatic aberration)
+- [x] BuildingHighlight — 1.05x outline mesh, pulsing alpha
+- [x] DamageEffects — 3 fire emitter, 2 smoke emitter, explosion burst
+- [x] ScreenShake — Perlin noise shake, exponential decay
+- [x] AtmosphereEffects — dust/fog particles, embers particle
+- [x] Pause menü (ESC) — Resume, Save/Load, Quit butonları
+- [x] BuildMenu kaynak ikonları — renkli ● ile kaynak maliyeti gösterimi
+
+---
+
 ## Faz 11 — Playtest & Bugfix ✅
 
 - [x] Ground plane kalıcı olarak sahneye eklendi (HollowGround > Setup Ground & Camera)
@@ -184,14 +227,15 @@ Last War ilhamlı, nükleer savaş sonrası strateji oyunu.
 ### Klasör Yapısı
 ```
 Assets/_Project/Scripts/
-├── Core/        GameManager, TimeManager, GameEvent, Singleton, GameInitializer,
+├── Core/        GameManager, TimeManager, Singleton, GameInitializer,
 │                SaveData, SaveSystem, AudioManager, AudioConfig, BaseStarter,
-│                PostProcessingSetup, AtmosphereEffects, GameConfig, SessionLogger
-├── Camera/      StrategyCamera
-├── Grid/        GridSystem, GridCell, GridVisualizer, PlacementValidator
+│                PostProcessingSetup, AtmosphereEffects, GameConfig, SessionLogger,
+│                WeatherSystem
+├── Camera/      StrategyCamera, ScreenShake
+├── Grid/        GridSystem, GridCell, GridVisualizer, GridOverlayRenderer
 ├── Buildings/   BuildingType, BuildingData, Building, BuildingManager,
 │                BuildingPlacer, BuildingSelector, BuildingDatabase,
-│                BuildingConstructionAnimation
+│                BuildingConstructionAnimation, BuildingHighlight, DamageEffects
 ├── Resources/   ResourceType, ResourceManager
 ├── Army/        TroopType, TroopData, ArmyManager
 ├── Combat/      BattleCalculator, BattleTarget, BattleManager,
@@ -201,11 +245,11 @@ Assets/_Project/Scripts/
 ├── Tech/        TechNode, ResearchManager
 ├── NPCs/        FactionData, TradeSystem
 ├── Quests/      QuestEnums, QuestData, QuestInstance, QuestManager
-├── UI/          UIManager, ResourceBarUI, BuildMenuUI, BuildingInfoUI,
+├── UI/          UIManager, PanelManager, ResourceBarUI, BuildMenuUI, BuildingInfoUI,
 │                ToastUI, TrainingPanelUI, ArmyPanelUI, BattleReportUI,
 │                HeroPanelUI, WorldMapUI, TechTreeUI, FactionTradeUI,
 │                QuestLogUI, SaveMenuUI, DebugHUD,
-│                UIThemeSO, UIThemeTag
+│                UIThemeSO, UIThemeTag, UIPrimitiveFactory, UIColors
 └── Editor/      GridSystemEditor, BuildingDataFactory, TroopDataFactory,
                  HeroDataFactory, QuestDataFactory, FactionDataFactory,
                  TechNodeFactory, GhostMaterialCreator,
@@ -220,4 +264,4 @@ GDD.md        — Oyun tasarim dokumanı
 BALANCE.md    — Dengeleme referans tablosu
 ```
 
-*Son güncelleme: Faz 11 playtest tamamlandi — 13/13 test gecti, GameConfig + SessionLogger eklendi*
+*Son güncelleme: Faz 14 visual/polish tamamlandi — BuildMenu renkli kaynak ikonları eklendi*
