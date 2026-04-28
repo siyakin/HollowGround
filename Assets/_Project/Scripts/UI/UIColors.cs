@@ -94,5 +94,20 @@ namespace HollowGround.UI
         public static readonly Color Selected = new(1f, 0.95f, 0.4f, 1f);
         public static readonly Color PanelInner = new(0.14f, 0.15f, 0.17f, 1f);
         public static readonly Color TextDim = new(0.45f, 0.45f, 0.48f, 1f);
+
+        public static Color ContrastText(Color bg)
+        {
+            float luminance = 0.299f * bg.r + 0.587f * bg.g + 0.114f * bg.b;
+            return luminance > 0.45f ? new Color(0.1f, 0.1f, 0.1f, 1f) : Color.white;
+        }
+
+        public static Color ContrastTextForButton(Color imageColor, Color normalColor)
+        {
+            float r = imageColor.r * normalColor.r;
+            float g = imageColor.g * normalColor.g;
+            float b = imageColor.b * normalColor.b;
+            float luminance = 0.299f * r + 0.587f * g + 0.114f * b;
+            return luminance > 0.45f ? new Color(0.1f, 0.1f, 0.1f, 1f) : Color.white;
+        }
     }
 }

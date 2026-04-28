@@ -59,7 +59,9 @@ namespace HollowGround.UI
 
             if (_label != null)
             {
-                _label.color = btnTheme.textColor;
+                _label.color = UIColors.ContrastTextForButton(
+                    _image != null ? _image.color : Color.white,
+                    _button != null ? _button.colors.normalColor : Color.white);
                 _label.fontSize = btnTheme.fontSize;
                 _label.characterSpacing = btnTheme.characterSpacing;
                 if (theme.defaultFont != null) _label.font = theme.defaultFont;

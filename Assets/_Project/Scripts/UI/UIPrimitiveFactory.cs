@@ -79,7 +79,7 @@ namespace HollowGround.UI
             colors.disabledColor = new Color(0.5f, 0.5f, 0.5f, 0.5f);
             btn.colors = colors;
 
-            var lbl = AddText(go.transform, label, 16, UIColors.Default.Text, TextAlignmentOptions.Center);
+            var lbl = AddText(go.transform, label, 16, UIColors.ContrastText(bgColor ?? UIColors.Default.RowBg), TextAlignmentOptions.Center);
             if (ResolvedThemeFont != null) lbl.font = ResolvedThemeFont;
             StretchFull(lbl.rectTransform);
 
