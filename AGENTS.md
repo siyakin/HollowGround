@@ -27,6 +27,8 @@ Tek kisi PvE: Sehir kurma + ordu yonetimi + hero sistemi + dunya kesfi.
 - **FindObjectsByType(FindObjectsSortMode) YASAK**: Unity 6'da deprecated. `FindObjectsByType<T>()` veya `FindObjectsByType<T>(FindObjectsInactive)` kullan
 - **Dictionary serialize olmaz**: `Dictionary<K,V>` Inspector'da gorunmez. Her zaman `List<Entry>` pattern'i kullan
 - **GitHub push oncesi derleme kontrolu ZORUNLU**: Her `git push` oncesi Unity'de derleme hatasi olmadigi dogrulanmali. Hata varsa push YASAK
+- **Branch farkındalığı**: Bir dosya bulunamadığında `git branch -a` ile mevcut branch'leri kontrol et, diğer branch'lerde (`git show main:dosya.yml` gibi) dosya var mı bak. Özellikle README.md, dokümantasyon ve konfigürasyon dosyaları main'de olabilir.
+- **Feature branch'leri sık merge et**: Biten feature branch'ler hemen main'e merge edilmeli. Uzun süre yaşayan branch'ler dosya bütünlüğünü bozar.
 
 ### Pattern'ler
 - Manager'lar **Singleton** pattern kullanir (Instance property)
