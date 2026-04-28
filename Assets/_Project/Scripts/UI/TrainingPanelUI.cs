@@ -110,6 +110,9 @@ namespace HollowGround.UI
             _statusText.alignment = TextAlignmentOptions.Center;
             var statusLE = _statusText.gameObject.AddComponent<LayoutElement>();
             statusLE.preferredHeight = 30;
+            _statusText.gameObject.AddComponent<UIThemeTag>().styleType = UIStyleType.BodyText;
+
+            UIPrimitiveFactory.ApplyThemeStyles(transform);
 
             _built = true;
         }

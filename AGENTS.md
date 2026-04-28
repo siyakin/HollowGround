@@ -477,6 +477,30 @@ Bu kurallar tekrarlanan hataları ve gereksiz kod tekrarını önlemek için Faz
 - `ApplyURPParticleMaterial(ps)` helper her `AddComponent<ParticleSystem>()` sonrasi cagrilmali
 - Fire/ember gibi parlak efektler icin additive blend (`_Blend=2, DstBlend=One`) kullanilmali
 
+### Runtime UITheme Uygulama (ZORUNLU)
+- Her runtime UI panel `BuildUI()` sonunda `UIPrimitiveFactory.ApplyThemeStyles(transform)` cagirmali
+- Bu metot UIThemeTag'li butun elementleri bulup UIThemeSO'dan stil uygular (font, renk, boyut, ColorBlock)
+- Kodla olusturulan her text'e uygun `UIThemeTag` eklenmeli:
+  - Header/panel basliklari → `UIStyleType.HeaderText`
+  - Govde/aciklama metni → `UIStyleType.BodyText`
+  - Etiket/ikincil bilgi → `UIStyleType.LabelText`
+  - Kaynak maliyeti → `UIStyleType.CostText`
+  - Uyari mesaji → `UIStyleType.WarningText`
+  - Hata/tehlike → `UIStyleType.DangerText`
+- Kodla olusturulan her butona uygun `UIThemeTag` eklenmeli:
+  - Onay/pozitif (Train, Upgrade, Research) → `UIStyleType.ConfirmButton`
+  - Tehlike/yikici (Demolish, Delete) → `UIStyleType.DangerButton`
+  - Genel aksiyon (Load, Back, Cancel) → `UIStyleType.ActionBarButton`
+  - BuildMenu bina kartlari → `UIStyleType.BuildingCardButton`
+  - Tab butonlari → `UIStyleType.TabButton`
+- Ornek kullanim:
+  ```csharp
+  var header = UIPrimitiveFactory.AddThemedText(transform, "TITLE", 28, UIColors.Default.Gold);
+  header.gameObject.AddComponent<UIThemeTag>().styleType = UIStyleType.HeaderText;
+  // BuildUI sonunda:
+  UIPrimitiveFactory.ApplyThemeStyles(transform);
+  ```
+
 ### UI Panel Kapatma Kurallari
 - Panel'i `gameObject.SetActive(false)` ile dogrudan kapatmak YASAK — PanelManager state'i bozulur
 - Panel kapatma her zaman `UIManager.ToggleXxx()` veya `PanelManager.CloseCurrent()` uzerinden yapilmali

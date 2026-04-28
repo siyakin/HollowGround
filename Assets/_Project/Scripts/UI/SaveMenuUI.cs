@@ -18,25 +18,10 @@ namespace HollowGround.UI
         private List<Image> _rowImages = new();
         private bool _built;
 
-        private static UIThemeSO _cachedTheme;
-
         private void OnEnable()
         {
             if (!_built) BuildUI();
             RefreshList();
-        }
-
-        private static UIThemeSO LoadTheme()
-        {
-            if (_cachedTheme != null) return _cachedTheme;
-#if UNITY_EDITOR
-            _cachedTheme = UnityEditor.AssetDatabase.LoadAssetAtPath<UIThemeSO>(
-                "Assets/_Project/ScriptableObjects/UITheme.asset");
-#else
-            var results = UnityEngine.Resources.LoadAll<UIThemeSO>("UITheme");
-            _cachedTheme = results.Length > 0 ? results[0] : null;
-#endif
-            return _cachedTheme;
         }
 
         private void BuildUI()
@@ -65,80 +50,9 @@ namespace HollowGround.UI
             BuildConfirmRow(root);
             BuildButtonRow(root);
 
-            ApplyThemeStyles();
+            UIPrimitiveFactory.ApplyThemeStyles(transform);
 
             _built = true;
-        }
-
-        private void ApplyThemeStyles()
-        {
-            var theme = LoadTheme();
-            if (theme == null) return;
-
-            foreach (var tag in GetComponentsInChildren<UIThemeTag>(true))
-            {
-                switch (tag.styleType)
-                {
-                    case UIStyleType.ConfirmButton:
-                        ApplyButtonTheme(tag.gameObject, theme.confirmButton, theme);
-                        break;
-                    case UIStyleType.DangerButton:
-                        ApplyButtonTheme(tag.gameObject, theme.dangerButton, theme);
-                        break;
-                    case UIStyleType.ActionBarButton:
-                        ApplyButtonTheme(tag.gameObject, theme.actionBarButton, theme);
-                        break;
-                    case UIStyleType.HeaderText:
-                        ApplyTextTheme(tag.gameObject, theme.headerStyle, theme.headerTextColor, theme);
-                        break;
-                    case UIStyleType.BodyText:
-                        ApplyTextTheme(tag.gameObject, theme.bodyStyle, theme.bodyTextColor, theme);
-                        break;
-                    case UIStyleType.LabelText:
-                        ApplyTextTheme(tag.gameObject, theme.labelStyle, theme.labelTextColor, theme);
-                        break;
-                    case UIStyleType.WarningText:
-                        ApplyTextTheme(tag.gameObject, theme.bodyStyle, theme.warningTextColor, theme);
-                        break;
-                    case UIStyleType.DangerText:
-                        ApplyTextTheme(tag.gameObject, theme.bodyStyle, theme.dangerTextColor, theme);
-                        break;
-                }
-            }
-        }
-
-        private static void ApplyButtonTheme(GameObject go, ButtonTheme btnTheme, UIThemeSO theme)
-        {
-            if (btnTheme == null) return;
-            var btn = go.GetComponent<Button>();
-            if (btn != null)
-            {
-                btn.colors = btnTheme.ToColorBlock();
-                var img = go.GetComponent<Image>();
-                if (img != null) img.color = btnTheme.imageColor;
-            }
-            var txt = go.GetComponentInChildren<TMP_Text>();
-            if (txt != null)
-            {
-                txt.color = btnTheme.textColor;
-                txt.fontSize = btnTheme.fontSize;
-                txt.characterSpacing = btnTheme.characterSpacing;
-                if (theme.defaultFont != null) txt.font = theme.defaultFont;
-            }
-        }
-
-        private static void ApplyTextTheme(GameObject go, TextStyle textStyle, Color textColor, UIThemeSO theme)
-        {
-            if (textStyle == null) return;
-            var txt = go.GetComponent<TMP_Text>();
-            if (txt == null) return;
-            txt.color = textColor;
-            txt.fontSize = textStyle.fontSize;
-            txt.fontStyle = textStyle.fontStyle;
-            txt.characterSpacing = textStyle.characterSpacing;
-            txt.wordSpacing = textStyle.wordSpacing;
-            if (textStyle.lineSpacing > 0) txt.lineSpacing = textStyle.lineSpacing;
-            if (theme.defaultFont != null) txt.font = theme.defaultFont;
         }
 
         private void BuildScrollList(RectTransform root)
@@ -272,7 +186,7 @@ namespace HollowGround.UI
             for (int i = 0; i < _saves.Count; i++)
                 BuildSaveRow(i, _saves[i]);
 
-            ApplyThemeStyles();
+            UIPrimitiveFactory.ApplyThemeStyles(transform);
 
             _statusText.text = "Select a save file";
         }

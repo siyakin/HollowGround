@@ -50,6 +50,7 @@ namespace HollowGround.UI
             _headerText.alignment = TextAlignmentOptions.Center;
             var headerLE = _headerText.gameObject.AddComponent<LayoutElement>();
             headerLE.preferredHeight = 35;
+            _headerText.gameObject.AddComponent<UIThemeTag>().styleType = UIStyleType.HeaderText;
 
             var listObj = new GameObject("HeroList", typeof(RectTransform));
             listObj.transform.SetParent(root, false);

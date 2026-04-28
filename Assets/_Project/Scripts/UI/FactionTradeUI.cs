@@ -76,6 +76,7 @@ namespace HollowGround.UI
             leftVLG.childForceExpandHeight = false;
 
             var leftHeader = UIPrimitiveFactory.AddThemedText(leftPanel.transform, "FACTIONS", 22, UIColors.Default.Gold);
+            leftHeader.gameObject.AddComponent<UIThemeTag>().styleType = UIStyleType.HeaderText;
             leftHeader.alignment = TextAlignmentOptions.Center;
             UIPrimitiveFactory.AddLayoutElement(leftHeader.gameObject, preferredHeight: 35);
 

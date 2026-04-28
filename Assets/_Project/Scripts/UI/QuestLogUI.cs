@@ -144,6 +144,8 @@ namespace HollowGround.UI
             _detailPanel = detailObj;
             _detailPanel.SetActive(false);
 
+            UIPrimitiveFactory.ApplyThemeStyles(transform);
+
             _built = true;
         }
 
