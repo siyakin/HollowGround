@@ -261,14 +261,12 @@ namespace HollowGround.UI
             costRt.anchoredPosition = new Vector2(0, -150);
             costRt.sizeDelta = new Vector2(-24, 80);
 
-            _detailResearchBtn = UIPrimitiveFactory.CreateButton(_detailPanel, "ResearchBtn", "START RESEARCH", StartResearchFromDetail);
+            _detailResearchBtn = UIPrimitiveFactory.CreateThemedButton(_detailPanel, "ResearchBtn", "START RESEARCH", StartResearchFromDetail, UIStyleType.ConfirmButton);
             var btnRt = _detailResearchBtn.GetComponent<RectTransform>();
             UIPrimitiveFactory.SetAnchors(btnRt, new Vector2(0, 1), new Vector2(1, 1), new Vector2(0.5f, 1));
             btnRt.anchoredPosition = new Vector2(0, -250);
             btnRt.sizeDelta = new Vector2(-24, 50);
             _detailResearchBtnText = _detailResearchBtn.GetComponentInChildren<TextMeshProUGUI>();
-            var confirmImg = _detailResearchBtn.GetComponent<Image>();
-            if (confirmImg != null) confirmImg.color = UIColors.Default.Ok;
 
             _detailBonuses = UIPrimitiveFactory.AddThemedText(_detailPanel, "", 15, UIColors.Default.Text, TextAlignmentOptions.TopLeft);
             var bonRt = _detailBonuses.rectTransform;

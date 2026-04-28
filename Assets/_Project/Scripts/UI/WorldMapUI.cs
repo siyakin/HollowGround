@@ -436,7 +436,7 @@ namespace HollowGround.UI
             cancelRect.anchoredPosition = new Vector2(0, 20);
             cancelRect.sizeDelta = new Vector2(-20, 40);
 
-            var confirmBtn = UIPrimitiveFactory.CreateButton(_expeditionSetupPanel, "Confirm", "CONFIRM", ConfirmExpedition);
+            var confirmBtn = UIPrimitiveFactory.CreateThemedButton(_expeditionSetupPanel, "Confirm", "CONFIRM", ConfirmExpedition, UIStyleType.ConfirmButton);
             var confirmRect = confirmBtn.GetComponent<RectTransform>();
             UIPrimitiveFactory.SetAnchors(confirmRect, new Vector2(0.5f, 0), new Vector2(1, 0), new Vector2(0.5f, 0));
             confirmRect.anchoredPosition = new Vector2(0, 20);

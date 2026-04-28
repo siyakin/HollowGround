@@ -26,9 +26,8 @@ namespace HollowGround.UI
 
         private PanelManager _panels;
         private Dictionary<string, Button> _actionBarButtons;
+        private Dictionary<string, ThemedButton> _actionBarThemed;
         private bool _isPaused;
-        private readonly Color _btnNormal = new(0.13f, 0.17f, 0.1f, 0.95f);
-        private readonly Color _btnActive = new(0.35f, 0.55f, 0.2f, 1f);
 
         private void Start()
         {
@@ -62,6 +61,7 @@ namespace HollowGround.UI
         private void CacheActionBarButtons()
         {
             _actionBarButtons = new Dictionary<string, Button>();
+            _actionBarThemed = new Dictionary<string, ThemedButton>();
             var actionBar = FindActionBar();
             if (actionBar == null) return;
 
@@ -83,7 +83,14 @@ namespace HollowGround.UI
                 {
                     var btn = t.GetComponent<Button>();
                     if (btn != null)
+                    {
                         _actionBarButtons[id] = btn;
+                        var themed = t.GetComponent<ThemedButton>();
+                        if (themed == null)
+                            themed = t.gameObject.AddComponent<ThemedButton>();
+                        themed.styleType = UIStyleType.ActionBarButton;
+                        _actionBarThemed[id] = themed;
+                    }
                 }
             }
         }
@@ -106,12 +113,10 @@ namespace HollowGround.UI
 
         private void UpdateActionBarHighlights()
         {
-            foreach (var kvp in _actionBarButtons)
+            foreach (var kvp in _actionBarThemed)
             {
                 if (kvp.Value == null) continue;
-                var img = kvp.Value.image;
-                if (img != null)
-                    img.color = _panels.IsOpen(kvp.Key) ? _btnActive : _btnNormal;
+                kvp.Value.SetSelected(_panels.IsOpen(kvp.Key));
             }
         }
 

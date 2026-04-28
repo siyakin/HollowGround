@@ -120,7 +120,7 @@ namespace HollowGround.UI
             layout.preferredHeight = 34;
 
             var bg = toast.AddComponent<UnityEngine.UI.Image>();
-            bg.color = new Color(0.1f, 0.1f, 0.12f, 0.92f);
+            bg.color = UIColors.Default.PanelBg;
             bg.raycastTarget = false;
 
             var textObj = new GameObject("Text", typeof(RectTransform));
@@ -131,6 +131,8 @@ namespace HollowGround.UI
             tmp.color = msg.Color;
             tmp.text = msg.Text;
             tmp.raycastTarget = false;
+            var theme = UIThemeManager.Instance?.CurrentTheme;
+            if (theme != null && theme.defaultFont != null) tmp.font = theme.defaultFont;
             var textRect = textObj.GetComponent<RectTransform>();
             textRect.anchorMin = Vector2.zero;
             textRect.anchorMax = Vector2.one;
