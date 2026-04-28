@@ -887,5 +887,224 @@ namespace HollowGround.Editor
         }
 
         #endregion
+
+        #region Save Menu ScrollList
+
+        [MenuItem("HollowGround/Setup Save Menu")]
+        public static void SetupSaveMenu()
+        {
+            Canvas canvas = Object.FindAnyObjectByType<Canvas>();
+            if (canvas == null)
+            {
+                Debug.LogError("[SceneSetup] No Canvas found in scene!");
+                return;
+            }
+
+            Transform panelT = null;
+            for (int i = 0; i < canvas.transform.childCount; i++)
+            {
+                if (canvas.transform.GetChild(i).name.Trim() == "SaveMenuPanel")
+                {
+                    panelT = canvas.transform.GetChild(i);
+                    break;
+                }
+            }
+
+            if (panelT == null)
+            {
+                Debug.LogError("[SceneSetup] SaveMenuPanel not found under Canvas! Run Setup UI Panels first.");
+                return;
+            }
+
+            GameObject panel = panelT.gameObject;
+
+            for (int i = panelT.childCount - 1; i >= 0; i--)
+                Object.DestroyImmediate(panelT.GetChild(i).gameObject);
+
+            var rect = panel.GetComponent<RectTransform>();
+            if (rect == null) rect = panel.AddComponent<RectTransform>();
+            rect.anchorMin = Vector2.zero;
+            rect.anchorMax = Vector2.one;
+            rect.offsetMin = new Vector2(0f, 60f);
+            rect.offsetMax = Vector2.zero;
+
+            var panelImg = panel.GetComponent<Image>();
+            if (panelImg == null) panelImg = panel.AddComponent<Image>();
+            panelImg.color = new Color(0.05f, 0.05f, 0.04f, 0.92f);
+
+            var cg = panel.GetComponent<CanvasGroup>();
+            if (cg == null) cg = panel.AddComponent<CanvasGroup>();
+
+            var vlg = panel.GetComponent<VerticalLayoutGroup>();
+            if (vlg == null) vlg = panel.AddComponent<VerticalLayoutGroup>();
+            vlg.spacing = 10f;
+            vlg.padding = new RectOffset(10, 10, 10, 10);
+            vlg.childControlWidth = true;
+            vlg.childControlHeight = false;
+            vlg.childForceExpandWidth = true;
+            vlg.childForceExpandHeight = false;
+
+            var headerGO = new GameObject("Header");
+            headerGO.transform.SetParent(panelT, false);
+            var headerRt = headerGO.AddComponent<RectTransform>();
+            var headerLe = headerGO.AddComponent<LayoutElement>();
+            headerLe.preferredHeight = 50;
+            var headerTmp = headerGO.AddComponent<TextMeshProUGUI>();
+            headerTmp.text = "SAVE / LOAD";
+            headerTmp.fontSize = 30;
+            headerTmp.alignment = TextAlignmentOptions.Center;
+            headerTmp.color = new Color(0.83f, 0.52f, 0.04f, 1f);
+
+            var scrollListObj = new GameObject("ScrollList");
+            scrollListObj.transform.SetParent(panelT, false);
+            var scrollRt = scrollListObj.AddComponent<RectTransform>();
+            var scrollLe = scrollListObj.AddComponent<LayoutElement>();
+            scrollLe.preferredHeight = 600f;
+            scrollLe.minHeight = 200f;
+            scrollLe.flexibleHeight = 1;
+
+            var scrollRect = scrollListObj.AddComponent<ScrollRect>();
+            scrollRect.horizontal = false;
+            scrollRect.vertical = true;
+            scrollRect.scrollSensitivity = 30f;
+            scrollRect.movementType = ScrollRect.MovementType.Clamped;
+
+            var viewportObj = new GameObject("Viewport");
+            viewportObj.transform.SetParent(scrollListObj.transform, false);
+            var vpRt = viewportObj.AddComponent<RectTransform>();
+            vpRt.anchorMin = Vector2.zero;
+            vpRt.anchorMax = Vector2.one;
+            vpRt.sizeDelta = Vector2.zero;
+            viewportObj.AddComponent<RectMask2D>();
+            scrollRect.viewport = vpRt;
+
+            var contentObj = new GameObject("Content");
+            contentObj.transform.SetParent(viewportObj.transform, false);
+            var ctRt = contentObj.AddComponent<RectTransform>();
+            ctRt.anchorMin = new Vector2(0f, 0f);
+            ctRt.anchorMax = new Vector2(1f, 1f);
+            ctRt.pivot = new Vector2(0.5f, 1f);
+            ctRt.sizeDelta = new Vector2(-18f, 0f);
+
+            var ctVlg = contentObj.AddComponent<VerticalLayoutGroup>();
+            ctVlg.padding = new RectOffset(8, 8, 6, 6);
+            ctVlg.spacing = 4f;
+            ctVlg.childControlWidth = true;
+            ctVlg.childControlHeight = true;
+            ctVlg.childForceExpandWidth = true;
+            ctVlg.childForceExpandHeight = false;
+
+            contentObj.AddComponent<ContentSizeFitter>().verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+            scrollRect.content = ctRt;
+
+            var scrollbarObj = new GameObject("Scrollbar");
+            scrollbarObj.transform.SetParent(scrollListObj.transform, false);
+            var sbRt = scrollbarObj.AddComponent<RectTransform>();
+            sbRt.anchorMin = new Vector2(1f, 0f);
+            sbRt.anchorMax = new Vector2(1f, 1f);
+            sbRt.pivot = new Vector2(1f, 1f);
+            sbRt.sizeDelta = new Vector2(14f, 0f);
+
+            var sbBg = scrollbarObj.AddComponent<Image>();
+            sbBg.color = new Color(0.2f, 0.2f, 0.2f, 0.6f);
+
+            var scrollbar = scrollbarObj.AddComponent<Scrollbar>();
+            scrollbar.direction = Scrollbar.Direction.BottomToTop;
+            scrollbar.size = 0.3f;
+
+            var handleObj = new GameObject("Handle");
+            handleObj.transform.SetParent(scrollbarObj.transform, false);
+            var hRt = handleObj.AddComponent<RectTransform>();
+            hRt.anchorMin = Vector2.zero;
+            hRt.anchorMax = Vector2.one;
+            hRt.sizeDelta = Vector2.zero;
+
+            var handleImg = handleObj.AddComponent<Image>();
+            handleImg.color = new Color(0.7f, 0.7f, 0.7f, 0.9f);
+            scrollbar.targetGraphic = handleImg;
+            scrollbar.handleRect = hRt;
+            scrollRect.verticalScrollbar = scrollbar;
+
+            var statusGO = new GameObject("StatusText");
+            statusGO.transform.SetParent(panelT, false);
+            var statusLe = statusGO.AddComponent<LayoutElement>();
+            statusLe.preferredHeight = 30;
+            var statusTmp = statusGO.AddComponent<TextMeshProUGUI>();
+            statusTmp.text = "Select a save file";
+            statusTmp.fontSize = 17;
+            statusTmp.alignment = TextAlignmentOptions.Center;
+            statusTmp.color = new Color(0.6f, 0.6f, 0.55f, 1f);
+
+            var confirmGO = new GameObject("ConfirmRow");
+            confirmGO.transform.SetParent(panelT, false);
+            var confirmLe = confirmGO.AddComponent<LayoutElement>();
+            confirmLe.preferredHeight = 48;
+            confirmGO.SetActive(false);
+
+            var btnRowGO = new GameObject("BtnRow");
+            btnRowGO.transform.SetParent(panelT, false);
+            var btnRowLe = btnRowGO.AddComponent<LayoutElement>();
+            btnRowLe.preferredHeight = 52;
+            var btnRowHlg = btnRowGO.AddComponent<HorizontalLayoutGroup>();
+            btnRowHlg.childAlignment = TextAnchor.MiddleCenter;
+            btnRowHlg.childForceExpandWidth = false;
+            btnRowHlg.spacing = 12f;
+
+            CreateEditorButton(btnRowGO.transform, "NewSaveBtn", "NEW SAVE", 140);
+            CreateEditorButton(btnRowGO.transform, "LoadBtn", "LOAD", 110);
+            CreateEditorButton(btnRowGO.transform, "DeleteBtn", "DELETE", 110);
+            CreateEditorButton(btnRowGO.transform, "BackBtn", "BACK", 110);
+
+            var saveMenuUI = panel.GetComponent<SaveMenuUI>() ?? panel.AddComponent<SaveMenuUI>();
+            SerializedObject so = new SerializedObject(saveMenuUI);
+            var contentProp = so.FindProperty("_contentContainer");
+            var statusProp = so.FindProperty("_statusText");
+            var loadProp = so.FindProperty("_loadBtn");
+            var deleteProp = so.FindProperty("_deleteBtn");
+            var confirmProp = so.FindProperty("_confirmRow");
+
+            if (contentProp != null) contentProp.objectReferenceValue = ctRt;
+            if (statusProp != null) statusProp.objectReferenceValue = statusTmp;
+            if (loadProp != null) loadProp.objectReferenceValue = btnRowGO.transform.Find("LoadBtn").GetComponent<Button>();
+            if (deleteProp != null) deleteProp.objectReferenceValue = btnRowGO.transform.Find("DeleteBtn").GetComponent<Button>();
+            if (confirmProp != null) confirmProp.objectReferenceValue = confirmGO;
+
+            so.ApplyModifiedProperties();
+            EditorUtility.SetDirty(saveMenuUI);
+
+            panel.SetActive(false);
+            EditorSceneManager.MarkSceneDirty(panel.scene);
+            Debug.Log("[SceneSetup] SaveMenuPanel setup complete! All bindings applied.");
+        }
+
+        static void CreateEditorButton(Transform parent, string name, string label, int width)
+        {
+            var btnGO = new GameObject(name);
+            btnGO.transform.SetParent(parent, false);
+            var btnLe = btnGO.AddComponent<LayoutElement>();
+            btnLe.minWidth = width;
+            btnLe.preferredWidth = width;
+            btnLe.minHeight = 46;
+
+            var btnImg = btnGO.AddComponent<Image>();
+            btnImg.color = new Color(0.15f, 0.15f, 0.13f, 1f);
+
+            var btn = btnGO.AddComponent<Button>();
+            btn.targetGraphic = btnImg;
+
+            var lblGO = new GameObject("Label");
+            lblGO.transform.SetParent(btnGO.transform, false);
+            var lblRt = lblGO.AddComponent<RectTransform>();
+            lblRt.anchorMin = Vector2.zero;
+            lblRt.anchorMax = Vector2.one;
+            lblRt.sizeDelta = Vector2.zero;
+            var lblTmp = lblGO.AddComponent<TextMeshProUGUI>();
+            lblTmp.text = label;
+            lblTmp.fontSize = 16;
+            lblTmp.alignment = TextAlignmentOptions.Center;
+            lblTmp.color = Color.white;
+        }
+
+        #endregion
     }
 }

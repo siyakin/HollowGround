@@ -19,7 +19,7 @@ namespace HollowGround.Core
         protected override void Awake()
         {
             base.Awake();
-            DontDestroyOnLoad(gameObject);
+            CurrentState = GameState.Menu;
         }
 
         public void SetState(GameState newState)

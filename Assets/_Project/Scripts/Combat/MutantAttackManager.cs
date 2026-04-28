@@ -73,6 +73,12 @@ namespace HollowGround.Combat
             ResetTimer();
         }
 
+        public void RestoreState(int waveIndex, float attackTimer)
+        {
+            _currentWaveIndex = waveIndex;
+            _attackTimer = attackTimer;
+        }
+
         private void ResetTimer()
         {
             float interval = _baseAttackInterval * Mathf.Pow(1f + _intervalGrowthFactor, _currentWaveIndex);

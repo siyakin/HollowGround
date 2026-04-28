@@ -46,6 +46,17 @@ namespace HollowGround.Heroes
         public void AddHero(HeroData data)
         {
             var hero = new Hero(data);
+            RegisterHero(hero);
+        }
+
+        public void AddHeroWithId(HeroData data, string id)
+        {
+            var hero = new Hero(data) { Id = id };
+            RegisterHero(hero);
+        }
+
+        private void RegisterHero(Hero hero)
+        {
             hero.OnLevelUp += HandleHeroLevelUp;
             _heroes.Add(hero);
             OnHeroAdded?.Invoke(hero);
@@ -120,6 +131,14 @@ namespace HollowGround.Heroes
                 if (hero.IsDeployed)
                     hero.AddXP(amount);
             }
+        }
+
+        public void ResetAll()
+        {
+            foreach (var hero in _heroes)
+                hero.OnLevelUp -= HandleHeroLevelUp;
+            _heroes.Clear();
+            OnHeroesChanged?.Invoke();
         }
 
         private void HandleHeroLevelUp(Hero hero)

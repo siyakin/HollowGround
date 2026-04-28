@@ -32,6 +32,7 @@ namespace HollowGround.Buildings
 
         private void Update()
         {
+            if (UIManager.Instance != null && UIManager.Instance.IsInputBlocked) return;
             if (BuildingPlacer.Instance != null && BuildingPlacer.Instance.IsPlacing) return;
             if (Mouse.current == null) return;
 

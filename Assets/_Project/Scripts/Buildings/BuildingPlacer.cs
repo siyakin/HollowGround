@@ -3,6 +3,7 @@ using System.Linq;
 using HollowGround.Core;
 using HollowGround.Grid;
 using HollowGround.Resources;
+using HollowGround.UI;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -49,6 +50,7 @@ namespace HollowGround.Buildings
 
         private void Update()
         {
+            if (UIManager.Instance != null && UIManager.Instance.IsInputBlocked) return;
             if (_isPlacing && _cam == null)
                 ResolveCamera();
             if (!_isPlacing) return;

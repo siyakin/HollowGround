@@ -1,6 +1,6 @@
 # Hollow Ground — AGENTS.md
 
-## Mevcut Versiyon: 0.16.3
+## Mevcut Versiyon: 0.17.0
 
 ## Versiyon Kurallari
 
@@ -11,8 +11,35 @@
   - **PATCH**: Bug fix, kucuk duzeltme
 - **Git tag**: Her merge'de `v0.X.Y` tag olusturulur
 - **CHANGELOG.md**: Her versiyonda ne degisti yazilir
-- **Workflow**: `feature/xxx` branch → test/onay → main merge → tag + CHANGELOG guncelle
 - **Commit/push**: Kullanici acikca istemedikce yapilmaz
+
+## Calisma Akisi (GitHub Project Driven)
+
+Tum isler **GitHub Project** uzerinden yonetilir. Issue yoksa kod yazilmaz.
+
+### Proje Tahtasi
+- **URL:** https://github.com/users/siyakin/projects/2
+- **Status:** Todo → In progress → Done
+- **Priority:** P0 (kritik) / P1 (yuksek) / P2 (normal)
+- **Size:** XS / S / M / L / XL
+
+### Is Akisi
+1. **Backlog olusturma:** Yapilacak isler GitHub issue olarak acilir, projeye eklenir, priority ve size atanir
+2. **Is alma:** Bir issue uzerinde calismaya baslanirken GitHub Project'te status → `In progress` yapilir
+3. **Branch:** Her issue icin `feature/xxx` veya `fix/xxx` branch acilir (ornek: `fix/save-hero-id`, `feature/quest-so`)
+4. **Gelistirme:** Kod yazilir, test edilir
+5. **Pull Request:** Is bitince PR acilir, review istenir
+6. **Merge:** Onaydan sonra main'e merge, VERSION + CHANGELOG guncellenir, git tag olusturulur
+7. **Issue kapatma:** Issue `Done` olarak isaretlenir, branch silinir
+
+### Kurallar
+- **Issue yok = kod yok:** Yeni kod yazmadan once mutlaka issue acilmali
+- **Tek issue, tek PR:** Bir PR birden fazla issue kapatmamali
+- **Workflow:** `feature/xxx` branch → test/onay → main merge → tag + CHANGELOG guncelle
+- **AGENTS.md guncelleme:** Yeni faz bittiginde veya onemli degisikliklerde AGENTS.md guncellenmeli
+- **ROADMAP.md guncelleme:** Faz tamamlandiginda check isaretlenmeli
+- **Commit mesajlari:** `#issue-no` ile referans verilmeli (ornek: `fix: hero ID mismatch on load #8`)
+- **gh CLI:** Issue ve PR islemleri icin `gh` komutu kullanilir
 
 ## Proje Ozeti
 
@@ -547,3 +574,23 @@ Bu kurallar tekrarlanan hataları ve gereksiz kod tekrarını önlemek için Faz
 - AboutPanelUI.VERSION dosyasindan okur: `Path.Combine(Application.dataPath, "..", "VERSION")`
 - Hardcoded versiyon stringi YASAK — her zaman VERSION dosyasindan oku
 - Yeni versiyon icin: VERSION dosyasini guncelle + CHANGELOG.md ekle + git tag
+
+### Save/Load Kurallari
+- `Building.Demolish()` kaynak iadesi yapar — load sirasinda `ClearForLoad()` kullanilmali (iade yok, event yok)
+- `ApplySaveData` sirasi: binalar once temizlenmeli, sonra kaynaklar set edilmeli (yoksa iade kaynaklari bozar)
+- `Destroy(gameObject)` deferred — load sirasinda `DestroyImmediate` kullanilmali
+- Hero yukleme: `AddHeroWithId(data, id)` ile save'deki ID korunmali, `AddHero()` yeni Guid uretir
+- Kaynak atama: `Set()` ile tam deger, `Add()` ile artirmali — load'da `Set()` kullanilmali
+- BuildingData eslestirme: once asset `name`, sonra `DisplayName`, sonra `BuildingNameAliases` dictionary
+- TechNode SO runtime degisiklikleri editor'de kalir — `ResetAllState()` ile her baslangicta sifirlanmali
+
+### Input Block Sistemi
+- `UIManager.IsInputBlocked` — pause/save/about paneli aciksa `true`
+- `StrategyCamera`, `BuildingPlacer`, `BuildingSelector` Update'te `IsInputBlocked` kontrol eder
+- Panel acildiginda `TimeManager.TogglePause()` ile zaman durur
+- Load sonrasi `ResumeAfterLoad()` ile tam resume yapilmali (pause + time + state)
+
+### Editor Setup Menuleri
+- `HollowGround > Setup UI Panels` — tum panel'leri olusturur ve UIManager'a baglar
+- `HollowGround > Setup Save Menu` — SaveMenuPanel icindeki ScrollList + butonlari olusturur, SerializeField'lari baglar
+- Panel isimlerinde trailing space olabilir — `name.Trim()` ile karsilastirilmali

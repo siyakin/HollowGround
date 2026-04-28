@@ -20,6 +20,12 @@ namespace HollowGround.Core
             OnGameTimeChanged?.Invoke(GameTime);
         }
 
+        public void SetTime(float time)
+        {
+            GameTime = time;
+            OnGameTimeChanged?.Invoke(GameTime);
+        }
+
         public void SetSpeed(int speed)
         {
             GameSpeed = Mathf.Clamp(speed, 0, 3);

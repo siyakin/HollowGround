@@ -84,6 +84,11 @@ namespace HollowGround.Editor
                     int idx = connected;
                     btn.onClick.RemoveAllListeners();
                     btn.onClick.AddListener(() => menu.SelectBuilding(idx));
+
+                    var tb = btn.GetComponent<ThemedButton>();
+                    if (tb == null)
+                        tb = btn.gameObject.AddComponent<ThemedButton>();
+                    tb.styleType = UIStyleType.BuildingCardButton;
                 }
 
                 connected++;

@@ -1,6 +1,10 @@
 using System.Collections.Generic;
+using System.Linq;
+using HollowGround.Army;
+using HollowGround.Buildings;
 using HollowGround.Combat;
 using HollowGround.Grid;
+using HollowGround.Heroes;
 using HollowGround.Quests;
 using UnityEngine;
 
@@ -16,12 +20,52 @@ namespace HollowGround.Core
 
         private void Start()
         {
+            ResetAllState();
             EnsureSessionLogger();
             CenterCamera();
             InitializeWorldMap();
             InitializeQuests();
             InitializeMutantAttacks();
             StartGame();
+        }
+
+        private void ResetAllState()
+        {
+            ResetTechNodes();
+            ResetBuildings();
+            ResetArmy();
+            ResetHeroes();
+        }
+
+        private void ResetTechNodes()
+        {
+            var techNodes = UnityEngine.Resources.LoadAll<Tech.TechNode>("TechNodes");
+            foreach (var tech in techNodes)
+            {
+                tech.IsResearched = false;
+                tech.IsResearching = false;
+                tech.ResearchProgress = 0f;
+            }
+        }
+
+        private void ResetBuildings()
+        {
+            if (BuildingManager.Instance == null) return;
+            var existing = BuildingManager.Instance.AllBuildings.ToList();
+            foreach (var b in existing)
+                b.Demolish();
+        }
+
+        private void ResetArmy()
+        {
+            if (ArmyManager.Instance == null) return;
+            ArmyManager.Instance.ResetAll();
+        }
+
+        private void ResetHeroes()
+        {
+            if (HeroManager.Instance == null) return;
+            HeroManager.Instance.ResetAll();
         }
 
         private void EnsureSessionLogger()

@@ -30,6 +30,22 @@ namespace HollowGround.UI
         private Dictionary<string, ThemedButton> _actionBarThemed;
         private bool _isPaused;
 
+        private static readonly HashSet<string> InputBlockingPanels = new()
+        {
+            "SaveMenu", "Pause", "About"
+        };
+
+        public bool IsInputBlocked
+        {
+            get
+            {
+                if (_isPaused) return true;
+                if (_saveMenuPanel != null && _saveMenuPanel.activeSelf) return true;
+                if (_aboutPanel != null && _aboutPanel.activeSelf) return true;
+                return false;
+            }
+        }
+
         private void Start()
         {
             InitPanelManager();
@@ -261,6 +277,19 @@ namespace HollowGround.UI
         {
             if (_isPaused && _pausePanel != null)
                 _pausePanel.SetActive(true);
+        }
+
+        public void ResumeAfterLoad()
+        {
+            if (_saveMenuPanel != null) _saveMenuPanel.SetActive(false);
+            ClosePauseAndSubPanels();
+            _isPaused = false;
+
+            if (HollowGround.Core.TimeManager.Instance != null && HollowGround.Core.TimeManager.Instance.IsPaused)
+                HollowGround.Core.TimeManager.Instance.TogglePause();
+
+            if (GameManager.Instance != null && GameManager.Instance.CurrentState == GameState.Paused)
+                GameManager.Instance.TogglePause();
         }
 
         public void ToggleBuildMenu() => _panels?.Toggle("BuildMenu");

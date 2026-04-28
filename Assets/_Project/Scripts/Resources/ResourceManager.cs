@@ -86,6 +86,13 @@ namespace HollowGround.Resources
             OnAllResourcesChanged?.Invoke();
         }
 
+        public void Set(ResourceType type, int amount)
+        {
+            _resources[type] = Mathf.Clamp(amount, 0, GetCapacity(type));
+            OnResourceChanged?.Invoke(type, _resources[type]);
+            OnAllResourcesChanged?.Invoke();
+        }
+
         public bool Spend(ResourceType type, int amount)
         {
             if (amount <= 0) return true;

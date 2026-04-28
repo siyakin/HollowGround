@@ -152,6 +152,15 @@ namespace HollowGround.Buildings
             return Mathf.Clamp01(bonus);
         }
 
+        public void RestoreFromSave(int level, BuildingState state, float constructionProgress, float upgradeProgress)
+        {
+            Level = level;
+            State = state;
+            ConstructionProgress = constructionProgress;
+            UpgradeProgress = upgradeProgress;
+            UpdateModel();
+        }
+
         public bool CanUpgrade()
         {
             return Level < _data.MaxLevel && State == BuildingState.Active;
@@ -173,11 +182,7 @@ namespace HollowGround.Buildings
 
         public void Demolish()
         {
-            var gridSystem = GridSystem.Instance;
-            if (gridSystem != null)
-            {
-                gridSystem.FreeCells(GridOrigin.x, GridOrigin.y, _data.SizeX, _data.SizeZ);
-            }
+            FreeGridCells();
 
             float refundRatio = GameConfig.Instance != null ? GameConfig.Instance.DemolishRefundRatio : 0.5f;
             var costs = _data.GetCostForLevel(Level);
@@ -191,6 +196,20 @@ namespace HollowGround.Buildings
 
             OnDestroyed?.Invoke(this);
             Destroy(gameObject);
+        }
+
+        public void ClearForLoad()
+        {
+            FreeGridCells();
+            BuildingManager.Instance?.UnregisterBuilding(this);
+            DestroyImmediate(gameObject);
+        }
+
+        private void FreeGridCells()
+        {
+            var gridSystem = GridSystem.Instance;
+            if (gridSystem != null)
+                gridSystem.FreeCells(GridOrigin.x, GridOrigin.y, _data.SizeX, _data.SizeZ);
         }
 
         private void UpdateModel()

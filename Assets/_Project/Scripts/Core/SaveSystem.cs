@@ -8,6 +8,7 @@ using HollowGround.Combat;
 using HollowGround.Heroes;
 using HollowGround.Quests;
 using HollowGround.Resources;
+using HollowGround.Grid;
 using HollowGround.World;
 using UnityEngine;
 
@@ -42,7 +43,6 @@ namespace HollowGround.Core
         {
             var data = new SaveData
             {
-                SaveName = $"Save_{DateTime.Now:yyyy-MM-dd_HH-mm-ss}",
                 SaveDate = DateTime.Now.ToString("o"),
                 PlayTime = TimeManager.Instance != null ? TimeManager.Instance.GameTime : 0f
             };
@@ -65,6 +65,7 @@ namespace HollowGround.Core
             try
             {
                 var data = CaptureSaveData();
+                data.SaveName = fileName;
                 string json = JsonUtility.ToJson(data, true);
                 string folder = GetSaveFolderPath();
                 Directory.CreateDirectory(folder);
@@ -118,7 +119,11 @@ namespace HollowGround.Core
                     string json = File.ReadAllText(file);
                     var data = JsonUtility.FromJson<SaveData>(json);
                     if (data != null)
+                    {
+                        // Always use actual filename so Load() can find the file
+                        data.SaveName = Path.GetFileNameWithoutExtension(file);
                         saves.Add(data);
+                    }
                 }
                 catch { }
             }
@@ -141,9 +146,9 @@ namespace HollowGround.Core
 
         private void ApplySaveData(SaveData data)
         {
+            ApplyBuildings(data);
             ApplyResources(data);
             ApplyTime(data);
-            ApplyBuildings(data);
             ApplyArmy(data);
             ApplyHeroes(data);
             ApplyResearch(data);
@@ -343,14 +348,14 @@ namespace HollowGround.Core
                 int amount = FindValue(data.Resources.Amounts, key);
                 int cap = FindValue(data.Resources.Capacities, key, 500);
                 ResourceManager.Instance.SetCapacity(type, cap);
-                int diff = amount - ResourceManager.Instance.Get(type);
-                if (diff > 0) ResourceManager.Instance.Add(type, diff);
+                ResourceManager.Instance.Set(type, amount);
             }
         }
 
         private void ApplyTime(SaveData data)
         {
             if (TimeManager.Instance == null || data.Time == null) return;
+            TimeManager.Instance.SetTime(data.Time.GameTime);
             TimeManager.Instance.SetSpeed(data.Time.GameSpeed);
         }
 
@@ -360,42 +365,86 @@ namespace HollowGround.Core
 
             var existing = BuildingManager.Instance.AllBuildings.ToList();
             foreach (var b in existing)
-                if (b.Data.Type != BuildingType.CommandCenter)
-                    b.Demolish();
+                b.ClearForLoad();
 
             foreach (var bs in data.Buildings)
             {
                 if (bs.State == BuildingState.Placing.ToString()) continue;
 
-                var buildingData = UnityEngine.Resources.LoadAll<BuildingData>("Buildings")
-                    .FirstOrDefault(b => b.name == bs.BuildingDataName);
-
-                if (buildingData == null) continue;
-
-                if (buildingData.Type == BuildingType.CommandCenter)
+                var buildingData = LoadBuildingDataByName(bs.BuildingDataName);
+                if (buildingData == null)
                 {
-                    var cc = BuildingManager.Instance.CommandCenter;
-                    if (cc != null)
-                    {
-                        while (cc.Level < bs.Level && cc.CanUpgrade())
-                            cc.StartUpgrade();
-                    }
+                    Debug.LogWarning($"[SaveSystem] BuildingData not found: {bs.BuildingDataName}");
                     continue;
                 }
 
+                Vector3 worldPos = GridSystem.Instance != null
+                    ? GridSystem.Instance.GetWorldPosition(bs.GridX, bs.GridZ)
+                    : Vector3.zero;
+
+                float offsetX = (buildingData.SizeX - 1) * (GridSystem.Instance != null ? GridSystem.Instance.CellSize : 2f) * 0.5f;
+                float offsetZ = (buildingData.SizeZ - 1) * (GridSystem.Instance != null ? GridSystem.Instance.CellSize : 2f) * 0.5f;
+
                 var go = new GameObject(buildingData.DisplayName);
+                go.transform.position = new Vector3(worldPos.x + offsetX, worldPos.y, worldPos.z + offsetZ);
+
                 var building = go.AddComponent<Building>();
                 building.Initialize(buildingData, new Vector2Int(bs.GridX, bs.GridZ));
 
-                if (bs.State == BuildingState.Active.ToString())
-                {
-                    for (int i = 1; i < bs.Level; i++)
-                    {
-                        if (building.CanUpgrade())
-                            building.StartUpgrade();
-                    }
-                }
+                if (System.Enum.TryParse<BuildingState>(bs.State, out var state))
+                    building.RestoreFromSave(bs.Level, state, bs.ConstructionProgress, bs.UpgradeProgress);
+
+                if (GridSystem.Instance != null)
+                    GridSystem.Instance.OccupyCells(bs.GridX, bs.GridZ, buildingData.SizeX, buildingData.SizeZ, go);
+
+                BuildingManager.Instance.RegisterBuilding(building);
             }
+        }
+
+        private static readonly Dictionary<string, string> BuildingNameAliases = new()
+        {
+            { "Su Kuyusu", "WaterWell" },
+            { "Depo", "Storage" },
+            { "Ciftlik", "Farm" },
+            { "Maden", "Mine" },
+            { "Odun Fabrikasi", "WoodFactory" },
+            { "Jenerator", "Generator" },
+            { "Kisla", "Barracks" },
+            { "Barinak", "Shelter" },
+            { "Hastane", "Hospital" },
+            { "Siginak", "Shelter" },
+            { "Building Red", "Storage" },
+            { "Building Green", "Farm" },
+            { "Town House", "Shelter" },
+        };
+
+        private static BuildingData LoadBuildingDataByName(string name)
+        {
+            var result = FindBuildingData(name);
+            if (result != null) return result;
+
+            if (BuildingNameAliases.TryGetValue(name, out string alias))
+                result = FindBuildingData(alias);
+
+            return result;
+        }
+
+        private static BuildingData FindBuildingData(string name)
+        {
+#if UNITY_EDITOR
+            string[] guids = UnityEditor.AssetDatabase.FindAssets($"t:BuildingData");
+            foreach (var guid in guids)
+            {
+                string path = UnityEditor.AssetDatabase.GUIDToAssetPath(guid);
+                var bd = UnityEditor.AssetDatabase.LoadAssetAtPath<BuildingData>(path);
+                if (bd != null && (bd.name == name || bd.DisplayName == name))
+                    return bd;
+            }
+            return null;
+#else
+            return UnityEngine.Resources.LoadAll<BuildingData>("Buildings")
+                .FirstOrDefault(b => b.name == name || b.DisplayName == name);
+#endif
         }
 
         private void ApplyArmy(SaveData data)
@@ -420,7 +469,7 @@ namespace HollowGround.Core
                 var heroData = allHeroData.FirstOrDefault(h => h.name == hs.HeroDataName);
                 if (heroData == null) continue;
 
-                HeroManager.Instance.AddHero(heroData);
+                HeroManager.Instance.AddHeroWithId(heroData, hs.Id);
                 var hero = HeroManager.Instance.GetHero(hs.Id);
 
                 if (hero == null) continue;
@@ -506,7 +555,9 @@ namespace HollowGround.Core
 
             if (data.MutantAttack.CycleStarted)
             {
-                MutantAttackManager.Instance.StartAttackCycle();
+                MutantAttackManager.Instance.RestoreState(
+                    data.MutantAttack.CurrentWaveIndex,
+                    data.MutantAttack.AttackTimer);
             }
         }
 

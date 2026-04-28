@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.EventSystems;
+using HollowGround.UI;
 
 namespace HollowGround.Camera
 {
@@ -69,6 +70,7 @@ namespace HollowGround.Camera
         private void Update()
         {
             if (Mouse.current == null || Keyboard.current == null) return;
+            if (UIManager.Instance != null && UIManager.Instance.IsInputBlocked) return;
 
             HandleDragState();
             HandleKeyboardPan();

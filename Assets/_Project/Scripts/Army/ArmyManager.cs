@@ -176,6 +176,18 @@ namespace HollowGround.Army
             return power;
         }
 
+        public void ResetAll()
+        {
+            _troops.Clear();
+            _trainingQueue.Clear();
+            foreach (TroopType type in System.Enum.GetValues(typeof(TroopType)))
+                _troops[type] = 0;
+            TotalTroopCount = 0;
+            TotalArmyPower = 0;
+            Morale = 1f;
+            OnArmyUpdated?.Invoke();
+        }
+
         private void Recalculate()
         {
             TotalTroopCount = 0;

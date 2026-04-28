@@ -18,6 +18,17 @@ namespace HollowGround.UI
             public TMP_Text NameText;
             public TMP_Text CostText;
             public GameObject LockedOverlay;
+
+            private ThemedButton _themedBtn;
+            public ThemedButton ThemedBtn
+            {
+                get
+                {
+                    if (_themedBtn == null && Button != null)
+                        _themedBtn = Button.GetComponent<ThemedButton>() ?? Button.gameObject.AddComponent<ThemedButton>();
+                    return _themedBtn;
+                }
+            }
         }
 
         [SerializeField] private List<BuildingCard> _cards = new();
@@ -73,21 +84,31 @@ namespace HollowGround.UI
 
         public void RefreshCards()
         {
+            var theme = UIThemeManager.Instance?.CurrentTheme;
             foreach (var card in _cards)
             {
                 if (card.Data == null) continue;
 
-                bool canBuild = BuildingManager.Instance != null && BuildingManager.Instance.CanBuild(card.Data);
+                int ccLevel = BuildingManager.Instance != null ? BuildingManager.Instance.GetCommandCenterLevel() : 0;
+                bool ccUnlocked = card.Data.CommandCenterLevelRequired <= ccLevel;
                 bool hasResources = HasEnoughResources(card.Data);
+                bool enabled = ccUnlocked && hasResources;
 
                 if (card.Button != null)
                 {
                     card.Button.gameObject.SetActive(true);
-                    card.Button.interactable = canBuild && hasResources;
+                    card.Button.interactable = enabled;
+
+                    var tb = card.ThemedBtn;
+                    if (tb != null && tb.styleType != UIStyleType.BuildingCardButton)
+                        tb.styleType = UIStyleType.BuildingCardButton;
                 }
 
                 if (card.NameText != null)
+                {
                     card.NameText.text = card.Data.DisplayName;
+                    card.NameText.color = enabled ? UIColors.Default.Text : UIColors.Default.Muted;
+                }
 
                 if (card.CostText != null)
                 {
@@ -103,10 +124,11 @@ namespace HollowGround.UI
                         parts.Add($"<color=#{hex}>\u25CF {kvp.Value}</color>");
                     }
                     card.CostText.text = parts.Count > 0 ? string.Join("  ", parts) : "<color=#C8C8C8>Free</color>";
+                    card.CostText.color = enabled ? UIColors.Default.Text : UIColors.Default.Muted;
                 }
 
                 if (card.LockedOverlay != null)
-                    card.LockedOverlay.SetActive(!canBuild);
+                    card.LockedOverlay.SetActive(!ccUnlocked);
             }
         }
 

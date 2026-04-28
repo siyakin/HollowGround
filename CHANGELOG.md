@@ -4,6 +4,44 @@ All notable changes to Hollow Ground are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Versioning follows [SemVer](https://semver.org/): MAJOR.MINOR.PATCH
 
+## [0.17.0] - 2026-04-29
+
+### Added
+- BuildMenuUI: ThemedButton entegrasyonu — disabled butonlar merkezi temadan renk aliyor
+- HeroManager.AddHeroWithId() — save'den hero yüklenirken ID uyumu
+- ResourceManager.Set() — kaynaga tam deger atama (additive degil)
+- MutantAttackManager.RestoreState() — wave/timer save'den restore
+- Building.ClearForLoad() — load sirasinda bina temizleme (kaynak iadesi yok, event yok)
+- SaveMenuUI: cift tikla load, DestroyImmediate ile liste guncelleme, LayoutRebuilder
+- SaveMenuUI: ScrollList + scrollbar editor setup (HollowGround > Setup Save Menu)
+- UIManager.IsInputBlocked — merkezi input blok sistemi
+- Input block: StrategyCamera, BuildingPlacer, BuildingSelector panel açıkken bloklanir
+- SaveMenuUI.OnEnable/OnDisable — panel acildiginda zaman durur, kapandiginda devam eder
+- UIManager.ResumeAfterLoad() — load sonrasi tam resume (pause + save menu + time)
+- SaveSystem: BuildingNameAliases — eski Turkce SO isimleri otomatik eslestirme
+- SaveSystem: FindBuildingData — DisplayName ile de arama destegi
+- GameInitializer.ResetAllState() — oyun baslangicinda tam state sifirlama
+- ArmyManager.ResetAll(), HeroManager.ResetAll() — manager sifirlama
+- .kilo/command/new-issue.md, start-work.md, finish-work.md — GitHub Project workflow komutlari
+- AGENTS.md: Calisma Akisi (GitHub Project Driven) bölümü eklendi
+- GitHub Issues: 13 backlog item olusturuldu (P0/P1/P2 priority, XS-XL size)
+
+### Fixed
+- BuildMenuUI: kaynak yetmediginde buton disabled + NameText soluk renk
+- SaveSystem.ApplyHeroes: hero ID uyumsuzlugu — yeni Guid yerine save ID kullaniliyor
+- SaveSystem.ApplyResources: sadece eklemek yerine tam deger ataniyor
+- SaveSystem.ApplyMutantAttack: wave/timer sifirlanmiyor, restore ediliyor
+- SaveSystem.ApplySaveData sirasi: binalar once temizleniyor, sonra kaynaklar set ediliyor
+- SaveSystem.ApplyBuildings: DestroyImmediate + offset hesabi (multi-cell binalar)
+- GameManager, AudioManager: DontDestroyOnLoad kaldirildi (single-scene game)
+- GameInitializer: CurrentState = GameState.Menu ile state sifirlama
+- SceneSetupEditor: SaveMenuPanel trim() ile bulunuyor (trailing space sorunu)
+
+### Changed
+- SaveMenuUI: runtime BuildUI yerine scene-based SerializeField baglantilari
+- SaveMenuUI: _built flag kaldirildi, her OnEnable'da RefreshList calisir
+- BuildMenuFixer: ThemedButton + BuildingCardButton style otomatik ekleniyor
+
 ## [0.16.3] - 2026-04-28
 
 ### Added
