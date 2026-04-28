@@ -37,20 +37,16 @@ namespace HollowGround.UI
 
             UIPrimitiveFactory.AddStandardVLG(gameObject, spacing: 10f);
 
-            var headerText = UIPrimitiveFactory.AddThemedText(transform, "SAVE / LOAD", 30, UIColors.Default.Gold, TextAlignmentOptions.Center);
+            var headerText = UIPrimitiveFactory.AddThemedText(transform, "SAVE / LOAD", 30, UIColors.Default.Gold, TextAlignmentOptions.Center, UIStyleType.HeaderText);
             UIPrimitiveFactory.AddLayoutElement(headerText.gameObject, preferredHeight: 50);
-            headerText.gameObject.AddComponent<UIThemeTag>().styleType = UIStyleType.HeaderText;
 
             BuildScrollList(root);
 
-            _statusText = UIPrimitiveFactory.AddThemedText(transform, "Select a save file", 17, UIColors.Default.Muted, TextAlignmentOptions.Center);
+            _statusText = UIPrimitiveFactory.AddThemedText(transform, "Select a save file", 17, UIColors.Default.Muted, TextAlignmentOptions.Center, UIStyleType.BodyText);
             UIPrimitiveFactory.AddLayoutElement(_statusText.gameObject, preferredHeight: 30);
-            _statusText.gameObject.AddComponent<UIThemeTag>().styleType = UIStyleType.BodyText;
 
             BuildConfirmRow(root);
             BuildButtonRow(root);
-
-            UIPrimitiveFactory.ApplyThemeStyles(transform);
 
             _built = true;
         }
@@ -100,21 +96,14 @@ namespace HollowGround.UI
             hlg.childAlignment = TextAnchor.MiddleCenter;
             hlg.childForceExpandWidth = false;
 
-            var qText = UIPrimitiveFactory.AddThemedText(_confirmRow.transform, "Delete this save?", 17, UIColors.Default.Warn, TextAlignmentOptions.MidlineRight);
+            var qText = UIPrimitiveFactory.AddThemedText(_confirmRow.transform, "Delete this save?", 17, UIColors.Default.Warn, TextAlignmentOptions.MidlineRight, UIStyleType.WarningText);
             UIPrimitiveFactory.AddLayoutElement(qText.gameObject, preferredWidth: 215, minHeight: 42);
-            qText.gameObject.AddComponent<UIThemeTag>().styleType = UIStyleType.WarningText;
 
-            var yesBtn = UIPrimitiveFactory.CreateButton(_confirmRow.transform, "YesBtn", "YES", ConfirmDelete, UIColors.Default.Danger);
+            var yesBtn = UIPrimitiveFactory.CreateThemedButton(_confirmRow.transform, "YesBtn", "YES", ConfirmDelete, UIStyleType.DangerButton);
             UIPrimitiveFactory.AddLayoutElement(yesBtn.gameObject, minWidth: 88, preferredWidth: 88, minHeight: 42);
-            var yesLabel = yesBtn.GetComponentInChildren<TMP_Text>();
-            if (yesLabel != null) yesLabel.fontSize = 17;
-            yesBtn.gameObject.AddComponent<UIThemeTag>().styleType = UIStyleType.DangerButton;
 
-            var noBtn = UIPrimitiveFactory.CreateButton(_confirmRow.transform, "NoBtn", "NO", CancelDelete, UIColors.Default.RowBg);
+            var noBtn = UIPrimitiveFactory.CreateThemedButton(_confirmRow.transform, "NoBtn", "NO", CancelDelete, UIStyleType.ActionBarButton);
             UIPrimitiveFactory.AddLayoutElement(noBtn.gameObject, minWidth: 88, preferredWidth: 88, minHeight: 42);
-            var noLabel = noBtn.GetComponentInChildren<TMP_Text>();
-            if (noLabel != null) noLabel.fontSize = 17;
-            noBtn.gameObject.AddComponent<UIThemeTag>().styleType = UIStyleType.ActionBarButton;
 
             _confirmRow.SetActive(false);
         }
@@ -128,29 +117,17 @@ namespace HollowGround.UI
             hlg.childForceExpandWidth = false;
             hlg.spacing = 12f;
 
-            var newBtn = UIPrimitiveFactory.CreateButton(btnRow, "NewSaveBtn", "NEW SAVE", NewSave, UIColors.Default.Ok);
+            var newBtn = UIPrimitiveFactory.CreateThemedButton(btnRow, "NewSaveBtn", "NEW SAVE", NewSave, UIStyleType.ConfirmButton);
             UIPrimitiveFactory.AddLayoutElement(newBtn.gameObject, minWidth: 140, preferredWidth: 140, minHeight: 46);
-            var newLabel = newBtn.GetComponentInChildren<TMP_Text>();
-            if (newLabel != null) newLabel.fontSize = 18;
-            newBtn.gameObject.AddComponent<UIThemeTag>().styleType = UIStyleType.ConfirmButton;
 
-            _loadBtn = UIPrimitiveFactory.CreateButton(btnRow, "LoadBtn", "LOAD", LoadSelected, UIColors.Default.Gold);
+            _loadBtn = UIPrimitiveFactory.CreateThemedButton(btnRow, "LoadBtn", "LOAD", LoadSelected, UIStyleType.ActionBarButton);
             UIPrimitiveFactory.AddLayoutElement(_loadBtn.gameObject, minWidth: 110, preferredWidth: 110, minHeight: 46);
-            var loadLabel = _loadBtn.GetComponentInChildren<TMP_Text>();
-            if (loadLabel != null) loadLabel.fontSize = 18;
-            _loadBtn.gameObject.AddComponent<UIThemeTag>().styleType = UIStyleType.ActionBarButton;
 
-            _deleteBtn = UIPrimitiveFactory.CreateButton(btnRow, "DeleteBtn", "DELETE", RequestDelete, UIColors.Default.Danger);
+            _deleteBtn = UIPrimitiveFactory.CreateThemedButton(btnRow, "DeleteBtn", "DELETE", RequestDelete, UIStyleType.DangerButton);
             UIPrimitiveFactory.AddLayoutElement(_deleteBtn.gameObject, minWidth: 110, preferredWidth: 110, minHeight: 46);
-            var deleteLabel = _deleteBtn.GetComponentInChildren<TMP_Text>();
-            if (deleteLabel != null) deleteLabel.fontSize = 18;
-            _deleteBtn.gameObject.AddComponent<UIThemeTag>().styleType = UIStyleType.DangerButton;
 
-            var backBtn = UIPrimitiveFactory.CreateButton(btnRow, "BackBtn", "BACK", CloseSelf, UIColors.Default.Muted);
+            var backBtn = UIPrimitiveFactory.CreateThemedButton(btnRow, "BackBtn", "BACK", CloseSelf, UIStyleType.ActionBarButton);
             UIPrimitiveFactory.AddLayoutElement(backBtn.gameObject, minWidth: 110, preferredWidth: 110, minHeight: 46);
-            var backLabel = backBtn.GetComponentInChildren<TMP_Text>();
-            if (backLabel != null) backLabel.fontSize = 18;
-            backBtn.gameObject.AddComponent<UIThemeTag>().styleType = UIStyleType.ActionBarButton;
         }
 
         public void RefreshList()
@@ -176,17 +153,14 @@ namespace HollowGround.UI
 
             if (_saves.Count == 0)
             {
-                var empty = UIPrimitiveFactory.AddThemedText(_listContainer, "No save files found.", 16, UIColors.Default.Muted, TextAlignmentOptions.Center);
+                var empty = UIPrimitiveFactory.AddThemedText(_listContainer, "No save files found.", 16, UIColors.Default.Muted, TextAlignmentOptions.Center, UIStyleType.BodyText);
                 UIPrimitiveFactory.AddLayoutElement(empty.gameObject, preferredHeight: 60, minHeight: 60);
-                empty.gameObject.AddComponent<UIThemeTag>().styleType = UIStyleType.BodyText;
                 _statusText.text = "No save files found.";
                 return;
             }
 
             for (int i = 0; i < _saves.Count; i++)
                 BuildSaveRow(i, _saves[i]);
-
-            UIPrimitiveFactory.ApplyThemeStyles(transform);
 
             _statusText.text = "Select a save file";
         }
@@ -203,21 +177,18 @@ namespace HollowGround.UI
             hlg.childControlHeight = true;
             hlg.childForceExpandWidth = false;
 
-            var nameText = UIPrimitiveFactory.AddThemedText(row, save.SaveName, 18, UIColors.Default.Text, TextAlignmentOptions.MidlineLeft);
+            var nameText = UIPrimitiveFactory.AddThemedText(row, save.SaveName, 18, UIColors.Default.Text, TextAlignmentOptions.MidlineLeft, UIStyleType.LabelText);
             var nameLE = UIPrimitiveFactory.AddLayoutElement(nameText.gameObject);
             nameLE.flexibleWidth = 1f;
-            nameText.gameObject.AddComponent<UIThemeTag>().styleType = UIStyleType.LabelText;
 
             int totalMinutes = Mathf.FloorToInt(save.PlayTime / 60f);
             int hours = totalMinutes / 60;
             int minutes = totalMinutes % 60;
-            var infoText = UIPrimitiveFactory.AddThemedText(row, $"B:{save.Buildings.Count}  H:{save.Heroes.Count}  |  {hours}h{minutes}m", 14, UIColors.Default.Muted, TextAlignmentOptions.MidlineLeft);
+            var infoText = UIPrimitiveFactory.AddThemedText(row, $"B:{save.Buildings.Count}  H:{save.Heroes.Count}  |  {hours}h{minutes}m", 14, UIColors.Default.Muted, TextAlignmentOptions.MidlineLeft, UIStyleType.BodyText);
             UIPrimitiveFactory.AddLayoutElement(infoText.gameObject, preferredWidth: 170, minWidth: 130);
-            infoText.gameObject.AddComponent<UIThemeTag>().styleType = UIStyleType.BodyText;
 
-            var dateText = UIPrimitiveFactory.AddThemedText(row, ParseSaveDate(save.SaveDate), 14, UIColors.Default.Muted, TextAlignmentOptions.MidlineRight);
+            var dateText = UIPrimitiveFactory.AddThemedText(row, ParseSaveDate(save.SaveDate), 14, UIColors.Default.Muted, TextAlignmentOptions.MidlineRight, UIStyleType.BodyText);
             UIPrimitiveFactory.AddLayoutElement(dateText.gameObject, preferredWidth: 100, minWidth: 80);
-            dateText.gameObject.AddComponent<UIThemeTag>().styleType = UIStyleType.BodyText;
 
             var btn = row.gameObject.AddComponent<Button>();
             btn.targetGraphic = rowImg;

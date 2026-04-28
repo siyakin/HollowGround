@@ -46,11 +46,9 @@ namespace HollowGround.UI
 
             var vlg = UIPrimitiveFactory.AddStandardVLG(gameObject);
 
-            _headerText = UIPrimitiveFactory.AddThemedText(transform, "HEROES", 20, UIColors.Default.Gold);
-            _headerText.alignment = TextAlignmentOptions.Center;
+            _headerText = UIPrimitiveFactory.AddThemedText(transform, "HEROES", 20, UIColors.Default.Gold, TextAlignmentOptions.Center, UIStyleType.HeaderText);
             var headerLE = _headerText.gameObject.AddComponent<LayoutElement>();
             headerLE.preferredHeight = 35;
-            _headerText.gameObject.AddComponent<UIThemeTag>().styleType = UIStyleType.HeaderText;
 
             var listObj = new GameObject("HeroList", typeof(RectTransform));
             listObj.transform.SetParent(root, false);
@@ -79,21 +77,11 @@ namespace HollowGround.UI
             var costLE = _summonCostText.gameObject.AddComponent<LayoutElement>();
             costLE.preferredWidth = 180;
 
-            var btnObj = new GameObject("SummonBtn", typeof(RectTransform));
-            btnObj.transform.SetParent(summonRow.transform, false);
-            var btnLE = btnObj.AddComponent<LayoutElement>();
+            var btn = UIPrimitiveFactory.CreateThemedButton(summonRow.transform, "SummonBtn", "SUMMON", OnSummonClicked, UIStyleType.ConfirmButton);
+            var btnLE = btn.gameObject.AddComponent<LayoutElement>();
             btnLE.minWidth = 120;
             btnLE.preferredWidth = 140;
             btnLE.minHeight = 35;
-            var btnImg = btnObj.AddComponent<Image>();
-            btnImg.color = UIColors.Summon;
-            var btn = btnObj.AddComponent<Button>();
-            btn.targetGraphic = btnImg;
-            var btnLabel = UIPrimitiveFactory.AddThemedText(btnObj.transform, "SUMMON", 15, Color.white);
-            btnLabel.alignment = TextAlignmentOptions.Center;
-            UIPrimitiveFactory.StretchFull(btnLabel.rectTransform);
-
-            btn.onClick.AddListener(OnSummonClicked);
 
             _built = true;
         }

@@ -130,8 +130,6 @@ namespace HollowGround.UI
             BuildGrid();
             BuildLegend();
 
-            UIPrimitiveFactory.ApplyThemeStyles(transform);
-
             _built = true;
         }
 

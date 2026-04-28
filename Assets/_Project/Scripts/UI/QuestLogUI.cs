@@ -138,13 +138,11 @@ namespace HollowGround.UI
             btnRowHLG.childForceExpandWidth = true;
             btnRowHLG.childForceExpandHeight = false;
 
-            _acceptBtn = MakeActionButton(btnRow.transform, "ACCEPT QUEST", UIColors.Default.Ok, AcceptSelectedQuest);
-            _turnInBtn = MakeActionButton(btnRow.transform, "TURN IN", UIColors.Default.Gold, TurnInSelectedQuest);
+            _acceptBtn = MakeActionButton(btnRow.transform, "ACCEPT QUEST", AcceptSelectedQuest, UIStyleType.ConfirmButton);
+            _turnInBtn = MakeActionButton(btnRow.transform, "TURN IN", TurnInSelectedQuest, UIStyleType.ConfirmButton);
 
             _detailPanel = detailObj;
             _detailPanel.SetActive(false);
-
-            UIPrimitiveFactory.ApplyThemeStyles(transform);
 
             _built = true;
         }
@@ -302,39 +300,21 @@ namespace HollowGround.UI
 
         private Button MakeTabButton(Transform parent, string label, System.Action onClick)
         {
-            var btnObj = new GameObject("TabBtn", typeof(RectTransform));
-            btnObj.transform.SetParent(parent, false);
-            var btnLE = btnObj.AddComponent<LayoutElement>();
+            var btn = UIPrimitiveFactory.CreateThemedButton(parent, "TabBtn", label, onClick, UIStyleType.ActionBarButton);
+            var btnLE = btn.gameObject.AddComponent<LayoutElement>();
             btnLE.minWidth = 80;
             btnLE.preferredWidth = 100;
             btnLE.minHeight = 32;
-            var btnImg = btnObj.AddComponent<Image>();
-            btnImg.color = new Color(0.2f, 0.2f, 0.22f, 1f);
-            var btn = btnObj.AddComponent<Button>();
-            btn.targetGraphic = btnImg;
-            var btnLabel = UIPrimitiveFactory.AddThemedText(btnObj.transform, label, 14, UIColors.Default.Text);
-            btnLabel.alignment = TextAlignmentOptions.Center;
-            UIPrimitiveFactory.StretchFull(btnLabel.rectTransform);
-            btn.onClick.AddListener(() => onClick());
             return btn;
         }
 
-        private Button MakeActionButton(Transform parent, string label, Color color, System.Action onClick)
+        private Button MakeActionButton(Transform parent, string label, System.Action onClick, UIStyleType styleType)
         {
-            var btnObj = new GameObject("ActionBtn", typeof(RectTransform));
-            btnObj.transform.SetParent(parent, false);
-            var btnLE = btnObj.AddComponent<LayoutElement>();
+            var btn = UIPrimitiveFactory.CreateThemedButton(parent, "ActionBtn", label, onClick, styleType);
+            var btnLE = btn.gameObject.AddComponent<LayoutElement>();
             btnLE.minWidth = 140;
             btnLE.preferredWidth = 180;
             btnLE.minHeight = 36;
-            var btnImg = btnObj.AddComponent<Image>();
-            btnImg.color = color;
-            var btn = btnObj.AddComponent<Button>();
-            btn.targetGraphic = btnImg;
-            var btnLabel = UIPrimitiveFactory.AddThemedText(btnObj.transform, label, 15, Color.black);
-            btnLabel.alignment = TextAlignmentOptions.Center;
-            UIPrimitiveFactory.StretchFull(btnLabel.rectTransform);
-            btn.onClick.AddListener(() => onClick());
             return btn;
         }
     }

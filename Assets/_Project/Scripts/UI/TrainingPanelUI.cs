@@ -106,13 +106,9 @@ namespace HollowGround.UI
             var summaryLE = _armySummaryText.gameObject.AddComponent<LayoutElement>();
             summaryLE.preferredHeight = 30;
 
-            _statusText = UIPrimitiveFactory.AddThemedText(transform, "No active training", 16, UIColors.Default.Muted);
-            _statusText.alignment = TextAlignmentOptions.Center;
+            _statusText = UIPrimitiveFactory.AddThemedText(transform, "No active training", 16, UIColors.Default.Muted, TextAlignmentOptions.Center, UIStyleType.BodyText);
             var statusLE = _statusText.gameObject.AddComponent<LayoutElement>();
             statusLE.preferredHeight = 30;
-            _statusText.gameObject.AddComponent<UIThemeTag>().styleType = UIStyleType.BodyText;
-
-            UIPrimitiveFactory.ApplyThemeStyles(transform);
 
             _built = true;
         }
@@ -152,22 +148,11 @@ namespace HollowGround.UI
             countLE.minWidth = 60;
             countLE.preferredWidth = 80;
 
-            var btnObj = new GameObject("TrainBtn", typeof(RectTransform));
-            btnObj.transform.SetParent(row.transform, false);
-            var btnLE = btnObj.AddComponent<LayoutElement>();
+            var btn = UIPrimitiveFactory.CreateThemedButton(row.transform, "TrainBtn", "TRAIN", () => TrainTroop(troop), UIStyleType.ConfirmButton);
+            var btnLE = btn.gameObject.AddComponent<LayoutElement>();
             btnLE.minWidth = 120;
             btnLE.preferredWidth = 140;
             btnLE.minHeight = 42;
-            var btnImg = btnObj.AddComponent<Image>();
-            btnImg.color = UIColors.Default.Ok;
-            var btn = btnObj.AddComponent<Button>();
-            btn.targetGraphic = btnImg;
-
-            var btnLabel = UIPrimitiveFactory.AddThemedText(btnObj.transform, "TRAIN", 17, Color.black);
-            btnLabel.alignment = TextAlignmentOptions.Center;
-            UIPrimitiveFactory.StretchFull(btnLabel.rectTransform);
-
-            btn.onClick.AddListener(() => TrainTroop(troop));
 
             _rows.Add(new TroopRow { Data = troop, Button = btn, Label = countLabel, CostLabel = costLabel });
         }

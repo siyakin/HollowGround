@@ -75,9 +75,7 @@ namespace HollowGround.UI
             leftVLG.childForceExpandWidth = true;
             leftVLG.childForceExpandHeight = false;
 
-            var leftHeader = UIPrimitiveFactory.AddThemedText(leftPanel.transform, "FACTIONS", 22, UIColors.Default.Gold);
-            leftHeader.gameObject.AddComponent<UIThemeTag>().styleType = UIStyleType.HeaderText;
-            leftHeader.alignment = TextAlignmentOptions.Center;
+            var leftHeader = UIPrimitiveFactory.AddThemedText(leftPanel.transform, "FACTIONS", 22, UIColors.Default.Gold, TextAlignmentOptions.Center, UIStyleType.HeaderText);
             UIPrimitiveFactory.AddLayoutElement(leftHeader.gameObject, preferredHeight: 35);
 
             var listObj = UIPrimitiveFactory.CreateUIObject("List", leftPanel.transform);
@@ -213,40 +211,30 @@ namespace HollowGround.UI
             priceT.alignment = TextAlignmentOptions.MidlineLeft;
             UIPrimitiveFactory.AddLayoutElement(priceT.gameObject, preferredWidth: 100);
 
-            var btnObj = UIPrimitiveFactory.CreateUIObject("Btn", row);
-            UIPrimitiveFactory.AddLayoutElement(btnObj.gameObject, minWidth: 70, preferredWidth: 90, minHeight: 28);
-            var btnImg = btnObj.gameObject.AddComponent<Image>();
-            btnImg.color = isBuy ? UIColors.Default.Ok : UIColors.Default.Gold;
-            var btn = btnObj.gameObject.AddComponent<Button>();
-            btn.targetGraphic = btnImg;
-            var btnLabel = UIPrimitiveFactory.AddThemedText(btnObj, isBuy ? "BUY" : "SELL", 14, Color.black);
-            btnLabel.alignment = TextAlignmentOptions.Center;
-            UIPrimitiveFactory.StretchFull(btnLabel.rectTransform);
-
-            bool canAfford = isBuy
-                ? TradeSystem.Instance != null && TradeSystem.Instance.CanBuyFrom(_selectedFaction, offer)
-                : ResourceManager.Instance != null && ResourceManager.Instance.Get(offer.Resource) >= offer.Amount;
-
-            btn.interactable = canAfford;
-
-            var captured = offer;
-            btn.onClick.AddListener(() =>
+            var btn = UIPrimitiveFactory.CreateThemedButton(row, "Btn", isBuy ? "BUY" : "SELL", () =>
             {
                 if (isBuy)
                 {
-                    if (TradeSystem.Instance != null && TradeSystem.Instance.BuyFrom(_selectedFaction, captured))
+                    if (TradeSystem.Instance != null && TradeSystem.Instance.BuyFrom(_selectedFaction, offer))
                         ShowTradePanel(_selectedFaction);
                     else
                         ToastUI.Show("Trade failed!", UIColors.Default.Danger);
                 }
                 else
                 {
-                    if (TradeSystem.Instance != null && TradeSystem.Instance.SellTo(_selectedFaction, captured))
+                    if (TradeSystem.Instance != null && TradeSystem.Instance.SellTo(_selectedFaction, offer))
                         ShowTradePanel(_selectedFaction);
                     else
                         ToastUI.Show("Trade failed!", UIColors.Default.Danger);
                 }
-            });
+            }, UIStyleType.ConfirmButton);
+            UIPrimitiveFactory.AddLayoutElement(btn.gameObject, minWidth: 70, preferredWidth: 90, minHeight: 28);
+
+            bool canAfford = isBuy
+                ? TradeSystem.Instance != null && TradeSystem.Instance.CanBuyFrom(_selectedFaction, offer)
+                : ResourceManager.Instance != null && ResourceManager.Instance.Get(offer.Resource) >= offer.Amount;
+
+            btn.interactable = canAfford;
         }
 
         private void ClearContainer(Transform container)

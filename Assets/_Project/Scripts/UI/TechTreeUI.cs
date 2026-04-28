@@ -143,8 +143,6 @@ namespace HollowGround.UI
             UIPrimitiveFactory.AddImage(_detailPanel, UIColors.PanelInner);
             BuildDetailPanel();
 
-            UIPrimitiveFactory.ApplyThemeStyles(transform);
-
             _built = true;
         }
 

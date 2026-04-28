@@ -6,107 +6,13 @@ namespace HollowGround.UI
 {
     public static class UIPrimitiveFactory
     {
-        public static TMP_FontAsset ResolvedThemeFont => _themeFont ??= ResolveThemeFont();
-        private static TMP_FontAsset _themeFont;
-        private static UIThemeSO _cachedTheme;
-
-        public static UIThemeSO LoadTheme()
+        public static TMP_FontAsset ResolvedThemeFont
         {
-            if (_cachedTheme != null) return _cachedTheme;
-#if UNITY_EDITOR
-            _cachedTheme = UnityEditor.AssetDatabase.LoadAssetAtPath<UIThemeSO>(
-                "Assets/_Project/ScriptableObjects/UITheme.asset");
-#else
-            var results = UnityEngine.Resources.LoadAll<UIThemeSO>("UITheme");
-            _cachedTheme = results.Length > 0 ? results[0] : null;
-#endif
-            return _cachedTheme;
-        }
-
-        private static TMP_FontAsset ResolveThemeFont()
-        {
-            var theme = LoadTheme();
-            return theme != null ? theme.defaultFont : null;
-        }
-
-        public static void ApplyThemeStyles(Transform root)
-        {
-            var theme = LoadTheme();
-            if (theme == null) return;
-
-            foreach (var tag in root.GetComponentsInChildren<UIThemeTag>(true))
+            get
             {
-                switch (tag.styleType)
-                {
-                    case UIStyleType.ConfirmButton:
-                        ApplyButtonTheme(tag.gameObject, theme.confirmButton, theme);
-                        break;
-                    case UIStyleType.DangerButton:
-                        ApplyButtonTheme(tag.gameObject, theme.dangerButton, theme);
-                        break;
-                    case UIStyleType.ActionBarButton:
-                        ApplyButtonTheme(tag.gameObject, theme.actionBarButton, theme);
-                        break;
-                    case UIStyleType.BuildingCardButton:
-                        ApplyButtonTheme(tag.gameObject, theme.buildingCardButton, theme);
-                        break;
-                    case UIStyleType.TabButton:
-                        ApplyButtonTheme(tag.gameObject, theme.tabButton, theme);
-                        break;
-                    case UIStyleType.HeaderText:
-                        ApplyTextTheme(tag.gameObject, theme.headerStyle, theme.headerTextColor, theme);
-                        break;
-                    case UIStyleType.BodyText:
-                        ApplyTextTheme(tag.gameObject, theme.bodyStyle, theme.bodyTextColor, theme);
-                        break;
-                    case UIStyleType.LabelText:
-                        ApplyTextTheme(tag.gameObject, theme.labelStyle, theme.labelTextColor, theme);
-                        break;
-                    case UIStyleType.CostText:
-                        ApplyTextTheme(tag.gameObject, theme.costStyle, theme.costTextColor, theme);
-                        break;
-                    case UIStyleType.WarningText:
-                        ApplyTextTheme(tag.gameObject, theme.bodyStyle, theme.warningTextColor, theme);
-                        break;
-                    case UIStyleType.DangerText:
-                        ApplyTextTheme(tag.gameObject, theme.bodyStyle, theme.dangerTextColor, theme);
-                        break;
-                }
+                var theme = UIThemeManager.Instance?.CurrentTheme;
+                return theme != null ? theme.defaultFont : null;
             }
-        }
-
-        private static void ApplyButtonTheme(GameObject go, ButtonTheme btnTheme, UIThemeSO theme)
-        {
-            if (btnTheme == null) return;
-            var btn = go.GetComponent<Button>();
-            if (btn != null)
-            {
-                btn.colors = btnTheme.ToColorBlock();
-                var img = go.GetComponent<Image>();
-                if (img != null) img.color = btnTheme.imageColor;
-            }
-            var txt = go.GetComponentInChildren<TMP_Text>();
-            if (txt != null)
-            {
-                txt.color = btnTheme.textColor;
-                txt.fontSize = btnTheme.fontSize;
-                txt.characterSpacing = btnTheme.characterSpacing;
-                if (theme.defaultFont != null) txt.font = theme.defaultFont;
-            }
-        }
-
-        private static void ApplyTextTheme(GameObject go, TextStyle textStyle, Color textColor, UIThemeSO theme)
-        {
-            if (textStyle == null) return;
-            var txt = go.GetComponent<TMP_Text>();
-            if (txt == null) return;
-            txt.color = textColor;
-            txt.fontSize = textStyle.fontSize;
-            txt.fontStyle = textStyle.fontStyle;
-            txt.characterSpacing = textStyle.characterSpacing;
-            txt.wordSpacing = textStyle.wordSpacing;
-            if (textStyle.lineSpacing > 0) txt.lineSpacing = textStyle.lineSpacing;
-            if (theme.defaultFont != null) txt.font = theme.defaultFont;
         }
 
         public static RectTransform CreateUIObject(string name, Transform parent)
@@ -134,10 +40,13 @@ namespace HollowGround.UI
         }
 
         public static TMP_Text AddThemedText(Transform parent, string text, float size, Color color,
-            TextAlignmentOptions alignment = TextAlignmentOptions.MidlineLeft)
+            TextAlignmentOptions alignment = TextAlignmentOptions.MidlineLeft,
+            UIStyleType styleType = UIStyleType.BodyText)
         {
             var tmp = AddText(parent, text, size, color, alignment);
             if (ResolvedThemeFont != null) tmp.font = ResolvedThemeFont;
+            var themed = tmp.gameObject.AddComponent<ThemedText>();
+            themed.styleType = styleType;
             return tmp;
         }
 
@@ -170,8 +79,32 @@ namespace HollowGround.UI
             colors.disabledColor = new Color(0.5f, 0.5f, 0.5f, 0.5f);
             btn.colors = colors;
 
-            var lbl = AddThemedText(go.transform, label, 16, UIColors.Default.Text,
-                TextAlignmentOptions.Center);
+            var lbl = AddText(go.transform, label, 16, UIColors.Default.Text, TextAlignmentOptions.Center);
+            if (ResolvedThemeFont != null) lbl.font = ResolvedThemeFont;
+            StretchFull(lbl.rectTransform);
+
+            if (onClick != null) btn.onClick.AddListener(() => onClick());
+            return btn;
+        }
+
+        public static Button CreateThemedButton(Transform parent, string name, string label,
+            System.Action onClick, UIStyleType styleType = UIStyleType.ActionBarButton)
+        {
+            var go = new GameObject(name, typeof(RectTransform));
+            go.transform.SetParent(parent, false);
+            var rt = go.GetComponent<RectTransform>();
+            rt.localScale = Vector3.one;
+
+            var img = go.AddComponent<Image>();
+
+            var btn = go.AddComponent<Button>();
+            btn.targetGraphic = img;
+
+            var themed = go.AddComponent<ThemedButton>();
+            themed.styleType = styleType;
+
+            var lbl = AddText(go.transform, label, 16, Color.white, TextAlignmentOptions.Center);
+            if (ResolvedThemeFont != null) lbl.font = ResolvedThemeFont;
             StretchFull(lbl.rectTransform);
 
             if (onClick != null) btn.onClick.AddListener(() => onClick());
