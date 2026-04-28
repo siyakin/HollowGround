@@ -172,7 +172,16 @@ namespace HollowGround.UI
                 Color catColor = _categoryColors.TryGetValue(category, out var cc) ? cc : Color.gray;
                 UIPrimitiveFactory.AddImage(colHeader, catColor);
                 var headerText = UIPrimitiveFactory.AddText(colHeader, category.ToString().ToUpper(), 16, UIColors.ContrastText(catColor), TextAlignmentOptions.Center);
-                if (UIPrimitiveFactory.ResolvedThemeFont != null) headerText.font = UIPrimitiveFactory.ResolvedThemeFont;
+                var theme = UIThemeManager.Instance?.CurrentTheme;
+                if (theme != null)
+                {
+                    if (theme.defaultFont != null) headerText.font = theme.defaultFont;
+                    if (theme.headerStyle != null)
+                    {
+                        headerText.fontSize = theme.headerStyle.fontSize;
+                        headerText.fontStyle = theme.headerStyle.fontStyle;
+                    }
+                }
                 UIPrimitiveFactory.StretchFull(headerText.rectTransform);
 
                 var techsInCat = _allTechs
