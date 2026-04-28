@@ -23,6 +23,7 @@ namespace HollowGround.UI
         [SerializeField] private GameObject _techTreePanel;
         [SerializeField] private GameObject _factionTradePanel;
         [SerializeField] private GameObject _saveMenuPanel;
+        [SerializeField] private GameObject _aboutPanel;
 
         private PanelManager _panels;
         private Dictionary<string, Button> _actionBarButtons;
@@ -130,6 +131,13 @@ namespace HollowGround.UI
                 if (BuildingPlacer.Instance != null && BuildingPlacer.Instance.IsPlacing)
                     return;
 
+                if (_aboutPanel != null && _aboutPanel.activeSelf)
+                {
+                    _aboutPanel.SetActive(false);
+                    Time.timeScale = 1f;
+                    return;
+                }
+
                 if (_isPaused)
                 {
                     if (_saveMenuPanel != null && _saveMenuPanel.activeSelf)
@@ -153,6 +161,8 @@ namespace HollowGround.UI
                 QuickSave();
             if (kb.f9Key.wasPressedThisFrame)
                 QuickLoad();
+            if (kb.f1Key.wasPressedThisFrame)
+                ToggleAbout();
         }
 
         private void QuickSave()
@@ -173,6 +183,23 @@ namespace HollowGround.UI
             else
             {
                 ToastUI.Show("No quicksave found!", UIColors.Default.Warn);
+            }
+        }
+
+        public void ToggleAbout()
+        {
+            if (_aboutPanel == null) return;
+            if (_aboutPanel.activeSelf)
+            {
+                _aboutPanel.SetActive(false);
+                Time.timeScale = 1f;
+            }
+            else
+            {
+                var about = _aboutPanel.GetComponent<AboutPanelUI>();
+                if (about != null) about.Show();
+                else _aboutPanel.SetActive(true);
+                Time.timeScale = 0f;
             }
         }
 

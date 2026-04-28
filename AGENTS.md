@@ -1,5 +1,19 @@
 # Hollow Ground — AGENTS.md
 
+## Mevcut Versiyon: 0.16.2
+
+## Versiyon Kurallari
+
+- **Tek kaynak:** `VERSION` dosyasi (kok dizinde) — surum numarasi burada
+- **SemVer:** `MAJOR.MINOR.PATCH` (orn: 0.15.0)
+  - **MAJOR**: Oynanabilir surum (1.0.0 = tum eksikler bitti)
+  - **MINOR**: Yeni faz / yeni ozellik
+  - **PATCH**: Bug fix, kucuk duzeltme
+- **Git tag**: Her merge'de `v0.X.Y` tag olusturulur
+- **CHANGELOG.md**: Her versiyonda ne degisti yazilir
+- **Workflow**: `feature/xxx` branch → test/onay → main merge → tag + CHANGELOG guncelle
+- **Commit/push**: Kullanici acikca istemedikce yapilmaz
+
 ## Proje Ozeti
 
 **Hollow Ground** — Last War ilhamli, nukleer savas sonrasi strateji oyunu.
@@ -515,3 +529,21 @@ Bu kurallar tekrarlanan hataları ve gereksiz kod tekrarını önlemek için Faz
 - `WorldPos(x, z)` hucre koselerini dondurur: `GetWorldPosition(x,z) - halfCell`
 - Footprint highlight: `GetWorldPosition(cx, cz)` direkt kullanilir (center), ekstra offset YASAK
 - `GetWorldPosition` zaten hucre merkezi dondurur: `origin + (x + 0.5) * cellSize`
+
+### TMP Font ve Unicode Tuzaklari
+- Roboto font SADECE standart Latin karakterleri destekler — emoji, Unicode sembol YASAK
+- Yasakli karakterler: ☢ ✅ ✓ ◆ 👤 ━ ve diger emoji/special Unicode
+- Yerine ASCII kullan: [OK], [!], >, =, -, *
+- TMP TextAlignmentOptions degerleri: `Midline`, `Center`, `MidlineLeft` (MiddleLeft/MidlineCenter YOK)
+- Theme font zorla uygula: `ApplyFont()` ile `GetComponentsInChildren<TMP_Text>()` uzerinden
+
+### Runtime Panel Acma/Kapama Tuzaklari
+- Inactive GameObject'te `Update()` calismaz — F1/F5 gibi input dinleyiciler UIManager'a konmali
+- Panel `BuildUI()` sonunda `gameObject.SetActive(false)` YAPILMAZ — UIManager Toggle metodunda yonetilir
+- ESC oncelik sirasi: About > SaveMenu > Pause > Panel > Pause toggle
+- Birden fazla panel ayni anda acilabilir (About + Pause) — UIManager'da kontrol sarti gerek
+
+### Versiyon Gosterimi
+- AboutPanelUI.VERSION dosyasindan okur: `Path.Combine(Application.dataPath, "..", "VERSION")`
+- Hardcoded versiyon stringi YASAK — her zaman VERSION dosyasindan oku
+- Yeni versiyon icin: VERSION dosyasini guncelle + CHANGELOG.md ekle + git tag

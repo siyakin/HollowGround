@@ -83,7 +83,7 @@ namespace HollowGround.UI
                 if (card.Button != null)
                 {
                     card.Button.gameObject.SetActive(true);
-                    card.Button.interactable = true;
+                    card.Button.interactable = canBuild && hasResources;
                 }
 
                 if (card.NameText != null)
