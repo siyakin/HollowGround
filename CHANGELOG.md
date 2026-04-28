@@ -4,6 +4,16 @@ All notable changes to Hollow Ground are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Versioning follows [SemVer](https://semver.org/): MAJOR.MINOR.PATCH
 
+## [0.16.3] - 2026-04-28
+
+### Added
+- AboutPanelUI: dinamik statlar (SO sayisi, bina sayisi, hero sayisi, toplam oyun suresi)
+- AboutPanelUI: versiyon VERSION dosyasindan dinamik okunur
+
+### Fixed
+- BuildMenuUI: kaynak yetmediginde bina butonlari disabled
+- AboutPanelUI: tema fontu ve renkleri duzeltildi (AddThemedText, 16px)
+
 ## [0.16.2] - 2026-04-28
 
 ### Fixed

@@ -1,6 +1,6 @@
 # Hollow Ground — AGENTS.md
 
-## Mevcut Versiyon: 0.16.2
+## Mevcut Versiyon: 0.16.3
 
 ## Versiyon Kurallari
 
