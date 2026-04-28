@@ -171,7 +171,7 @@ namespace HollowGround.UI
                 UIPrimitiveFactory.AddLayoutElement(colHeader.gameObject, minHeight: 32, preferredHeight: 32);
                 Color catColor = _categoryColors.TryGetValue(category, out var cc) ? cc : Color.gray;
                 UIPrimitiveFactory.AddImage(colHeader, catColor);
-                var headerText = UIPrimitiveFactory.AddThemedText(colHeader, category.ToString().ToUpper(), 16, Color.white, TextAlignmentOptions.Center);
+                var headerText = UIPrimitiveFactory.AddThemedText(colHeader, category.ToString().ToUpper(), 16, UIColors.ContrastText(catColor), TextAlignmentOptions.Center);
                 UIPrimitiveFactory.StretchFull(headerText.rectTransform);
 
                 var techsInCat = _allTechs
