@@ -1,5 +1,6 @@
 using HollowGround.Buildings;
 using HollowGround.Heroes;
+using HollowGround.Resources;
 using HollowGround.World;
 using UnityEngine;
 
@@ -70,6 +71,20 @@ namespace HollowGround.UI
                 BuildingState.Constructing => new Color(0.9f, 0.7f, 0.2f),
                 BuildingState.Upgrading => new Color(0.3f, 0.7f, 0.9f),
                 BuildingState.Active => Default.Ok,
+                _ => Default.Text
+            };
+        }
+
+        public static Color GetResourceColor(ResourceType type)
+        {
+            return type switch
+            {
+                ResourceType.Wood => new Color(0.76f, 0.55f, 0.2f, 1f),
+                ResourceType.Metal => new Color(0.7f, 0.75f, 0.82f, 1f),
+                ResourceType.Food => new Color(0.35f, 0.8f, 0.4f, 1f),
+                ResourceType.Water => new Color(0.3f, 0.6f, 0.95f, 1f),
+                ResourceType.TechPart => new Color(0.7f, 0.3f, 0.9f, 1f),
+                ResourceType.Energy => new Color(1f, 0.85f, 0.3f, 1f),
                 _ => Default.Text
             };
         }

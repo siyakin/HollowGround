@@ -95,11 +95,14 @@ namespace HollowGround.UI
                     var parts = new List<string>();
                     foreach (var kvp in costs)
                     {
+                        if (kvp.Value <= 0) continue;
+                        var resColor = UIColors.GetResourceColor(kvp.Key);
                         int have = ResourceManager.Instance != null ? ResourceManager.Instance.Get(kvp.Key) : 0;
-                        string color = have >= kvp.Value ? "#C8C8C8" : "#E64D4D";
-                        parts.Add($"<color={color}>{kvp.Key}: {kvp.Value}</color>");
+                        bool enough = have >= kvp.Value;
+                        string hex = ColorUtility.ToHtmlStringRGBA(enough ? resColor : UIColors.Default.Danger);
+                        parts.Add($"<color=#{hex}>\u25CF {kvp.Value}</color>");
                     }
-                    card.CostText.text = parts.Count > 0 ? string.Join("  ", parts) : "Free";
+                    card.CostText.text = parts.Count > 0 ? string.Join("  ", parts) : "<color=#C8C8C8>Free</color>";
                 }
 
                 if (card.LockedOverlay != null)
