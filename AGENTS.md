@@ -42,10 +42,10 @@ Tek kisi PvE: Sehir kurma + ordu yonetimi + hero sistemi + dunya kesfi.
 ```
 Assets/_Project/
 ├── Scripts/
-│   ├── Core/        GameManager, TimeManager, GameEvent, Singleton, GameInitializer,
-│   │                SaveData, SaveSystem, AudioManager, AudioConfig, BaseStarter,
+│   ├── Core/        GameManager, TimeManager, Singleton, GameInitializer,
+│   │                SaveData, SaveSystem, AudioManager, BaseStarter,
 │   │                PostProcessingSetup, AtmosphereEffects, GameConfig, SessionLogger,
-│   │                WeatherSystem
+│   │                WeatherSystem, CostEntryHelper
 │   ├── Camera/      StrategyCamera, ScreenShake
 │   ├── Grid/        GridSystem, GridCell, GridVisualizer, GridOverlayRenderer
 │   ├── Buildings/   BuildingType, BuildingData, Building, BuildingManager,
@@ -127,12 +127,12 @@ SaveSystem, BaseStarter, GameInitializer, WeatherSystem
 
 ---
 
-## Tamamlanan Fazlar (1-10)
+## Tamamlanan Fazlar (1-14)
 
 | Faz | Durum | Aciklama |
 |-----|-------|----------|
 | 1 | ✅ | Temel altyapi: Camera, Grid, Resources, GameManager, Input |
-| 2 | ✅ | Base Building: 9 bina SO, ghost preview, grid snap |
+| 2 | ✅ | Base Building: 10 bina SO, ghost preview, grid snap |
 | 3 | ✅ | UI: 15 panel, UIManager, tum toggle metotlari |
 | 4 | ✅ | Askeri: 5 birlik, egitim kuyrugu, moral sistemi |
 | 5 | ✅ | Savas: BattleCalculator, BattleTarget, sefer sistemi |
@@ -141,6 +141,10 @@ SaveSystem, BaseStarter, GameInitializer, WeatherSystem
 | 8 | ✅ | Ileri: Tech tree, Faction/Ticaret, Quest, Mutant saldiri |
 | 9 | ✅ | Save/Load + Audio: JSON save, auto-save, SFX pool |
 | 10 | ✅ | Content: BaseStarter, 3 faction, 10 tech, 15 quest, BALANCE.md |
+| 11 | ✅ | Playtest & Bugfix: 13/13 test gecti, GameConfig, SessionLogger |
+| 12 | ✅ | Bina Model Sistemi: 105 FBX, state-based model swap, hasar/tamir |
+| 13 | ✅ | Refactoring: Singleton<T>, UIPrimitiveFactory, UIColors, dead code silindi |
+| 14 | ✅ | Visual & Polish: Grid overlay, weather, highlight, damage efektleri |
 
 ---
 
@@ -182,13 +186,16 @@ Tum sistemler playtest edildi, 13/13 test gecti:
 - 3 FactionData SO olusturuldu (Scavenger Guild, Iron Legion, Green Haven)
 
 ### SO'lar Olusturulmadi (Editor'de yapilmali)
-- `ScriptableObjects/Troops/` — 5 birlik SO (TroopDataFactory ile)
-- `ScriptableObjects/Heroes/` — 5 hero SO (HeroDataFactory ile)
-- `ScriptableObjects/Quests/` — 10 ek quest SO (QuestDataFactory ile)
+- `ScriptableObjects/Quests/` — 10 ek quest SO (QuestDataFactory ile) (5 mevcut, 10 daha eklenmeli)
 
 ### SO'lar Olusturuldu
+- `ScriptableObjects/Buildings/` — 10 aktif bina SO ✅
+- `ScriptableObjects/Troops/` — 5 birlik SO (Infantry, Scout, Heavy, Sniper, Engineer) ✅
+- `ScriptableObjects/Heroes/` — 5 hero SO (Commander, Warrior, Ranger, Engineer, Scout) ✅
 - `ScriptableObjects/TechNodes/` — 10 teknoloji SO ✅
 - `ScriptableObjects/Factions/` — 3 faction SO ✅
+- `ScriptableObjects/Quests/` — 5 quest SO ✅
+- `ScriptableObjects/Targets/` — 5 BattleTarget SO ✅
 
 ### Sahne Kurulumlari
 - `HollowGround > Setup Ground & Camera` ile ground plane + camera + lighting kalıcı olarak sahneye eklenir
@@ -316,11 +323,12 @@ Tum sistemler playtest edildi, 13/13 test gecti:
 - **UIThemeTag**: MakeLabel/MakeButton helper'lari otomatik UIThemeTag ekler (HeaderText, DangerButton, CostText, vs.)
 
 ### Gorsel/Polish (Editor isi, script gerektirmez)
-- Post-processing (bloom 0.2, vignette 0.2, filmgrain kapalı) — PostProcessingSetup runtime
-- Atmosfer efektleri varsayılan kapalı (dust/fog particles) — AtmosphereEffects inspector'dan açılır
-- Bina inşaat animasyonu — BuildingConstructionAnimation otomatik eklenir
-- 15+ bina modeli sahne yerlesimi
-- 5+ karakter modeli sahne yerlesimi
+- Post-processing (bloom 0.2, vignette 0.2, filmgrain kapalı) — PostProcessingSetup runtime ✅
+- Atmosfer efektleri varsayılan kapalı (dust/fog particles) — AtmosphereEffects inspector'dan açılır ✅
+- Bina inşaat animasyonu — BuildingConstructionAnimation otomatik eklenir ✅
+- 15+ bina modeli sahne yerlesimi ✅
+- [ ] 5+ karakter modeli sahne yerlesimi
+- [ ] Sahne dekorasyonu ve atmosfer
 
 ### Potansiyel Bug'lar
 - `GameInitializer.Start()` ile `GameManager.StartGame()` cagrilir ama sahnede `GameInitializer` yoksa oyun Playing state'e gecmez

@@ -141,7 +141,7 @@ Last War ilhamlı, nükleer savaş sonrası strateji oyunu.
 - [x] 10 arastirma SO factory (5 temel + 5 gelismis)
 - [x] 15 gorev SO factory (10 ana + 5 yan)
 - [x] BALANCE.md — tum dengeleme referans tablosu
-- [ ] 15+ bina modeli sahne yerlesimi (editor isi)
+- [x] 15+ bina modeli sahne yerlesimi ✅
 - [ ] 5+ karakter modeli sahne yerlesimi (editor isi)
 - [ ] Sahne dekorasyonu ve atmosfer (editor isi)
 
@@ -264,4 +264,4 @@ GDD.md        — Oyun tasarim dokumanı
 BALANCE.md    — Dengeleme referans tablosu
 ```
 
-*Son güncelleme: Faz 14 visual/polish tamamlandi — BuildMenu renkli kaynak ikonları eklendi*
+*Son güncelleme: AGENTS.md dokümantasyon guncellemesi — tum tamamlanan isler yansitildi*
