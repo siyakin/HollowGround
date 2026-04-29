@@ -22,6 +22,7 @@ namespace HollowGround.Core
         public List<QuestSave> Quests = new();
         public MutantAttackSave MutantAttack;
         public List<MapNodeSave> MapNodes = new();
+        public List<IntIntEntry> RoadCells = new();
     }
 
     [Serializable]
@@ -63,6 +64,7 @@ namespace HollowGround.Core
         public float ConstructionProgress;
         public float UpgradeProgress;
         public float ProductionTimer;
+        public int Rotation;
     }
 
     [Serializable]

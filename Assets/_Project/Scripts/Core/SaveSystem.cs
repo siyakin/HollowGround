@@ -10,6 +10,7 @@ using HollowGround.Quests;
 using HollowGround.Resources;
 using HollowGround.Grid;
 using HollowGround.World;
+using HollowGround.Roads;
 using UnityEngine;
 
 namespace HollowGround.Core
@@ -56,6 +57,7 @@ namespace HollowGround.Core
             CaptureQuests(data);
             CaptureMutantAttack(data);
             CaptureMap(data);
+            CaptureRoads(data);
 
             return data;
         }
@@ -155,6 +157,7 @@ namespace HollowGround.Core
             ApplyQuests(data);
             ApplyMutantAttack(data);
             ApplyMap(data);
+            ApplyRoads(data);
         }
 
         #region Capture
@@ -198,7 +201,8 @@ namespace HollowGround.Core
                     Level = building.Level,
                     State = building.State.ToString(),
                     ConstructionProgress = building.ConstructionProgress,
-                    UpgradeProgress = building.UpgradeProgress
+                    UpgradeProgress = building.UpgradeProgress,
+                    Rotation = building.Rotation
                 });
             }
         }
@@ -367,6 +371,9 @@ namespace HollowGround.Core
             foreach (var b in existing)
                 b.ClearForLoad();
 
+            if (RoadManager.Instance != null)
+                RoadManager.Instance.ClearAllRoads();
+
             foreach (var bs in data.Buildings)
             {
                 if (bs.State == BuildingState.Placing.ToString()) continue;
@@ -378,24 +385,29 @@ namespace HollowGround.Core
                     continue;
                 }
 
+                int rotation = bs.Rotation;
+                int sx = rotation % 2 == 0 ? buildingData.SizeX : buildingData.SizeZ;
+                int sz = rotation % 2 == 0 ? buildingData.SizeZ : buildingData.SizeX;
+
                 Vector3 worldPos = GridSystem.Instance != null
                     ? GridSystem.Instance.GetWorldPosition(bs.GridX, bs.GridZ)
                     : Vector3.zero;
 
-                float offsetX = (buildingData.SizeX - 1) * (GridSystem.Instance != null ? GridSystem.Instance.CellSize : 2f) * 0.5f;
-                float offsetZ = (buildingData.SizeZ - 1) * (GridSystem.Instance != null ? GridSystem.Instance.CellSize : 2f) * 0.5f;
+                float offsetX = (sx - 1) * (GridSystem.Instance != null ? GridSystem.Instance.CellSize : 2f) * 0.5f;
+                float offsetZ = (sz - 1) * (GridSystem.Instance != null ? GridSystem.Instance.CellSize : 2f) * 0.5f;
 
                 var go = new GameObject(buildingData.DisplayName);
                 go.transform.position = new Vector3(worldPos.x + offsetX, worldPos.y, worldPos.z + offsetZ);
+                go.transform.rotation = Quaternion.Euler(0, rotation * 90f, 0);
 
                 var building = go.AddComponent<Building>();
-                building.Initialize(buildingData, new Vector2Int(bs.GridX, bs.GridZ));
+                building.Initialize(buildingData, new Vector2Int(bs.GridX, bs.GridZ), rotation);
 
                 if (System.Enum.TryParse<BuildingState>(bs.State, out var state))
                     building.RestoreFromSave(bs.Level, state, bs.ConstructionProgress, bs.UpgradeProgress);
 
                 if (GridSystem.Instance != null)
-                    GridSystem.Instance.OccupyCells(bs.GridX, bs.GridZ, buildingData.SizeX, buildingData.SizeZ, go);
+                    GridSystem.Instance.OccupyCells(bs.GridX, bs.GridZ, sx, sz, go);
 
                 BuildingManager.Instance.RegisterBuilding(building);
             }
@@ -573,6 +585,22 @@ namespace HollowGround.Core
                 if (ns.IsExplored) node.SetExplored(true);
                 if (ns.IsVisible) node.SetVisible(true);
             }
+        }
+
+        private void CaptureRoads(SaveData data)
+        {
+            if (RoadManager.Instance == null) return;
+            foreach (var cell in RoadManager.Instance.GetRoadCellsForSave())
+                data.RoadCells.Add(new IntIntEntry { Key = cell.x, Value = cell.y });
+        }
+
+        private void ApplyRoads(SaveData data)
+        {
+            if (RoadManager.Instance == null || data.RoadCells == null) return;
+            var cells = new List<Vector2Int>();
+            foreach (var rc in data.RoadCells)
+                cells.Add(new Vector2Int(rc.Key, rc.Value));
+            RoadManager.Instance.LoadRoadCells(cells);
         }
 
         #endregion

@@ -264,4 +264,23 @@ GDD.md        — Oyun tasarim dokumanı
 BALANCE.md    — Dengeleme referans tablosu
 ```
 
+*Son güncelleme: Faz 15 — Organic Road System*
+
+---
+
+## Faz 15 — Organic Road System ✅
+
+- [x] Building rotation persistence — save/load ile bina yönü korunuyor
+- [x] Building.GetDoorCell() — kapı yönü hesaplama (rotation 0=-Z, 1=-X, 2=+Z, 3=+X)
+- [x] Building.GetRotatedFootprint() — rotation'a göre footprint döndürme
+- [x] RoadManager singleton — BFS pathfinding (0-1 deque), bina inşaatı bitince yol oluşturma
+- [x] RoadVisualizer — connected tile sistemi, Bezier köşeler, ellipsoid caps, procedural texture
+- [x] Auto-rotation — bina yerleştirirken yola doğru otomatik dönme
+- [x] Orphan road cleanup — bina yıkılınca 30s sonra bağlantısız yollar fade-out
+- [x] Manual road removal — sağ-tık ile yol silme
+- [x] Save/load entegrasyonu — yol verisi + bina rotasyonu kaydetme/yükleme
+- [ ] Orphan cleanup bug fix — BFS connectivity check çalışmıyor
+- [ ] Sağ-tık sadece orphan yolları silmeli — aktif yollar korunmali
+- [ ] Yol hücrelerine bina yerleştirme engeli — BuildingPlacer road cell kontrolü
+
 *Son güncelleme: AGENTS.md dokümantasyon guncellemesi — tum tamamlanan isler yansitildi*

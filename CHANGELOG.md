@@ -4,6 +4,36 @@ All notable changes to Hollow Ground are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Versioning follows [SemVer](https://semver.org/): MAJOR.MINOR.PATCH
 
+## [0.18.0] - 2026-04-29
+
+### Added
+- Organic road system — Settlers/Rome tarzı binalar arası otomatik yol oluşumu
+- RoadManager singleton — BFS pathfinding (0-1 deque), bina inşaatı bitince yol oluşturma
+- RoadVisualizer — connected tile sistemi (mask-based), Bezier köşeler, ellipsoid dead-end cap'ler
+- Procedural dirt texture — 3-oktav Perlin noise, 64x64, world-position UV ile dikişsiz tiling
+- Building rotation persistence — save/load ile bina yönü korunuyor
+- Building.GetRotatedFootprint() — rotation'a göre (SizeX,SizeZ) veya (SizeZ,SizeX) döndürür
+- Building.GetDoorCell() — kapı yönü hesaplama (rotation 0=-Z, 1=-X, 2=+Z, 3=+X)
+- Auto-rotation — bina yerleştirirken yola doğru otomatik dönme (R ile override)
+- Orphan road cleanup — bina yıkılınca 30s sonra bağlantısız yollar fade-out ile kaybolur (BFS connectivity)
+- Manual road removal — sağ-tık ile yol silme (2s fade-out animasyonu)
+- RoadManager.HasRoadAt() — belirli grid koordinatında yol var mı kontrolü
+- SaveData.RoadCells — yol verisi kaydetme/yükleme (IntIntEntry listesi)
+- BuildingSave.Rotation — bina rotasyonu kaydetme/yükleme
+- SaveSystem: rotated footprint ile bina pozisyon/occupy hesaplama
+
+### Changed
+- Building.cs: Initialize() rotation parametresi alıyor, FreeGridCells/RemoveBuilding rotated footprint kullanıyor
+- BuildingPlacer: _rotation Initialize'a geçiriliyor, _manualRotate flag ile R override
+- SaveSystem.ApplyBuildings: rotation-aware transform, offset, OccupyCells
+- GameInitializer.ResetBuildings: RoadManager.ClearAllRoads() çağrısı
+- AGENTS.md: Roads/ klasörü, RoadManager GameManager GO'da, road system kuralları, 3 yeni discovery
+
+### Known Issues
+- Orphan road cleanup (30s) çalışmıyor — BFS connectivity check debug edilmeli
+- Sağ-tık aktif/bağlı yolları da silebiliyor — sadece orphan yollar silinmeli
+- Yol olan hücrelere bina yerleştirilebiliyor — BuildingPlacer'da road cell kontrolü gerekli
+
 ## [0.17.0] - 2026-04-29
 
 ### Added

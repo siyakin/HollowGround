@@ -15,8 +15,8 @@ MonoBehaviour:
   DevMode: 1
   DisableMutantAttacks: 1
   EnableSessionLog: 1
-  BoostStartingResources: 1
-  BoostMultiplier: 9999
+  BoostStartingResources: 0
+  BoostMultiplier: 10
   BuildTimeMultiplier: 0.1
   ProductionIntervalMultiplier: 0.1
   TrainingTimeMultiplier: 0.1

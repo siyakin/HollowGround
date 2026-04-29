@@ -3,6 +3,7 @@ using System.Linq;
 using HollowGround.Core;
 using HollowGround.Grid;
 using HollowGround.Resources;
+using HollowGround.Roads;
 using HollowGround.UI;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -20,6 +21,7 @@ namespace HollowGround.Buildings
         private bool _isPlacing;
         private int _rotation;
         private bool _isValidPlacement;
+        private bool _manualRotate;
         private UnityEngine.Camera _cam;
         private Vector2Int _cachedCoords;
         private Vector3 _cachedWorldPos;
@@ -66,6 +68,7 @@ namespace HollowGround.Buildings
             _currentBuilding = buildingData;
             _isPlacing = true;
             _rotation = 0;
+            _manualRotate = false;
             _isValidPlacement = false;
             _cachedCoords = new Vector2Int(-1, -1);
             _cachedWorldPos = Vector3.zero;
@@ -109,8 +112,12 @@ namespace HollowGround.Buildings
             if (!Physics.Raycast(ray, out RaycastHit hit, Mathf.Infinity, _groundMask)) return;
 
             _cachedCoords = GridSystem.Instance.GetGridCoordinates(hit.point);
-            Vector3 snapped = GridSystem.Instance.GetWorldPosition(_cachedCoords.x, _cachedCoords.y);
+
+            if (!_manualRotate)
+                AutoRotateToRoad();
+
             (int sx, int sz) = GetRotatedSize();
+            Vector3 snapped = GridSystem.Instance.GetWorldPosition(_cachedCoords.x, _cachedCoords.y);
             float offsetX = (sx - 1) * GridSystem.Instance.CellSize * 0.5f;
             float offsetZ = (sz - 1) * GridSystem.Instance.CellSize * 0.5f;
             _cachedWorldPos = new Vector3(snapped.x + offsetX, snapped.y, snapped.z + offsetZ);
@@ -138,6 +145,7 @@ namespace HollowGround.Buildings
             else if (Keyboard.current.rKey.wasPressedThisFrame)
             {
                 _rotation = (_rotation + 1) % 4;
+                _manualRotate = true;
             }
         }
 
@@ -180,7 +188,7 @@ namespace HollowGround.Buildings
             }
 
             Building building = buildingObj.AddComponent<Building>();
-            building.Initialize(_currentBuilding, coords);
+            building.Initialize(_currentBuilding, coords, _rotation);
 
             GridSystem.Instance.OccupyCells(coords.x, coords.y, sx, sz, buildingObj);
             if (BuildingManager.Instance != null)
@@ -213,6 +221,43 @@ namespace HollowGround.Buildings
             {
                 rend.material = mat;
             }
+        }
+
+        private void AutoRotateToRoad()
+        {
+            if (RoadManager.Instance == null) return;
+            if (_currentBuilding == null) return;
+
+            for (int r = 0; r < 4; r++)
+            {
+                int sx = r % 2 == 0 ? _currentBuilding.SizeX : _currentBuilding.SizeZ;
+                int sz = r % 2 == 0 ? _currentBuilding.SizeZ : _currentBuilding.SizeX;
+
+                if (!GridSystem.Instance.IsAreaBuildable(_cachedCoords.x, _cachedCoords.y, sx, sz))
+                    continue;
+
+                var door = ComputeDoorCell(_cachedCoords, sx, sz, r);
+                if (RoadManager.Instance.HasRoadAt(door))
+                {
+                    _rotation = r;
+                    return;
+                }
+            }
+        }
+
+        private static Vector2Int ComputeDoorCell(Vector2Int origin, int sx, int sz, int rotation)
+        {
+            int cx = origin.x + sx / 2;
+            int cz = origin.y + sz / 2;
+
+            return rotation switch
+            {
+                0 => new Vector2Int(cx, origin.y - 1),
+                1 => new Vector2Int(origin.x - 1, cz),
+                2 => new Vector2Int(cx, origin.y + sz),
+                3 => new Vector2Int(origin.x + sx, cz),
+                _ => new Vector2Int(cx, origin.y - 1)
+            };
         }
     }
 }
