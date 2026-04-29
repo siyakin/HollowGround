@@ -25,6 +25,7 @@ namespace HollowGround.Buildings
         public int Level { get; private set; } = 1;
         public BuildingState State { get; private set; } = BuildingState.Constructing;
         public Vector2Int GridOrigin { get; private set; }
+        public int Rotation { get; private set; }
         public float ConstructionProgress { get; private set; }
         public float UpgradeProgress { get; private set; }
 
@@ -41,16 +42,18 @@ namespace HollowGround.Buildings
         public event Action<Building> OnDamaged;
         public event Action<Building> OnRepaired;
 
-        public void Initialize(BuildingData data, Vector2Int gridOrigin)
+        public void Initialize(BuildingData data, Vector2Int gridOrigin, int rotation = 0)
         {
             _data = data;
             GridOrigin = gridOrigin;
+            Rotation = rotation;
             Level = 1;
             State = BuildingState.Constructing;
             ConstructionProgress = 0f;
 
+            var (sx, sz) = GetRotatedFootprint();
             var col = gameObject.AddComponent<BoxCollider>();
-            col.size = new Vector3(data.SizeX * GridSystem.Instance.CellSize, 5f, data.SizeZ * GridSystem.Instance.CellSize);
+            col.size = new Vector3(sx * GridSystem.Instance.CellSize, 5f, sz * GridSystem.Instance.CellSize);
             col.center = new Vector3(0f, 2.5f, 0f);
 
             gameObject.layer = LayerMask.NameToLayer("Building");
@@ -209,7 +212,10 @@ namespace HollowGround.Buildings
         {
             var gridSystem = GridSystem.Instance;
             if (gridSystem != null)
-                gridSystem.FreeCells(GridOrigin.x, GridOrigin.y, _data.SizeX, _data.SizeZ);
+            {
+                var (sx, sz) = GetRotatedFootprint();
+                gridSystem.FreeCells(GridOrigin.x, GridOrigin.y, sx, sz);
+            }
         }
 
         private void UpdateModel()
@@ -285,7 +291,10 @@ namespace HollowGround.Buildings
         {
             var gridSystem = GridSystem.Instance;
             if (gridSystem != null)
-                gridSystem.FreeCells(GridOrigin.x, GridOrigin.y, _data.SizeX, _data.SizeZ);
+            {
+                var (sx, sz) = GetRotatedFootprint();
+                gridSystem.FreeCells(GridOrigin.x, GridOrigin.y, sx, sz);
+            }
 
             OnDestroyed?.Invoke(this);
             Destroy(gameObject);
@@ -301,6 +310,38 @@ namespace HollowGround.Buildings
         {
             if (!_data.HasProduction) return 0f;
             return _productionTimer / _data.ProductionInterval;
+        }
+
+        public (int sizeX, int sizeZ) GetRotatedFootprint()
+        {
+            if (_data == null) return (1, 1);
+            return Rotation % 2 == 0
+                ? (_data.SizeX, _data.SizeZ)
+                : (_data.SizeZ, _data.SizeX);
+        }
+
+        public Vector2Int GetDoorCell()
+        {
+            var (sx, sz) = GetRotatedFootprint();
+            int cx = GridOrigin.x + sx / 2;
+            int cz = GridOrigin.y + sz / 2;
+
+            return Rotation switch
+            {
+                0 => new Vector2Int(cx, GridOrigin.y - 1),
+                1 => new Vector2Int(GridOrigin.x - 1, cz),
+                2 => new Vector2Int(cx, GridOrigin.y + sz),
+                3 => new Vector2Int(GridOrigin.x + sx, cz),
+                _ => new Vector2Int(cx, GridOrigin.y - 1)
+            };
+        }
+
+        public Vector3 GetDoorWorldPosition()
+        {
+            var doorCell = GetDoorCell();
+            if (GridSystem.Instance != null && GridSystem.Instance.IsValidCoordinate(doorCell.x, doorCell.y))
+                return GridSystem.Instance.GetWorldPosition(doorCell.x, doorCell.y);
+            return transform.position;
         }
     }
 }

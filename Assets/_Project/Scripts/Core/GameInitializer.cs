@@ -6,6 +6,7 @@ using HollowGround.Combat;
 using HollowGround.Grid;
 using HollowGround.Heroes;
 using HollowGround.Quests;
+using HollowGround.Roads;
 using UnityEngine;
 
 namespace HollowGround.Core
@@ -54,6 +55,9 @@ namespace HollowGround.Core
             var existing = BuildingManager.Instance.AllBuildings.ToList();
             foreach (var b in existing)
                 b.Demolish();
+
+            if (RoadManager.Instance != null)
+                RoadManager.Instance.ClearAllRoads();
         }
 
         private void ResetArmy()

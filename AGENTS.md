@@ -1,6 +1,6 @@
 # Hollow Ground — AGENTS.md
 
-## Mevcut Versiyon: 0.17.0
+## Mevcut Versiyon: 0.18.0
 
 ## Versiyon Kurallari
 
@@ -94,6 +94,7 @@ Assets/_Project/
 │   ├── Buildings/   BuildingType, BuildingData, Building, BuildingManager,
 │   │                BuildingPlacer, BuildingSelector, BuildingDatabase,
 │   │                BuildingConstructionAnimation, BuildingHighlight, DamageEffects
+│   ├── Roads/       RoadManager, RoadVisualizer
 │   ├── Resources/   ResourceType, ResourceManager
 │   ├── Army/        TroopType, TroopData, ArmyManager
 │   ├── Combat/      BattleCalculator, BattleTarget, BattleManager,
@@ -146,7 +147,7 @@ GameManager, TimeManager, ResourceManager, GridSystem, GridVisualizer,
 BuildingPlacer, BuildingSelector, BuildingManager, ArmyManager,
 BattleManager, HeroManager, WorldMap, ExpeditionSystem,
 QuestManager, MutantAttackManager, ResearchManager, TradeSystem,
-SaveSystem, BaseStarter, GameInitializer, WeatherSystem
+SaveSystem, BaseStarter, GameInitializer, WeatherSystem, RoadManager
 
 ### GameCanvas Alt Yapisi
 - ResourceBar
@@ -377,6 +378,9 @@ Tum sistemler playtest edildi, 13/13 test gecti:
 - `GameInitializer.Start()` ile `GameManager.StartGame()` cagrilir ama sahnede `GameInitializer` yoksa oyun Playing state'e gecmez
 - `BaseStarter.SetupBase()` manuel tetiklenmeli (ContextMenu) veya GameInitializer'a entegre edilmeli
 - WorldMap.GenerateDefaultMap() runtime'da SO olusturur (ScriptableObject.CreateInstance) — save/load ile uyumlu degil
+- RoadManager.RemoveOrphanedRoads() bina yikildiktan 30s sonra calismiyor — BFS connectivity check debug edilmeli
+- RoadManager.HandleManualRoadRemoval() aktif/bagli yollari da silebiliyor — sadece orphan yollar silinmeli
+- Yol olan hucrelere bina yerlestirilebiliyor — BuildingPlacer'da road cell kontrolu eklenmeli
 
 ---
 
@@ -411,6 +415,9 @@ Tum sistemler playtest edildi, 13/13 test gecti:
 27. `BuildMenuUI.SelectBuilding()` paneli `gameObject.SetActive(false)` ile kapatırsa PanelManager state'i bozulur → `UIManager.Instance.ToggleBuildMenu()` kullanılmalı
 28. `GridOverlayRenderer.WorldPos()` hucre merkezi değil köşe vermeli: `GetWorldPosition(x,z) - halfCell`. Footprint highlight `GetWorldPosition` direkt kullanmalı (zaten merkez verir), ekstra offset YASAK
 29. `TimeDisplayUI.cs` kaldirildi — zaman gosterimi ResourceBarUI'da `_timeText` SerializeField uzerinden. UI text'leri runtime'da otomatik olusturmak YERINE manuel SerializeField ile baglamak tercih edilir
+30. Blender modelleri `-Z forward` export edildigi icin kapı yönü: rotation 0=-Z, 1=-X, 2=+Z, 3=+X. `+Z` varsayılırsa yollar bina arkasında oluşur
+31. `Singleton<T>.OnDestroy()` virtual — override edenler `base.OnDestroy()` cagirmali yoksa Instance temizlenmez
+32. RoadVisualizer coroutine'leri destroyed tile Transform'a erisimeden once null check yapmali — `MissingReferenceException`
 
 ---
 
@@ -594,3 +601,16 @@ Bu kurallar tekrarlanan hataları ve gereksiz kod tekrarını önlemek için Faz
 - `HollowGround > Setup UI Panels` — tum panel'leri olusturur ve UIManager'a baglar
 - `HollowGround > Setup Save Menu` — SaveMenuPanel icindeki ScrollList + butonlari olusturur, SerializeField'lari baglar
 - Panel isimlerinde trailing space olabilir — `name.Trim()` ile karsilastirilmali
+
+### Organic Road System
+- RoadManager singleton, GameManager GO uzerinde olmali
+- Building rotation (0-3) save/load ile persist edilir
+- Kapı yönü: rotation 0=-Z, 1=-X, 2=+Z, 3=+X (Blender -Z forward export convention)
+- Yollar sadece visual — grid cell state degismez, bina yerlestirmeyi engellemez
+- BFS pathfinding kapılar arası: 0-1 deque ile mevcut yollar tercih edilir
+- Arama yaricapi: 15 hucre (Manhattan distance), max 500 BFS iterasyon
+- Yol tile'lari: 0.92 scale, 1.5s scale-in animasyon, URP Lit material, renderQueue=2001
+- Bina inşaatı bitince yol oluşur (OnConstructionComplete event)
+- Load sirasinda: RoadManager.ClearAllRoads() → binalar yüklenir → ApplyRoads ile save'den geri yuklenir
+- `Building.GetRotatedFootprint()` rotation'a göre (SizeX,SizeZ) veya (SizeZ,SizeX) dondurur
+- `Building.GetDoorCell()` ön yüzeyin 1 hucre otesindeki grid koordinatini dondurur
