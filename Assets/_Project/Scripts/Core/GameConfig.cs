@@ -50,6 +50,16 @@ namespace HollowGround.Core
         [Tooltip("How often (seconds) SettlerManager checks population and adjusts count")]
         public float SettlerSpawnCheckInterval = 5f;
 
+        [Header("Settler Models")]
+        public bool EnableWorker = true;
+        public bool EnableAdventurer = true;
+        public bool EnableSuit = true;
+        public bool EnableCasual = true;
+        public bool EnablePunk;
+        public bool EnableMan;
+        public bool EnableWoman;
+        public bool EnableAnimatedWoman;
+
         public float GetBuildTimeMultiplier => DevMode ? BuildTimeMultiplier : NormalBuildTimeMultiplier;
         public float GetProductionIntervalMultiplier => DevMode ? ProductionIntervalMultiplier : NormalProductionIntervalMultiplier;
         public float GetTrainingTimeMultiplier => DevMode ? TrainingTimeMultiplier : NormalTrainingTimeMultiplier;

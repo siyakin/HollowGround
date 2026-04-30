@@ -236,17 +236,16 @@ namespace HollowGround.NPCs
 
         private void CreateSettlerVisual(Transform parent)
         {
-            if (_settlerModels == null || _settlerModels.Length == 0)
+            var enabledModels = GetEnabledModels();
+            if (enabledModels.Count == 0)
             {
-                Debug.LogError("[SettlerManager] Settler Models dizisi bos!");
                 CreatePlaceholderVisual(parent);
                 return;
             }
 
-            GameObject model = _settlerModels[Random.Range(0, _settlerModels.Length)];
+            GameObject model = enabledModels[Random.Range(0, enabledModels.Count)];
             if (model == null)
             {
-                Debug.LogError("[SettlerManager] Null model referans!");
                 CreatePlaceholderVisual(parent);
                 return;
             }
@@ -296,6 +295,45 @@ namespace HollowGround.NPCs
             targetAnimator.Rebind();
 
             parent.GetComponent<SettlerWalker>()?.SetAnimator(targetAnimator);
+        }
+
+        private List<GameObject> GetEnabledModels()
+        {
+            var cfg = GameConfig.Instance;
+            var result = new List<GameObject>();
+            if (_settlerModels == null) return result;
+
+            for (int i = 0; i < _settlerModels.Length; i++)
+            {
+                if (_settlerModels[i] == null) continue;
+                if (!IsModelEnabled(i, cfg)) continue;
+                result.Add(_settlerModels[i]);
+            }
+
+            if (result.Count == 0)
+            {
+                foreach (var m in _settlerModels)
+                    if (m != null) result.Add(m);
+            }
+
+            return result;
+        }
+
+        private static bool IsModelEnabled(int index, GameConfig cfg)
+        {
+            if (cfg == null) return true;
+            return index switch
+            {
+                0 => cfg.EnableWorker,
+                1 => cfg.EnableAdventurer,
+                2 => cfg.EnableSuit,
+                3 => cfg.EnableCasual,
+                4 => cfg.EnablePunk,
+                5 => cfg.EnableMan,
+                6 => cfg.EnableWoman,
+                7 => cfg.EnableAnimatedWoman,
+                _ => true
+            };
         }
 
         private static void FixMaterials(GameObject go)
