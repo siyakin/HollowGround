@@ -2,6 +2,7 @@ using HollowGround.Army;
 using HollowGround.Buildings;
 using HollowGround.Core;
 using HollowGround.Grid;
+using HollowGround.NPCs;
 using HollowGround.Resources;
 using TMPro;
 using UnityEngine;
@@ -90,6 +91,14 @@ namespace HollowGround.UI
                     foreach (var entry in queue)
                         lines.Add($"  {entry.Data.DisplayName} x{entry.Amount} ({entry.RemainingTime:F0}s) {entry.Progress:P0}");
                 }
+            }
+            lines.Add("");
+
+            lines.Add("<b>Settlers:</b>");
+            if (SettlerManager.Instance != null)
+            {
+                lines.Add($"  Active: {SettlerManager.Instance.ActiveCount}/{SettlerManager.Instance.SettlerCount}");
+                lines.Add($"  Population: {SettlerManager.Instance.TotalPopulation}");
             }
             lines.Add("");
 

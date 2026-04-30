@@ -4,6 +4,7 @@ using System.Text;
 using HollowGround.Army;
 using HollowGround.Buildings;
 using HollowGround.Combat;
+using HollowGround.NPCs;
 using HollowGround.Resources;
 using HollowGround.Tech;
 using HollowGround.UI;
@@ -159,6 +160,13 @@ namespace HollowGround.Core
             var gm = GameManager.Instance;
             if (gm != null)
                 gm.OnStateChanged += OnGameStateChanged;
+
+            var settlers = SettlerManager.Instance;
+            if (settlers != null)
+            {
+                settlers.OnSettlerSpawned += OnSettlerSpawned;
+                settlers.OnSettlerRemoved += OnSettlerRemoved;
+            }
         }
 
         private void UnsubscribeEvents()
@@ -207,6 +215,13 @@ namespace HollowGround.Core
             var gm = GameManager.Instance;
             if (gm != null)
                 gm.OnStateChanged -= OnGameStateChanged;
+
+            var settlers = SettlerManager.Instance;
+            if (settlers != null)
+            {
+                settlers.OnSettlerSpawned -= OnSettlerSpawned;
+                settlers.OnSettlerRemoved -= OnSettlerRemoved;
+            }
         }
 
         #endregion
@@ -339,6 +354,16 @@ namespace HollowGround.Core
         {
             Log($"EXPEDITION ARRIVED: {expedition.TargetName}");
             ToastUI.Show($"Expedition arrived: {expedition.TargetName}", UIColors.Default.Ok);
+        }
+
+        private void OnSettlerSpawned(SettlerWalker walker)
+        {
+            Log($"SETTLER SPAWNED | Total: {SettlerManager.Instance?.SettlerCount ?? 0}");
+        }
+
+        private void OnSettlerRemoved(SettlerWalker walker)
+        {
+            Log($"SETTLER REMOVED | Total: {SettlerManager.Instance?.SettlerCount ?? 0}");
         }
 
         #endregion

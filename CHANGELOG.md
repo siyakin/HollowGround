@@ -4,6 +4,32 @@ All notable changes to Hollow Ground are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Versioning follows [SemVer](https://semver.org/): MAJOR.MINOR.PATCH
 
+## [0.19.0] - 2026-04-30
+
+### Added
+- SettlerWalker: grid-based NPC movement, state machine (Idle/Walk/Wait/ReturnHome)
+- SettlerManager: population-based spawn, road pathfinding integration
+- SettlerAnimationSetup: editor tools for Avatar generation, clip baking, AnimatorController
+- 4 CityPack characters with animation: Worker, Adventurer, Suit, Casual_2
+- 24 baked animation clips from Worker.fbx (Walk, Idle, Run, Death, etc.)
+- SettlerController: Speed parameter, Idle/Walk transitions (0.15s blend)
+- FBX import fix: avatarSetup=1 (CreateAnAvatarFromModel) for Generic rig characters
+- Runtime URP material conversion (Standard → URP/Lit) for settler models
+- DebugHUD: settler count, active count, population display
+- SessionLogger: OnSettlerSpawned/OnSettlerRemoved event logging
+- GameConfig: DisableSettlers, SettlersPerPopulation, MaxSettlers, SettlerMoveSpeed, SettlerIdleTime
+- Save/Load: SettlerWalkerSave with position/state persistence
+
+### Changed
+- AGENTS.md: Faz 15 updated — animation system documented, 5 new discoveries added
+- Building SO meta changes (Avatar fix applied to PostApoc characters)
+
+### Editor Tools
+- HollowGround > Settlers > Fix: Enable Avatar on All Characters
+- HollowGround > Settlers > Fix: Rebuild Clips + Controller
+- HollowGround > Settlers > Test: Spawn Animated Settler in Scene
+- HollowGround > Settlers > Test: Verify Model Hierarchy
+
 ## [0.18.0] - 2026-04-29
 
 ### Added
