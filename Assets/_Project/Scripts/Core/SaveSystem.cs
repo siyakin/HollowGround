@@ -10,6 +10,7 @@ using HollowGround.Quests;
 using HollowGround.Resources;
 using HollowGround.Grid;
 using HollowGround.World;
+using HollowGround.NPCs;
 using HollowGround.Roads;
 using UnityEngine;
 
@@ -58,6 +59,7 @@ namespace HollowGround.Core
             CaptureMutantAttack(data);
             CaptureMap(data);
             CaptureRoads(data);
+            CaptureSettlers(data);
 
             return data;
         }
@@ -158,6 +160,7 @@ namespace HollowGround.Core
             ApplyMutantAttack(data);
             ApplyMap(data);
             ApplyRoads(data);
+            ApplySettlers(data);
         }
 
         #region Capture
@@ -324,6 +327,12 @@ namespace HollowGround.Core
                     IsVisible = node.IsVisible
                 });
             }
+        }
+
+        private void CaptureSettlers(SaveData data)
+        {
+            if (SettlerManager.Instance == null) return;
+            data.Settlers = SettlerManager.Instance.CaptureSettlersSave();
         }
 
         #endregion
@@ -601,6 +610,12 @@ namespace HollowGround.Core
             foreach (var rc in data.RoadCells)
                 cells.Add(new Vector2Int(rc.Key, rc.Value));
             RoadManager.Instance.LoadRoadCells(cells);
+        }
+
+        private void ApplySettlers(SaveData data)
+        {
+            if (SettlerManager.Instance == null || data.Settlers == null) return;
+            SettlerManager.Instance.LoadSettlers(data.Settlers);
         }
 
         #endregion

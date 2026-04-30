@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using HollowGround.Army;
 using HollowGround.Core;
 using HollowGround.Heroes;
+using HollowGround.NPCs;
 using HollowGround.Resources;
 using TMPro;
 using UnityEngine;
@@ -84,6 +85,12 @@ namespace HollowGround.UI
 
             if (HeroManager.Instance != null)
                 HeroManager.Instance.OnHeroesChanged += UpdatePopulation;
+
+            if (SettlerManager.Instance != null)
+            {
+                SettlerManager.Instance.OnSettlerSpawned += OnSettlerChanged;
+                SettlerManager.Instance.OnSettlerRemoved += OnSettlerChanged;
+            }
         }
 
         private void UnsubscribeEvents()
@@ -99,6 +106,12 @@ namespace HollowGround.UI
 
             if (HeroManager.Instance != null)
                 HeroManager.Instance.OnHeroesChanged -= UpdatePopulation;
+
+            if (SettlerManager.Instance != null)
+            {
+                SettlerManager.Instance.OnSettlerSpawned -= OnSettlerChanged;
+                SettlerManager.Instance.OnSettlerRemoved -= OnSettlerChanged;
+            }
         }
 
         private void HandleResourceChanged(ResourceType type, int amount)
@@ -150,8 +163,12 @@ namespace HollowGround.UI
 
             int troops = ArmyManager.Instance != null ? ArmyManager.Instance.TotalTroopCount : 0;
             int heroes = HeroManager.Instance != null ? HeroManager.Instance.HeroCount : 0;
-            _populationText.text = $"Tro:{troops}  Her:{heroes}";
+            int people = SettlerManager.Instance != null ? SettlerManager.Instance.SettlerCount : 0;
+            int pop = SettlerManager.Instance != null ? SettlerManager.Instance.TotalPopulation : 0;
+            _populationText.text = $"Tro:{troops}  Her:{heroes}  Pop:{pop}  Ppl:{people}";
         }
+
+        private void OnSettlerChanged(SettlerWalker _) => UpdatePopulation();
 
         public void UpdateLevel(int level)
         {

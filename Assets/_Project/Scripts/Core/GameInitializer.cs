@@ -5,6 +5,7 @@ using HollowGround.Buildings;
 using HollowGround.Combat;
 using HollowGround.Grid;
 using HollowGround.Heroes;
+using HollowGround.NPCs;
 using HollowGround.Quests;
 using HollowGround.Roads;
 using UnityEngine;
@@ -23,6 +24,7 @@ namespace HollowGround.Core
         {
             ResetAllState();
             EnsureSessionLogger();
+            ResetSettlers();
             CenterCamera();
             InitializeWorldMap();
             InitializeQuests();
@@ -127,6 +129,12 @@ namespace HollowGround.Core
         {
             if (GameManager.Instance == null) return;
             GameManager.Instance.StartGame();
+        }
+
+        private void ResetSettlers()
+        {
+            if (SettlerManager.Instance == null) return;
+            SettlerManager.Instance.RemoveAllSettlers();
         }
     }
 }

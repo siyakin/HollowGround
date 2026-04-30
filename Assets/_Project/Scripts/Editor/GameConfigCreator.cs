@@ -21,6 +21,12 @@ namespace HollowGround.Editor
             config.RepairCostRatio = 0.5f;
             config.WallDefenseBonus = 20;
             config.DefeatTroopLossRatio = 0.6f;
+            config.SettlersPerPopulation = 0.2f;
+            config.MaxSettlers = 20;
+            config.SettlerMoveSpeed = 2f;
+            config.SettlerIdleTime = 3f;
+            config.SettlerSpawnCheckInterval = 5f;
+            config.DisableSettlers = false;
             config.BuildTimeMultiplier = 0.1f;
             config.ProductionIntervalMultiplier = 0.1f;
             config.TrainingTimeMultiplier = 0.1f;

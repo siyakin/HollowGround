@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using HollowGround.NPCs;
 using UnityEngine;
 
 namespace HollowGround.Core
@@ -23,6 +24,7 @@ namespace HollowGround.Core
         public MutantAttackSave MutantAttack;
         public List<MapNodeSave> MapNodes = new();
         public List<IntIntEntry> RoadCells = new();
+        public List<SettlerWalkerSave> Settlers = new();
     }
 
     [Serializable]
