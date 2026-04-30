@@ -204,7 +204,10 @@ namespace HollowGround.NPCs
         private int GetMaxSettlers()
         {
             var cfg = GameConfig.Instance;
-            return cfg != null ? cfg.MaxSettlers : 5;
+            int pop = GetPopulation();
+            float ratio = cfg != null ? cfg.SettlersPerPopulation : 0.2f;
+            int max = cfg != null ? cfg.MaxSettlers : 20;
+            return Mathf.Min(Mathf.FloorToInt(pop * ratio), max);
         }
 
         private SettlerWalker CreatePoolSettler()
