@@ -157,21 +157,16 @@ namespace HollowGround.UI
 
         public void NewSave()
         {
-            if (SaveSystem.Instance == null) return;
+            if (SaveSystem.Instance == null)
+            {
+                ToastUI.Show("SaveSystem not found!", UIColors.Default.Danger);
+                return;
+            }
 
             string fileName = $"save_{System.DateTime.Now:yyyyMMdd_HHmmss}";
             SaveSystem.Instance.Save(fileName);
+            ToastUI.Show("Game saved!", UIColors.Default.Ok);
             RefreshList();
-
-            for (int i = 0; i < _saves.Count; i++)
-            {
-                if (_saves[i].SaveName == fileName)
-                {
-                    SelectSlot(i);
-                    break;
-                }
-            }
-            if (_statusText != null) _statusText.text = "Game saved!";
         }
 
         public void LoadSelected()
