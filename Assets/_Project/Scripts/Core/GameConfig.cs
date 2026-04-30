@@ -54,11 +54,8 @@ namespace HollowGround.Core
         public bool EnableWorker = true;
         public bool EnableAdventurer = true;
         public bool EnableSuit = true;
-        public bool EnableCasual = true;
-        public bool EnablePunk;
         public bool EnableMan;
         public bool EnableWoman;
-        public bool EnableAnimatedWoman;
 
         public float GetBuildTimeMultiplier => DevMode ? BuildTimeMultiplier : NormalBuildTimeMultiplier;
         public float GetProductionIntervalMultiplier => DevMode ? ProductionIntervalMultiplier : NormalProductionIntervalMultiplier;

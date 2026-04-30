@@ -330,11 +330,8 @@ namespace HollowGround.NPCs
                 0 => cfg.EnableWorker,
                 1 => cfg.EnableAdventurer,
                 2 => cfg.EnableSuit,
-                3 => cfg.EnableCasual,
-                4 => cfg.EnablePunk,
-                5 => cfg.EnableMan,
-                6 => cfg.EnableWoman,
-                7 => cfg.EnableAnimatedWoman,
+                3 => cfg.EnableMan,
+                4 => cfg.EnableWoman,
                 _ => true
             };
         }

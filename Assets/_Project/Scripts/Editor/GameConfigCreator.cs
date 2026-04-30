@@ -30,11 +30,8 @@ namespace HollowGround.Editor
             config.EnableWorker = true;
             config.EnableAdventurer = true;
             config.EnableSuit = true;
-            config.EnableCasual = true;
-            config.EnablePunk = false;
             config.EnableMan = false;
             config.EnableWoman = false;
-            config.EnableAnimatedWoman = false;
             config.BuildTimeMultiplier = 0.1f;
             config.ProductionIntervalMultiplier = 0.1f;
             config.TrainingTimeMultiplier = 0.1f;
