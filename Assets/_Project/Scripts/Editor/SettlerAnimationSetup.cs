@@ -11,47 +11,25 @@ namespace HollowGround.Editor
         private const string MENU_PATH = "HollowGround/Settlers/";
         private const string CHARACTERS_FOLDER = "Assets/_Project/Models";
         private const string CONTROLLER_PATH = "Assets/_Project/Animations/Characters/SettlerController.controller";
+        private const string MAN_CONTROLLER_PATH = "Assets/_Project/Animations/Characters/ManSettlerController.controller";
+        private const string WOMAN_CONTROLLER_PATH = "Assets/_Project/Animations/Characters/WomanSettlerController.controller";
         private const string ANIMATIONS_FOLDER = "Assets/_Project/Animations/Characters";
+        private const string MAN_ANIMATIONS_FOLDER = "Assets/_Project/Animations/Characters/Man";
+        private const string WOMAN_ANIMATIONS_FOLDER = "Assets/_Project/Animations/Characters/Woman";
         private const string WORKER_FBX = "CityPack/Worker/Worker.fbx";
+        private const string MAN_FBX = "CityPack/Man/Male_Casual.fbx";
+        private const string WOMAN_FBX = "CityPack/Woman/Female_Alternative.fbx";
 
-        private static readonly string[] CityPackCharacters = { "Worker", "Adventurer", "Business Man", "Man", "Woman" };
-
-        [MenuItem(MENU_PATH + "Fix: Revert All to Generic Rig")]
-        public static void RevertAllToGeneric()
-        {
-            int fixedCount = 0;
-            string[] allCharFolders = { "Worker", "Adventurer", "Business Man", "Man", "Woman",
-                "Punk", "Suit", "Casual Character", "Animated Woman" };
-
-            foreach (var charName in allCharFolders)
-            {
-                string folder = Path.Combine(CHARACTERS_FOLDER, "CityPack", charName).Replace('\\', '/');
-                if (!Directory.Exists(folder)) continue;
-
-                foreach (var fbx in Directory.GetFiles(folder, "*.fbx"))
-                {
-                    string assetPath = fbx.Replace('\\', '/');
-                    var importer = AssetImporter.GetAtPath(assetPath) as ModelImporter;
-                    if (importer == null) continue;
-                    if (importer.animationType != ModelImporterAnimationType.Generic)
-                    {
-                        importer.animationType = ModelImporterAnimationType.Generic;
-                        importer.avatarSetup = (ModelImporterAvatarSetup)1;
-                        importer.SaveAndReimport();
-                        fixedCount++;
-                    }
-                }
-            }
-            Debug.Log($"[SettlerSetup] Reverted {fixedCount} FBX to Generic + Avatar.");
-        }
+        private static readonly string[] CityPackCharacters = {
+            "Worker", "Adventurer", "Business Man", "Man", "Suit", "Woman"
+        };
 
         [MenuItem(MENU_PATH + "Fix: Enable Avatar on All Characters")]
         public static void FixAvatarOnAllCharacters()
         {
-            string[] characterNames = CityPackCharacters;
             int fixedCount = 0;
 
-            foreach (var charName in characterNames)
+            foreach (var charName in CityPackCharacters)
             {
                 string folder = Path.Combine(CHARACTERS_FOLDER, "CityPack", charName).Replace('\\', '/');
                 if (!Directory.Exists(folder)) continue;
@@ -78,39 +56,62 @@ namespace HollowGround.Editor
                 }
             }
 
-            Debug.Log($"[SettlerSetup] Fixed {fixedCount} FBX imports. Now run 'Test: Spawn Animated Settler' to verify.");
+            Debug.Log($"[SettlerSetup] Fixed {fixedCount} FBX imports. Now run 'Fix: Rebuild All Clips + Controllers'.");
+        }
+
+        [MenuItem(MENU_PATH + "Fix: Revert All to Generic Rig")]
+        public static void RevertAllToGeneric()
+        {
+            int fixedCount = 0;
+
+            string[] allCharFolders = { "Worker", "Adventurer", "Business Man", "Man", "Woman",
+                "Punk", "Suit", "Casual Character", "Animated Woman" };
+
+            foreach (var charName in allCharFolders)
+            {
+                string folder = Path.Combine(CHARACTERS_FOLDER, "CityPack", charName).Replace('\\', '/');
+                if (!Directory.Exists(folder)) continue;
+
+                foreach (var fbx in Directory.GetFiles(folder, "*.fbx"))
+                {
+                    string assetPath = fbx.Replace('\\', '/');
+                    var importer = AssetImporter.GetAtPath(assetPath) as ModelImporter;
+                    if (importer == null) continue;
+                    if (importer.animationType != ModelImporterAnimationType.Generic)
+                    {
+                        importer.animationType = ModelImporterAnimationType.Generic;
+                        importer.avatarSetup = (ModelImporterAvatarSetup)1;
+                        importer.SaveAndReimport();
+                        fixedCount++;
+                    }
+                }
+            }
+
+            Debug.Log($"[SettlerSetup] Reverted {fixedCount} FBX to Generic + Avatar.");
         }
 
         [MenuItem(MENU_PATH + "Fix: Rebuild All Clips + Controllers")]
         public static void FixAndRebuildAll()
         {
-            BakeFromModel("CityPack/Worker/Worker.fbx", "Characters", "SettlerController");
-            BakeFromModel("CityPack/Man/Male_Casual.fbx", "Characters_Man", "SettlerController_Man");
-            BakeFromModel("CityPack/Woman/Female_Alternative.fbx", "Characters_Woman", "SettlerController_Woman");
-            Debug.Log("[SettlerSetup] All clips + controllers rebuilt.");
+            BakeFromModel(WORKER_FBX, ANIMATIONS_FOLDER, CONTROLLER_PATH, "CharacterArmature|");
+            BakeFromModel(MAN_FBX, MAN_ANIMATIONS_FOLDER, MAN_CONTROLLER_PATH, "HumanArmature|");
+            BakeFromModel(WOMAN_FBX, WOMAN_ANIMATIONS_FOLDER, WOMAN_CONTROLLER_PATH, "HumanArmature|");
+            Debug.Log("[SettlerSetup] All 3 controller sets rebuilt. Assign controllers in SettlerManager Inspector.");
         }
 
-        [MenuItem(MENU_PATH + "Fix: Rebuild Clips + Controller (Worker only)")]
-        public static void FixAndRebuild()
+        private static void BakeFromModel(string fbxRelative, string animFolder, string controllerPath, string prefix)
         {
-            BakeFromModel(WORKER_FBX, "Characters", "SettlerController");
-        }
+            string fbxPath = Path.Combine(CHARACTERS_FOLDER, fbxRelative).Replace('\\', '/');
 
-        private static void BakeFromModel(string fbxRelativePath, string animFolder, string controllerName)
-        {
-            string animDir = $"Assets/_Project/Animations/{animFolder}";
-            string fbxPath = Path.Combine(CHARACTERS_FOLDER, fbxRelativePath).Replace('\\', '/');
-
-            if (Directory.Exists(animDir))
+            if (Directory.Exists(animFolder))
             {
-                foreach (var f in Directory.GetFiles(animDir, "*.anim"))
-                    AssetDatabase.DeleteAsset(animDir + "/" + Path.GetFileName(f));
-                var ctrl = $"{animDir}/{controllerName}.controller";
-                if (File.Exists(ctrl)) AssetDatabase.DeleteAsset(ctrl);
+                var files = Directory.GetFiles(animFolder, "*.anim");
+                foreach (var f in files)
+                    AssetDatabase.DeleteAsset(animFolder + "/" + Path.GetFileName(f));
             }
             else
             {
-                Directory.CreateDirectory(animDir);
+                Directory.CreateDirectory(animFolder);
             }
 
             var allAssets = AssetDatabase.LoadAllAssetsAtPath(fbxPath);
@@ -128,15 +129,17 @@ namespace HollowGround.Editor
                 if (!(asset is AnimationClip clip)) continue;
                 if (clip.name.StartsWith("__preview__"))
                 {
-                    string key = CleanName(clip.name.Substring("__preview__".Length));
+                    string key = CleanName(clip.name.Substring("__preview__".Length), prefix);
                     if (!byNamePreview.ContainsKey(key)) byNamePreview[key] = clip;
                 }
                 else
                 {
-                    string key = CleanName(clip.name);
+                    string key = CleanName(clip.name, prefix);
                     if (!byName.ContainsKey(key)) byName[key] = clip;
                 }
             }
+
+            Debug.Log($"[SettlerSetup] [{prefix}] Found {byName.Count} real clips, {byNamePreview.Count} preview clips.");
 
             foreach (var kv in byNamePreview)
                 if (!byName.ContainsKey(kv.Key)) byName[kv.Key] = kv.Value;
@@ -144,7 +147,7 @@ namespace HollowGround.Editor
             int extracted = 0;
             foreach (var kv in byName)
             {
-                string destPath = $"{animDir}/{kv.Key}.anim";
+                string destPath = $"{animFolder}/{kv.Key}.anim";
                 bool isWalk = kv.Key == "Walk" || kv.Key == "Run";
                 var clean = BakeFreshClip(kv.Value, kv.Key, isWalk);
                 AssetDatabase.CreateAsset(clean, destPath);
@@ -153,59 +156,70 @@ namespace HollowGround.Editor
 
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
-            Debug.Log($"[SettlerSetup] Baked {extracted} clips from '{fbxRelativePath}' to '{animDir}'.");
-            BuildController(animDir, controllerName);
+            Debug.Log($"[SettlerSetup] [{prefix}] Baked {extracted} clips to {animFolder}.");
+            BuildControllerForModel(animFolder, controllerPath);
         }
-            else
-            {
-                Directory.CreateDirectory(ANIMATIONS_FOLDER);
-            }
 
-            string fbxPath = Path.Combine(CHARACTERS_FOLDER, WORKER_FBX).Replace('\\', '/');
-            var allAssets = AssetDatabase.LoadAllAssetsAtPath(fbxPath);
-            if (allAssets == null || allAssets.Length == 0)
+        private static void BuildControllerForModel(string animFolder, string controllerPath)
+        {
+            var idleClip = AssetDatabase.LoadAssetAtPath<AnimationClip>($"{animFolder}/Idle.anim");
+            var walkClip = AssetDatabase.LoadAssetAtPath<AnimationClip>($"{animFolder}/Walk.anim");
+
+            if (idleClip == null || walkClip == null)
             {
-                Debug.LogError($"[SettlerSetup] No assets at '{fbxPath}'.");
+                Debug.LogError($"[SettlerSetup] Idle.anim or Walk.anim not found in {animFolder}.");
                 return;
             }
 
-            var byName = new System.Collections.Generic.Dictionary<string, AnimationClip>();
-            var byNamePreview = new System.Collections.Generic.Dictionary<string, AnimationClip>();
+            string folder = Path.GetDirectoryName(controllerPath).Replace('\\', '/');
+            if (!Directory.Exists(folder))
+                Directory.CreateDirectory(folder);
 
-            foreach (var asset in allAssets)
+            if (File.Exists(controllerPath))
             {
-                if (!(asset is AnimationClip clip)) continue;
-                if (clip.name.StartsWith("__preview__"))
+                var existing = AssetDatabase.LoadAssetAtPath<AnimatorController>(controllerPath);
+                if (existing != null)
                 {
-                    string key = CleanName(clip.name.Substring("__preview__".Length));
-                    if (!byNamePreview.ContainsKey(key)) byNamePreview[key] = clip;
-                }
-                else
-                {
-                    string key = CleanName(clip.name);
-                    if (!byName.ContainsKey(key)) byName[key] = clip;
+                    foreach (var layer in existing.layers)
+                    {
+                        foreach (var cs in layer.stateMachine.states)
+                        {
+                            if (cs.state.name == "Idle") cs.state.motion = idleClip;
+                            else if (cs.state.name == "Walk") cs.state.motion = walkClip;
+                        }
+                    }
+                    EditorUtility.SetDirty(existing);
+                    AssetDatabase.SaveAssets();
+                    Debug.Log($"[SettlerSetup] Updated controller: {controllerPath}");
+                    return;
                 }
             }
 
-            Debug.Log($"[SettlerSetup] Found {byName.Count} real clips, {byNamePreview.Count} preview clips.");
+            var controller = AnimatorController.CreateAnimatorControllerAtPath(controllerPath);
+            controller.AddParameter("Speed", AnimatorControllerParameterType.Float);
 
-            foreach (var kv in byNamePreview)
-                if (!byName.ContainsKey(kv.Key)) byName[kv.Key] = kv.Value;
+            var sm = controller.layers[0].stateMachine;
 
-            int extracted = 0;
-            foreach (var kv in byName)
-            {
-                string destPath = $"{ANIMATIONS_FOLDER}/{kv.Key}.anim";
-                bool isWalk = kv.Key == "Walk";
-                var clean = BakeFreshClip(kv.Value, kv.Key, isWalk);
-                AssetDatabase.CreateAsset(clean, destPath);
-                extracted++;
-            }
+            var idleState = sm.AddState("Idle");
+            idleState.motion = idleClip;
+
+            var walkState = sm.AddState("Walk");
+            walkState.motion = walkClip;
+
+            var idleToWalk = idleState.AddTransition(walkState);
+            idleToWalk.hasExitTime = false;
+            idleToWalk.duration = 0.15f;
+            idleToWalk.AddCondition(AnimatorConditionMode.Greater, 0.1f, "Speed");
+
+            var walkToIdle = walkState.AddTransition(idleState);
+            walkToIdle.hasExitTime = false;
+            walkToIdle.duration = 0.15f;
+            walkToIdle.AddCondition(AnimatorConditionMode.Less, 0.1f, "Speed");
+
+            sm.defaultState = idleState;
 
             AssetDatabase.SaveAssets();
-            AssetDatabase.Refresh();
-            Debug.Log($"[SettlerSetup] Baked {extracted} clips.");
-            BuildController();
+            Debug.Log($"[SettlerSetup] Created controller: {controllerPath}");
         }
 
         [MenuItem(MENU_PATH + "Test: Spawn Animated Settler in Scene")]
@@ -246,7 +260,7 @@ namespace HollowGround.Editor
             var controller = AssetDatabase.LoadAssetAtPath<RuntimeAnimatorController>(CONTROLLER_PATH);
             if (controller == null)
             {
-                Debug.LogError("[SettlerTest] SettlerController not found. Run 'Fix: Rebuild Clips + Controller' first.");
+                Debug.LogError("[SettlerTest] SettlerController not found. Run 'Fix: Rebuild All Clips + Controllers' first.");
                 return;
             }
 
@@ -381,7 +395,7 @@ namespace HollowGround.Editor
         public static void DebugLogWalkBindings()
         {
             var walkClip = AssetDatabase.LoadAssetAtPath<AnimationClip>($"{ANIMATIONS_FOLDER}/Walk.anim");
-            if (walkClip == null) { Debug.LogError("[SettlerSetup] Walk.anim bulunamadı."); return; }
+            if (walkClip == null) { Debug.LogError("[SettlerSetup] Walk.anim not found."); return; }
 
             var bindings = AnimationUtility.GetCurveBindings(walkClip);
             Debug.Log($"[SettlerSetup] Walk.anim bindings: {bindings.Length}");
@@ -406,70 +420,6 @@ namespace HollowGround.Editor
                     names.Add($"{clip.name} (type={clip.GetType().Name})");
 
             Debug.Log($"[SettlerSetup] {names.Count} clips:\n  {string.Join("\n  ", names)}");
-        }
-
-        private static void BuildController(string animDir, string controllerName)
-        {
-            string controllerPath = $"{animDir}/{controllerName}.controller";
-            var idleClip = AssetDatabase.LoadAssetAtPath<AnimationClip>($"{animDir}/Idle.anim");
-            var walkClip = AssetDatabase.LoadAssetAtPath<AnimationClip>($"{animDir}/Walk.anim");
-            var femaleIdle = AssetDatabase.LoadAssetAtPath<AnimationClip>($"{animDir}/Female_Idle.anim");
-            var femaleWalk = AssetDatabase.LoadAssetAtPath<AnimationClip>($"{animDir}/Female_Walk.anim");
-
-            if (femaleIdle != null) idleClip = femaleIdle;
-            if (femaleWalk != null) walkClip = femaleWalk;
-
-            if (idleClip == null || walkClip == null)
-            {
-                Debug.LogError($"[SettlerSetup] Idle or Walk clip not found in '{animDir}'.");
-                return;
-            }
-
-            if (File.Exists(controllerPath))
-            {
-                var existing = AssetDatabase.LoadAssetAtPath<AnimatorController>(controllerPath);
-                if (existing != null)
-                {
-                    foreach (var layer in existing.layers)
-                    {
-                        foreach (var cs in layer.stateMachine.states)
-                        {
-                            if (cs.state.name == "Idle") cs.state.motion = idleClip;
-                            else if (cs.state.name == "Walk") cs.state.motion = walkClip;
-                        }
-                    }
-                    EditorUtility.SetDirty(existing);
-                    AssetDatabase.SaveAssets();
-                    Debug.Log($"[SettlerSetup] Controller updated — Idle: {idleClip.GetType().Name}, Walk: {walkClip.GetType().Name}");
-                    return;
-                }
-            }
-
-            var controller = AnimatorController.CreateAnimatorControllerAtPath(controllerPath);
-            controller.AddParameter("Speed", AnimatorControllerParameterType.Float);
-
-            var sm = controller.layers[0].stateMachine;
-
-            var idleState = sm.AddState("Idle");
-            idleState.motion = idleClip;
-
-            var walkState = sm.AddState("Walk");
-            walkState.motion = walkClip;
-
-            var idleToWalk = idleState.AddTransition(walkState);
-            idleToWalk.hasExitTime = false;
-            idleToWalk.duration = 0.15f;
-            idleToWalk.AddCondition(AnimatorConditionMode.Greater, 0.1f, "Speed");
-
-            var walkToIdle = walkState.AddTransition(idleState);
-            walkToIdle.hasExitTime = false;
-            walkToIdle.duration = 0.15f;
-            walkToIdle.AddCondition(AnimatorConditionMode.Less, 0.1f, "Speed");
-
-            sm.defaultState = idleState;
-
-            AssetDatabase.SaveAssets();
-            Debug.Log($"[SettlerSetup] Controller created — Idle: {idleClip.GetType().Name}, Walk: {walkClip.GetType().Name}");
         }
 
         private static AnimationClip BakeFreshClip(AnimationClip source, string clipName, bool loop = false)
@@ -506,8 +456,8 @@ namespace HollowGround.Editor
             return dst;
         }
 
-        private static string CleanName(string raw) =>
-            raw.Replace("CharacterArmature|", "").Replace("|", "_");
+        private static string CleanName(string raw, string prefix = "CharacterArmature|") =>
+            raw.Replace(prefix, "").Replace("|", "_");
     }
 #endif
 }
