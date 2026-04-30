@@ -1039,6 +1039,23 @@ namespace HollowGround.Editor
             confirmGO.transform.SetParent(panelT, false);
             var confirmLe = confirmGO.AddComponent<LayoutElement>();
             confirmLe.preferredHeight = 48;
+            var confirmHlg = confirmGO.AddComponent<HorizontalLayoutGroup>();
+            confirmHlg.childAlignment = TextAnchor.MiddleCenter;
+            confirmHlg.childForceExpandWidth = false;
+            confirmHlg.spacing = 12f;
+
+            var confirmLabel = new GameObject("ConfirmLabel");
+            confirmLabel.transform.SetParent(confirmGO.transform, false);
+            var confirmLabelTmp = confirmLabel.AddComponent<TextMeshProUGUI>();
+            confirmLabelTmp.text = "Delete this save?";
+            confirmLabelTmp.fontSize = 16;
+            confirmLabelTmp.alignment = TextAlignmentOptions.Center;
+            confirmLabelTmp.color = new Color(0.9f, 0.6f, 0.3f, 1f);
+            var confirmLabelLe = confirmLabel.AddComponent<LayoutElement>();
+            confirmLabelLe.preferredWidth = 180;
+
+            CreateEditorButton(confirmGO.transform, "YesBtn", "YES", 80);
+            CreateEditorButton(confirmGO.transform, "NoBtn", "NO", 80);
             confirmGO.SetActive(false);
 
             var btnRowGO = new GameObject("BtnRow");
@@ -1071,6 +1088,21 @@ namespace HollowGround.Editor
 
             so.ApplyModifiedProperties();
             EditorUtility.SetDirty(saveMenuUI);
+
+            var newSaveBtn = btnRowGO.transform.Find("NewSaveBtn").GetComponent<Button>();
+            var loadBtn = btnRowGO.transform.Find("LoadBtn").GetComponent<Button>();
+            var deleteBtn = btnRowGO.transform.Find("DeleteBtn").GetComponent<Button>();
+            var backBtn = btnRowGO.transform.Find("BackBtn").GetComponent<Button>();
+
+            newSaveBtn.onClick.AddListener(saveMenuUI.NewSave);
+            loadBtn.onClick.AddListener(saveMenuUI.LoadSelected);
+            deleteBtn.onClick.AddListener(saveMenuUI.RequestDelete);
+            backBtn.onClick.AddListener(saveMenuUI.CloseSelf);
+
+            var confirmYes = confirmGO.transform.Find("YesBtn");
+            var confirmNo = confirmGO.transform.Find("NoBtn");
+            if (confirmYes != null) confirmYes.GetComponent<Button>().onClick.AddListener(saveMenuUI.ConfirmDelete);
+            if (confirmNo != null) confirmNo.GetComponent<Button>().onClick.AddListener(saveMenuUI.CancelDelete);
 
             panel.SetActive(false);
             EditorSceneManager.MarkSceneDirty(panel.scene);
