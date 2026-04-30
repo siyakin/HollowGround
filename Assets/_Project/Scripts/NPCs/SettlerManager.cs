@@ -19,6 +19,8 @@ namespace HollowGround.NPCs
         private readonly List<SettlerWalker> _pool = new();
         private GameObject _settlerParent;
         private float _idleSpawnTimer;
+        private float _lastDispatchTime;
+        private const float MinDispatchInterval = 2f;
 
         private const string SettlerParentName = "Settlers";
         private const float SettlerYOffset = 0.05f;
@@ -92,6 +94,7 @@ namespace HollowGround.NPCs
 
         private void OnProduced(Building building, ResourceType type, int amount)
         {
+            if (ActiveCount >= 3) return;
             var storage = FindNearestStorage(building);
             Vector2Int dest = storage != null ? storage.GetDoorCell() : FindCommandCenter()?.GetDoorCell() ?? building.GetDoorCell();
             Dispatch(building.GetDoorCell(), dest, 2f);
@@ -127,10 +130,12 @@ namespace HollowGround.NPCs
             var cfg = GameConfig.Instance;
             if (cfg != null && cfg.DisableSettlers) return;
             if (ActiveCount >= GetMaxSettlers()) return;
+            if (Time.time - _lastDispatchTime < MinDispatchInterval) return;
 
             SettlerWalker walker = GetFreeSettler();
             if (walker == null) return;
 
+            _lastDispatchTime = Time.time;
             ActiveCount++;
             walker.Dispatch(origin, destination, waitDuration, () =>
             {
@@ -304,17 +309,33 @@ namespace HollowGround.NPCs
                 bool changed = false;
                 for (int i = 0; i < mats.Length; i++)
                 {
-                    if (mats[i] != null && mats[i].shader != null
-                        && !mats[i].shader.name.StartsWith("Universal Render Pipeline"))
+                    if (mats[i] == null || mats[i].shader == null) continue;
+                    if (mats[i].shader.name.StartsWith("Universal Render Pipeline")) continue;
+
+                    var newMat = new Material(urpLit);
+
+                    string[] texProps = { "_MainTex", "_BaseMap", "_Albedo", "_Diffuse" };
+                    foreach (var prop in texProps)
                     {
-                        var newMat = new Material(urpLit);
-                        if (mats[i].HasProperty("_MainTex"))
-                            newMat.SetTexture("_BaseMap", mats[i].GetTexture("_MainTex"));
-                        if (mats[i].HasProperty("_Color"))
-                            newMat.SetColor("_BaseColor", mats[i].GetColor("_Color"));
-                        mats[i] = newMat;
-                        changed = true;
+                        if (mats[i].HasProperty(prop) && mats[i].GetTexture(prop) != null)
+                        {
+                            newMat.SetTexture("_BaseMap", mats[i].GetTexture(prop));
+                            break;
+                        }
                     }
+
+                    string[] colProps = { "_Color", "_BaseColor", "_AlbedoColor" };
+                    foreach (var prop in colProps)
+                    {
+                        if (mats[i].HasProperty(prop))
+                        {
+                            newMat.SetColor("_BaseColor", mats[i].GetColor(prop));
+                            break;
+                        }
+                    }
+
+                    mats[i] = newMat;
+                    changed = true;
                 }
                 if (changed)
                     renderer.sharedMaterials = mats;
