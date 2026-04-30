@@ -13,8 +13,10 @@ namespace HollowGround.NPCs
     {
         [Header("Settler Models (drag FBX here)")]
         [SerializeField] private GameObject[] _settlerModels;
-        [Header("Animator Controller")]
+        [Header("Animator Controllers")]
         [SerializeField] private RuntimeAnimatorController _animatorController;
+        [SerializeField] private RuntimeAnimatorController _manController;
+        [SerializeField] private RuntimeAnimatorController _womanController;
 
         private readonly List<SettlerWalker> _pool = new();
         private GameObject _settlerParent;
@@ -263,7 +265,8 @@ namespace HollowGround.NPCs
 
             FixMaterials(instance);
 
-            if (_animatorController == null) return;
+            RuntimeAnimatorController controller = GetControllerForModel(model);
+            if (controller == null) return;
 
             Avatar avatar = null;
             var sourceAnimator = model.GetComponent<Animator>();
@@ -292,12 +295,22 @@ namespace HollowGround.NPCs
             if (avatar != null)
                 targetAnimator.avatar = avatar;
 
-            targetAnimator.runtimeAnimatorController = _animatorController;
+            targetAnimator.runtimeAnimatorController = controller;
             targetAnimator.applyRootMotion = false;
             targetAnimator.cullingMode = AnimatorCullingMode.AlwaysAnimate;
             targetAnimator.Rebind();
 
             parent.GetComponent<SettlerWalker>()?.SetAnimator(targetAnimator);
+        }
+
+        private RuntimeAnimatorController GetControllerForModel(GameObject model)
+        {
+            string name = model.name.ToLowerInvariant();
+            if ((name.Contains("male_casual") || name.Contains("male_shirt")) && _manController != null)
+                return _manController;
+            if (name.Contains("female") && _womanController != null)
+                return _womanController;
+            return _animatorController;
         }
 
         private List<GameObject> GetEnabledModels()
