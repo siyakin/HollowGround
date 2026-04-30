@@ -10,6 +10,8 @@ namespace HollowGround.Core
         public bool DevMode = false;
         [Tooltip("Disable mutant attacks entirely (for testing)")]
         public bool DisableMutantAttacks = false;
+        [Tooltip("Disable settler spawning entirely (for testing)")]
+        public bool DisableSettlers = false;
         [Tooltip("Enable session logging to file")]
         public bool EnableSessionLog = false;
         [Tooltip("Start with multiplied resources (for testing)")]
@@ -39,6 +41,14 @@ namespace HollowGround.Core
         [Header("Combat")]
         public int WallDefenseBonus = 20;
         [Range(0f, 1f)] public float DefeatTroopLossRatio = 0.6f;
+
+        [Header("Settlers")]
+        public float SettlersPerPopulation = 0.2f;
+        public int MaxSettlers = 20;
+        public float SettlerMoveSpeed = 2f;
+        public float SettlerIdleTime = 3f;
+        [Tooltip("How often (seconds) SettlerManager checks population and adjusts count")]
+        public float SettlerSpawnCheckInterval = 5f;
 
         public float GetBuildTimeMultiplier => DevMode ? BuildTimeMultiplier : NormalBuildTimeMultiplier;
         public float GetProductionIntervalMultiplier => DevMode ? ProductionIntervalMultiplier : NormalProductionIntervalMultiplier;

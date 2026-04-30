@@ -102,7 +102,7 @@ Assets/_Project/
 │   ├── Heroes/      HeroEnums, HeroData, Hero, HeroManager
 │   ├── World/       MapNodeData, WorldMap, ExpeditionSystem
 │   ├── Tech/        TechNode, ResearchManager
-│   ├── NPCs/        FactionData, TradeSystem
+│   ├── NPCs/        FactionData, TradeSystem, SettlerWalker, SettlerManager
 │   ├── Quests/      QuestEnums, QuestData, QuestInstance, QuestManager
 │   ├── UI/          UIManager, PanelManager, ResourceBarUI, BuildMenuUI, BuildingInfoUI,
 │   │                ToastUI, TrainingPanelUI, ArmyPanelUI, BattleReportUI,
@@ -147,7 +147,8 @@ GameManager, TimeManager, ResourceManager, GridSystem, GridVisualizer,
 BuildingPlacer, BuildingSelector, BuildingManager, ArmyManager,
 BattleManager, HeroManager, WorldMap, ExpeditionSystem,
 QuestManager, MutantAttackManager, ResearchManager, TradeSystem,
-SaveSystem, BaseStarter, GameInitializer, WeatherSystem, RoadManager
+SaveSystem, BaseStarter, GameInitializer, WeatherSystem, RoadManager,
+SettlerManager
 
 ### GameCanvas Alt Yapisi
 - ResourceBar
@@ -189,6 +190,7 @@ SaveSystem, BaseStarter, GameInitializer, WeatherSystem, RoadManager
 | 12 | ✅ | Bina Model Sistemi: 105 FBX, state-based model swap, hasar/tamir |
 | 13 | ✅ | Refactoring: Singleton<T>, UIPrimitiveFactory, UIColors, dead code silindi |
 | 14 | ✅ | Visual & Polish: Grid overlay, weather, highlight, damage efektleri |
+| 15 | WIP | Settler Walker: NPC yolu yurume, nufus bazli spawn, save/load |
 
 ---
 
@@ -266,6 +268,69 @@ Tum sistemler playtest edildi, 13/13 test gecti:
 ### Refactoring Faz 13 (Tamamlandi) ✅
 
 ### Visual Faz 14 (Tamamlandi) ✅
+
+### Settler Walker Faz 15 (WIP)
+
+**SettlerWalker.cs — Bireysel NPC AI:**
+- State machine: `Idle → Walking → WaitingAtDoor → Walking...`
+- `PickNewTarget()`: aktif bina kapilarindan rastgele hedef secer, `RoadManager.FindPublicPath()` ile yol bulur
+- Grid-based hareket: hucreden hucreye smooth lerp, `Quaternion.Slerp` ile yone donus
+- `TimeManager.GameSpeed` ile hiz carpani, pause'da durur
+- `GameConfig.SettlerMoveSpeed` (2) ve `GameConfig.SettlerIdleTime` (3s) ile ayarlanir
+
+**SettlerManager.cs — Nufus Bazli Spawn:**
+- Singleton, GameManager GO uzerinde
+- Her 5 saniyede (`SettlerSpawnCheckInterval`) nufus kontrol eder
+- Nufus = sum(Aktif bina PopulationCapacity x Level)
+- Hedef settler sayisi = `floor(population * SettlersPerPopulation)`, max `MaxSettlers`
+- `GameConfig.DisableSettlers` ile tamamen kapatilabilir
+- Spawn noktasi: rastgele aktif bina kapi hucresi
+- Placeholder gorsel: Capsule + Sphere (CityPack FBX ile degistirilecek)
+- `OnSettlerSpawned` / `OnSettlerRemoved` eventleri
+
+**RoadManager Public API:**
+- `FindPublicPath(start, end)` — 0-1 BFS, mevcut yollari tercih eder
+- `GetActiveBuildingDoorCells()` — tum aktif bina kapi hucreleri
+- `GetAllRoadCells()` — HashSet<Vector2Int> referans
+- `HasRoads` — yol var mi kontrolu
+
+**GameConfig Settler Ayarlari:**
+- `DisableSettlers` — settler spawn'ini tamamen kapatir (developer toggle)
+- `SettlersPerPopulation` (0.2) — nufus basina settler orani
+- `MaxSettlers` (20) — maksimum settler sayisi
+- `SettlerMoveSpeed` (2) — hareket hizi
+- `SettlerIdleTime` (3) — kapida bekleme suresi
+- `SettlerSpawnCheckInterval` (5s) — nufus kontrol sıklığı
+
+**Save/Load:**
+- `SettlerWalkerSave`: GridX, GridZ, State, WaitTimer
+- SaveSystem: `CaptureSettlers()` / `ApplySettlers()`
+- GameInitializer: `ResetSettlers()` ile yeni oyunda temizler
+- Load sirasinda: settler pozisyon ve state geri yuklenir, visual yeniden olusturulur
+
+**Yapilacaklar (Faz 15 kalan):**
+- [x] CityPack karakter FBX'leri ile placeholder visual degistirme (Animator + Avatar)
+- [ ] Settler sayisi DebugPanel'de gosterim
+- [ ] SessionLogger'a OnSettlerSpawned/Removed loglama
+- [ ] Fazladan karakter modellerini SettlerModels dizisine ekleme (Worker harici 4 karakter daha var)
+
+**Settler Animasyon Sistemi:**
+- CityPack karakter modelleri: Worker, Adventurer, Suit (Business Man), Casual_2 (Casual Character) → 4 FBX Avatar aktif
+- FBX import: Generic rig + `avatarSetup=1` (CreateAnAvatarFromThisModel) ZORUNLU
+- `SettlerAnimationSetup` editor araclari:
+  - `Fix: Enable Avatar on All Characters` — tum CityPack karakterlerde Avatar uretimini aktif eder
+  - `Fix: Rebuild Clips + Controller` — FBX clip'lerini bake eder, SettlerController olusturur
+  - `Test: Spawn Animated Settler in Scene` — sahnede test settler spawn eder, Avatar/Animator dogrulama
+  - `Test: Verify Model Hierarchy` — FBX hiyerarsi, SMR bone, Avatar validasyon
+- BakeFreshClip: PreviewAnimationClip (type 1108) → AnimationClip (type 74) donusumu AnimationUtility ile
+- Walk clip: loopTime=True, Idle clip: loopTime=False
+- SettlerController: Speed parametresi, Idle↔Walk transition (0.15s blend)
+- SettlerWalker.SetAnimSpeed(): CrossFade + SetFloat birlikte calisir
+- Runtime material fix: Standard shader → URP/Lit (FixMaterials)
+- **Kritik**: FBX Instantiate sonrasi Animator/Avatar kaybolur → kaynak asset'ten `model.GetComponent<Animator>().avatar` ile geri alinir
+- **Kritik**: `DestroyImmediate()` kullanilmali (`Destroy()` frame sonuna bekler, Animator bosta kalir)
+- **Kritik**: `Animator.Rebind()` setup sonrasi cagrilmali — skeleton binding refresh
+- Editor menu: `HollowGround/Settlers/...` altinda tum araclartoplandi
 
 **Runtime Grid Overlay:**
 - `GridOverlayRenderer.cs` — LineRenderer ile yerlestirme modunda grid gorunur
@@ -418,6 +483,11 @@ Tum sistemler playtest edildi, 13/13 test gecti:
 30. Blender modelleri `-Z forward` export edildigi icin kapı yönü: rotation 0=-Z, 1=-X, 2=+Z, 3=+X. `+Z` varsayılırsa yollar bina arkasında oluşur
 31. `Singleton<T>.OnDestroy()` virtual — override edenler `base.OnDestroy()` cagirmali yoksa Instance temizlenmez
 32. RoadVisualizer coroutine'leri destroyed tile Transform'a erisimeden once null check yapmali — `MissingReferenceException`
+33. FBX Instantiate sonrasi Animator ve Avatar kaybolur — `Instantiate()` FBX modelini klonlarken Animator component'i dahil edilmez veya Avatar=null olur. Kaynak asset'ten `model.GetComponent<Animator>().avatar` ile okunup instance'a atanmali
+34. CityPack FBX import'ta `avatarSetup: 0` (None) geliyor — Generic rig icin Avatar uretimi zorunlu. `avatarSetup: 1` (CreateAnAvatarFromThisModel) olarak degistirilmeli. Menu: `HollowGround > Settlers > Fix: Enable Avatar on All Characters`
+35. `AnimationUtility.SetEditorCurve()` ile bake edilen clip'ler PreviewAnimationClip (type 1108) yerine AnimationClip (type 74) olur — runtime'da calisir.Ama FBX'ten dogrudan `LoadAllAssetsAtPath()` ile alinan preview clip'ler calismaz
+36. FBX Instantiate sonrasi `Destroy()` ile Animator silmek yerine `DestroyImmediate()` kullanilmali — `Destroy()` frame sonuna bekler, arada Animator bosta kalir
+37. `Animator.Rebind()` setup sonrasi cagrilmali — skeleton binding refresh olmadan animasyon oynamaz
 
 ---
 
@@ -614,3 +684,12 @@ Bu kurallar tekrarlanan hataları ve gereksiz kod tekrarını önlemek için Faz
 - Load sirasinda: RoadManager.ClearAllRoads() → binalar yüklenir → ApplyRoads ile save'den geri yuklenir
 - `Building.GetRotatedFootprint()` rotation'a göre (SizeX,SizeZ) veya (SizeZ,SizeX) dondurur
 - `Building.GetDoorCell()` ön yüzeyin 1 hucre otesindeki grid koordinatini dondurur
+
+### Settler Walker System
+- SettlerManager singleton, GameManager GO uzerinde olmali
+- Settler'lar road hücreleri üzerinde hareket eder (grid-based, NavMesh yok)
+- `RoadManager.FindPublicPath()` 0-1 BFS ile yolu hesaplar, mevcut yolları tercih eder
+- Nüfus = sum(Aktif bina PopulationCapacity × Level)
+- CityPack FBX karakter modelleri: Worker, Adventurer, Suit, Casual_2 (4 aktif, daha fazla eklenebilir)
+- `GameConfig.DisableSettlers` ile settler sistemi tamamen kapatilabilir
+- Save/Load uyumlu: settler pozisyonu, state, waitTimer kaydedilir (`SettlerWalkerSave`)

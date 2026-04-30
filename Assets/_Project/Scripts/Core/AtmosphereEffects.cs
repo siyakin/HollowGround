@@ -102,6 +102,10 @@ namespace HollowGround.Core
             if (_sunLight != null && _sunLight.type == LightType.Directional)
                 return;
 
+            _sunLight = FindAnyObjectByType<Light>();
+            if (_sunLight != null && _sunLight.type == LightType.Directional)
+                return;
+
             _sunLight = GetComponentInChildren<Light>();
             if (_sunLight == null)
             {
@@ -125,6 +129,30 @@ namespace HollowGround.Core
             RenderSettings.fogMode = FogMode.Exponential;
             RenderSettings.fogColor = _fogColor;
             RenderSettings.fogDensity = _fogDensity;
+        }
+
+        private void UpdateParticlePositions()
+        {
+            if (UnityEngine.Camera.main == null) return;
+            Vector3 camPos = UnityEngine.Camera.main.transform.position;
+
+            if (_dustSystem != null)
+            {
+                _dustSystem.transform.position = new Vector3(
+                    camPos.x, camPos.y * 0.5f, camPos.z);
+            }
+
+            if (_fogSystem != null)
+            {
+                _fogSystem.transform.position = new Vector3(
+                    camPos.x, 0f, camPos.z);
+            }
+
+            if (_embersSystem != null)
+            {
+                _embersSystem.transform.position = new Vector3(
+                    camPos.x, camPos.y * 0.5f + 2f, camPos.z);
+            }
         }
 
         private static void ApplyURPParticleMaterial(ParticleSystem ps)
@@ -189,8 +217,7 @@ namespace HollowGround.Core
 
             var sizeOverLifetime = ps.sizeOverLifetime;
             sizeOverLifetime.enabled = true;
-            sizeOverLifetime.size = new ParticleSystem.MinMaxCurve(1f,
-                AnimationCurve.EaseInOut(0f, 0.5f, 1f, 1.2f));
+            sizeOverLifetime.size = new ParticleSystem.MinMaxCurve(1f, AnimationCurve.EaseInOut(0f, 0.5f, 1f, 1.2f));
 
             return ps;
         }
@@ -248,39 +275,13 @@ namespace HollowGround.Core
 
             var sizeOverLifetime = ps.sizeOverLifetime;
             sizeOverLifetime.enabled = true;
-            sizeOverLifetime.size = new ParticleSystem.MinMaxCurve(1f,
-                new AnimationCurve(
+            sizeOverLifetime.size = new ParticleSystem.MinMaxCurve(1f, new AnimationCurve(
                     new Keyframe(0f, 0.5f),
                     new Keyframe(0.3f, 1f),
                     new Keyframe(0.7f, 1f),
-                    new Keyframe(1f, 0.6f)
-                ));
+                    new Keyframe(1f, 0.6f)));
 
             return ps;
-        }
-
-        private void UpdateParticlePositions()
-        {
-            if (UnityEngine.Camera.main == null) return;
-            Vector3 camPos = UnityEngine.Camera.main.transform.position;
-
-            if (_dustSystem != null)
-            {
-                _dustSystem.transform.position = new Vector3(
-                    camPos.x, camPos.y * 0.5f, camPos.z);
-            }
-
-            if (_fogSystem != null)
-            {
-                _fogSystem.transform.position = new Vector3(
-                    camPos.x, 0f, camPos.z);
-            }
-
-            if (_embersSystem != null)
-            {
-                _embersSystem.transform.position = new Vector3(
-                    camPos.x, camPos.y * 0.5f + 2f, camPos.z);
-            }
         }
 
         private ParticleSystem CreateEmbersParticles()
@@ -336,13 +337,11 @@ namespace HollowGround.Core
 
             var sizeOverLifetime = ps.sizeOverLifetime;
             sizeOverLifetime.enabled = true;
-            sizeOverLifetime.size = new ParticleSystem.MinMaxCurve(1f,
-                new AnimationCurve(
+            sizeOverLifetime.size = new ParticleSystem.MinMaxCurve(1f, new AnimationCurve(
                     new Keyframe(0f, 0f),
                     new Keyframe(0.15f, 1f),
                     new Keyframe(0.85f, 1f),
-                    new Keyframe(1f, 0f)
-                ));
+                    new Keyframe(1f, 0f)));
 
             return ps;
         }

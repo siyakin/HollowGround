@@ -177,8 +177,7 @@ namespace HollowGround.Buildings
                 new Keyframe(0.25f, 1f),
                 new Keyframe(0.5f, 0.6f),
                 new Keyframe(0.75f, 0.9f),
-                new Keyframe(1f, 0f)
-            ));
+                new Keyframe(1f, 0f)));
 
             var colorOverLifetime = ps.colorOverLifetime;
             colorOverLifetime.enabled = true;
@@ -232,8 +231,7 @@ namespace HollowGround.Buildings
 
             var sizeOverLifetime = ps.sizeOverLifetime;
             sizeOverLifetime.enabled = true;
-            sizeOverLifetime.size = new ParticleSystem.MinMaxCurve(1f,
-                AnimationCurve.Linear(0f, 0.5f, 1f, 2f));
+            sizeOverLifetime.size = new ParticleSystem.MinMaxCurve(1f, AnimationCurve.Linear(0f, 0.5f, 1f, 2f));
 
             var colorOverLifetime = ps.colorOverLifetime;
             colorOverLifetime.enabled = true;
@@ -275,7 +273,7 @@ namespace HollowGround.Buildings
             main.simulationSpace = ParticleSystemSimulationSpace.World;
             main.startLifetime = new ParticleSystem.MinMaxCurve(1f, 1.5f);
             main.startSpeed = new ParticleSystem.MinMaxCurve(_explosionSpeed * 0.5f, _explosionSpeed * 1.5f);
-            main.startSize = new ParticleSystem.MinMaxCurve(0.05f, 0.4f);
+            main.startSize = new ParticleSystem.MinMaxCurve(0.04f, 0.22f);
             main.startColor = new ParticleSystem.MinMaxGradient(
                 new Color(0.5f, 0.35f, 0.1f, 1f),
                 new Color(0.35f, 0.35f, 0.35f, 1f)
@@ -283,7 +281,6 @@ namespace HollowGround.Buildings
             main.maxParticles = _explosionParticleCount;
             main.gravityModifier = 1.5f;
             main.startRotation = new ParticleSystem.MinMaxCurve(0f, 360f * Mathf.Deg2Rad);
-            main.startSize = new ParticleSystem.MinMaxCurve(0.04f, 0.22f);
 
             var emission = ps.emission;
             emission.rateOverTime = 0;
@@ -327,14 +324,13 @@ namespace HollowGround.Buildings
             main.simulationSpace = ParticleSystemSimulationSpace.World;
             main.startLifetime = new ParticleSystem.MinMaxCurve(2f, 3.5f);
             main.startSpeed = new ParticleSystem.MinMaxCurve(1f, 3f);
-            main.startSize = new ParticleSystem.MinMaxCurve(0.5f, 1.5f);
+            main.startSize = new ParticleSystem.MinMaxCurve(0.3f, 0.7f);
             main.startColor = new ParticleSystem.MinMaxGradient(
                 new Color(0.3f, 0.3f, 0.3f, 0.5f),
                 new Color(0.2f, 0.2f, 0.2f, 0.4f)
             );
             main.maxParticles = 20;
             main.gravityModifier = -0.08f;
-            main.startSize = new ParticleSystem.MinMaxCurve(0.3f, 0.7f);
 
             var emission = ps.emission;
             emission.rateOverTime = 0;
@@ -346,8 +342,7 @@ namespace HollowGround.Buildings
 
             var sizeOverLifetime = ps.sizeOverLifetime;
             sizeOverLifetime.enabled = true;
-            sizeOverLifetime.size = new ParticleSystem.MinMaxCurve(1f,
-                AnimationCurve.Linear(0f, 0.6f, 1f, 1.6f));
+            sizeOverLifetime.size = new ParticleSystem.MinMaxCurve(1f, AnimationCurve.Linear(0f, 0.6f, 1f, 1.6f));
 
             var colorOverLifetime = ps.colorOverLifetime;
             colorOverLifetime.enabled = true;

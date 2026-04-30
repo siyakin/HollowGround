@@ -405,5 +405,31 @@ namespace HollowGround.Roads
         }
 
         public bool HasRoadAt(Vector2Int cell) => _roadCells.Contains(cell);
+
+        public List<Vector2Int> FindPublicPath(Vector2Int start, Vector2Int end)
+        {
+            if (GridSystem.Instance == null) return null;
+            if (!GridSystem.Instance.IsValidCoordinate(start.x, start.y)) return null;
+            if (!GridSystem.Instance.IsValidCoordinate(end.x, end.y)) return null;
+            return FindPath(start, end);
+        }
+
+        public HashSet<Vector2Int> GetAllRoadCells() => _roadCells;
+
+        public bool HasRoads => _roadCells.Count > 0;
+
+        public List<Vector2Int> GetActiveBuildingDoorCells()
+        {
+            var doors = new List<Vector2Int>();
+            if (BuildingManager.Instance == null) return doors;
+
+            foreach (var b in BuildingManager.Instance.AllBuildings)
+            {
+                if (b.State == BuildingState.Active)
+                    doors.Add(b.GetDoorCell());
+            }
+
+            return doors;
+        }
     }
 }
