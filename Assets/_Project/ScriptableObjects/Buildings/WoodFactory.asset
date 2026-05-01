@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 6c7055fb7298b4c44877c972cfbd95b5, type: 3}
-  m_Name: Building Green
+  m_Name: WoodFactory
   m_EditorClassIdentifier: Assembly-CSharp::HollowGround.Buildings.BuildingData
   DisplayName: Wood Factory
   Description: Produces wood. Essential building material.
@@ -37,6 +37,10 @@ MonoBehaviour:
   BaseProductionAmount: 12
   ProductionInterval: 300
   ProductionMultiplierPerLevel: 1.2
-  PopulationCapacity: 0
+  PopulationCapacity: 2
   StorageCapacity: 0
+  RequiredWorkers:
+  - Role: 4
+    Count: 2
+  WorkerProductionBonus: 0.5
   CommandCenterLevelRequired: 1

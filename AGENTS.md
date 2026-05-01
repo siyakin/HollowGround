@@ -1,6 +1,6 @@
 # Hollow Ground — AGENTS.md
 
-## Mevcut Versiyon: 0.18.0
+## Mevcut Versiyon: 0.20.0
 
 ## Versiyon Kurallari
 
@@ -148,11 +148,11 @@ BuildingPlacer, BuildingSelector, BuildingManager, ArmyManager,
 BattleManager, HeroManager, WorldMap, ExpeditionSystem,
 QuestManager, MutantAttackManager, ResearchManager, TradeSystem,
 SaveSystem, BaseStarter, GameInitializer, WeatherSystem, RoadManager,
-SettlerManager
+SettlerManager, SettlerJobManager
 
 ### GameCanvas Alt Yapisi
 - ResourceBar
-- ActionBar (Yapi, Arastir, Ordu, Hero, Gorev, Harita, Ticaret butonlari — hepsi bagli)
+- ActionBar (Yapi, Arastir, Ordu, Hero, Gorev, Harita, Ticaret, Settler butonlari — hepsi bagli)
 - BuildMenu (3 buton: CommandCenter, Farm, Mine — kaynak kontrolu calisiyor)
 - TrainingPanel
 - BattleReportPanel
@@ -162,6 +162,8 @@ SettlerManager
 - TechTreePanel (SceneSetupEditor ile otomatik)
 - FactionTradePanel (SceneSetupEditor ile otomatik)
 - SaveMenuPanel (kurulum yapildi)
+- SettlerPanel (Population/Workers — iki panel HLG, sol: bina isci listesi, sag: aktif isci listesi)
+- SettlerInfoPanel (Overlay — tiklaninca acilir, BuildingSelector ile yonetilir)
 - PausePanel (ESC ile acilir, Resume/Save-Load/Quit butonlari, runtime olusturulur)
 - DebugPanel (DebugText + DebugHUD)
 - UIManager objesi (UIManager component + tum panel referanslari)
@@ -190,7 +192,8 @@ SettlerManager
 | 12 | ✅ | Bina Model Sistemi: 105 FBX, state-based model swap, hasar/tamir |
 | 13 | ✅ | Refactoring: Singleton<T>, UIPrimitiveFactory, UIColors, dead code silindi |
 | 14 | ✅ | Visual & Polish: Grid overlay, weather, highlight, damage efektleri |
-| 15 | WIP | Settler Walker: NPC yolu yurume, nufus bazli spawn, save/load |
+| 15 | ✅ | Settler Walker: NPC yolu yurume, nufus bazli spawn, save/load |
+| 16 | ✅ | Settler Job System: Roller, is atama, isci bazli uretim, SettlerPanelUI, SettlerInfoUI |
 
 ---
 
@@ -301,13 +304,6 @@ Tum sistemler playtest edildi, 13/13 test gecti:
 - `SettlerMoveSpeed` (2) — hareket hizi
 - `SettlerIdleTime` (3) — kapida bekleme suresi
 - `SettlerSpawnCheckInterval` (5s) — nufus kontrol sıklığı
-- `EnableWorker/EnableAdventurer/EnableSuit` — individual model toggle
-
-**GameConfig Runtime Toggle'lar:**
-- `EnableAutoSave` (false) — otomatik kayit (main thread hitch yapabilir)
-- `AutoSaveInterval` (300s) — auto-save sıklığı
-- `EnableWeather` (true) — hava durumu sistemi
-- `EnableDebugHUD` (true) — debug panel gosterimi
 
 **Save/Load:**
 - `SettlerWalkerSave`: GridX, GridZ, State, WaitTimer
@@ -318,7 +314,8 @@ Tum sistemler playtest edildi, 13/13 test gecti:
 **Yapilacaklar (Faz 15 kalan):**
 - [x] CityPack karakter FBX'leri ile placeholder visual degistirme (Animator + Avatar)
 - [ ] Settler sayisi DebugPanel'de gosterim
-- [ ] SessionLogger'a OnSettlerSpawned/Removed loglama
+- [x] SessionLogger'a OnSettlerSpawned/Removed loglama
+- [ ] Fazladan karakter modellerini SettlerModels dizisine ekleme (Worker harici 4 karakter daha var)
 
 **Settler Animasyon Sistemi:**
 - CityPack karakter modelleri: Worker, Adventurer, Suit (Business Man) → 3 FBX aktif (CharacterArmature iskeleti)
@@ -326,8 +323,7 @@ Tum sistemler playtest edildi, 13/13 test gecti:
 - FBX import: Generic rig + `avatarSetup=1` (CreateAnAvatarFromThisModel) ZORUNLU
 - `SettlerAnimationSetup` editor araclari:
   - `Fix: Enable Avatar on All Characters` — tum CityPack karakterlerde Avatar uretimini aktif eder
-  - `Fix: Rebuild All Clips + Controllers` — Worker'dan SettlerController bake eder
-  - `Fix: Revert All to Generic Rig` — Humanoid denemesini geri alir
+  - `Fix: Rebuild Clips + Controller` — FBX clip'lerini bake eder, SettlerController olusturur
   - `Test: Spawn Animated Settler in Scene` — sahnede test settler spawn eder, Avatar/Animator dogrulama
   - `Test: Verify Model Hierarchy` — FBX hiyerarsi, SMR bone, Avatar validasyon
 - BakeFreshClip: PreviewAnimationClip (type 1108) → AnimationClip (type 74) donusumu AnimationUtility ile
@@ -698,7 +694,43 @@ Bu kurallar tekrarlanan hataları ve gereksiz kod tekrarını önlemek için Faz
 - Settler'lar road hücreleri üzerinde hareket eder (grid-based, NavMesh yok)
 - `RoadManager.FindPublicPath()` 0-1 BFS ile yolu hesaplar, mevcut yolları tercih eder
 - Nüfus = sum(Aktif bina PopulationCapacity × Level)
-- CityPack FBX karakter modelleri: Worker, Adventurer, Suit (3 aktif, CharacterArmature iskeleti)
-- Man (HumanArmature) ve Woman (HumanArmature) kaldirildi — Generic rig'de iskelet uyumsuzlugu
+- CityPack FBX karakter modelleri: Worker, Adventurer, Suit (Business Man) → 3 FBX aktif (CharacterArmature iskeleti)
+- Man (HumanArmature) ve Woman (HumanArmature) kaldırıldı — farklı iskelet, Generic rig'de uyumsuz
 - `GameConfig.DisableSettlers` ile settler sistemi tamamen kapatilabilir
 - Save/Load uyumlu: settler pozisyonu, state, waitTimer kaydedilir (`SettlerWalkerSave`)
+
+### Settler Job System (Faz 16)
+- **SettlerRole.cs** — 12-role enum: None, Builder, Farmer, Miner, Woodcutter, WaterCarrier, Engineer, Medic, Guard, Researcher, Trader, Hauler + SettlerRoleInfo display names
+- **SettlerJobManager.cs** — Singleton, GameManager GO uzerinde (SettlerManager ile birlikte)
+  - Auto-assigns idle settlers to buildings by priority: Farm > Mine > WaterWell > WoodFactory > Generator > Hospital > ResearchLab > TradeCenter > CommandCenter
+  - Releases workers on building destroy/demolish
+  - Tracks building→workers mapping (Dictionary<Building, List<SettlerWalker>>)
+  - `GetAssignedWorkerCount(building)`, `GetWorkerFillRatio(building)`, `RebuildAssignmentsFromLoad()`
+- **SettlerWalker.cs** — Work cycle: Idle → Walking(work) → Working → Walking(home) → Resting → repeat
+  - `Role`, `AssignedBuilding` property'leri
+  - `SettlerWorkDuration=8f`, `SettlerRestDuration=5f` (GameConfig)
+  - Save: `SettlerWalkerSave` — Role + AssignedBuildingGridX/Z (backward compatible, old saves get None→auto-assign)
+- **BuildingData.cs** — `WorkerSlot` class (Role + Count), `RequiredWorkers` list, `WorkerProductionBonus` (0-1)
+  - `GetTotalRequiredWorkers()` — toplam gerekli işçi sayısı
+  - WorkerProductionBonus 0=no dependency, 1=no workers=no production
+- **Building.cs** — `AssignedWorkerCount` property, `GetWorkerProductionModifier()` formula: `1 - bonus * (1 - fillRatio)`
+- **SettlerPanelUI.cs** — Population panel (ActionBar "Settler" butonu)
+  - İki sütun: sol bina-işçi listesi, sağ aktif işçi listesi
+  - Event-driven refresh (OnBuildingChanged, OnSettlerSpawned/Removed)
+- **SettlerInfoUI.cs** — Overlay panel, settler tiklandiginda acilir
+  - Root (width/height/VLG/Image/CanvasGroup) Inspector'da yapilandirilir, kod sadece child olusturur
+  - BuildingSelector ile birlikte calisir (raycast priority: en yakin obje)
+- **BuildingSelector.cs** — Extended: hem bina hem settler raycast selection
+  - SphereCollider (r=0.8, y=0.7 center) settler'lara SettlerManager.CreatePoolSettler() tarafindan eklenir
+  - Settler selection → SettlerInfoUI göster, Building selection → BuildingInfoUI göster
+- **SettlerJobDataFactory.cs** — Editor araçları:
+  - `Apply Default Worker Requirements` — 10 BuildingData SO'ya varsayılan RequiredWorkers uygular
+  - `Show Report` — her binanın worker requirement/assignment durumunu gösterir
+- **GameConfig** — `SettlerWorkDuration=8f`, `SettlerRestDuration=5f`
+- **UIManager** — `ToggleSettlerPanel()`, "Settler"/"BtnSettler" panel registration
+- **DebugHUD** — F12 ile toggle, settler count gösterimi
+
+**Fixed Issues (Faz 16):**
+- 6 BuildingData SO wrong m_Name (Barracks, Generator, Shelter, Storage, WaterWell, WoodFactory)
+- Hospital SO Type: 0 (CommandCenter) → Type: 11 (Hospital)
+- 9 legacy/yedek BuildingData SO silindi + 1 duplicate BuildingData.asset root'tan silindi

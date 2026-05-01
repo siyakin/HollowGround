@@ -4,6 +4,34 @@ All notable changes to Hollow Ground are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Versioning follows [SemVer](https://semver.org/): MAJOR.MINOR.PATCH
 
+## [0.20.0] - 2026-05-01
+
+### Added
+- SettlerRole: 12-role enum (None, Builder, Farmer, Miner, Woodcutter, WaterCarrier, Engineer, Medic, Guard, Researcher, Trader, Hauler) + display names
+- SettlerJobManager: auto-assignment of idle settlers to buildings by priority, worker release on building destroy, building→workers mapping
+- SettlerWalker: work cycle (Idle→Walking→Working→Walking→Resting→repeat), Role/AssignedBuilding properties
+- BuildingData: WorkerSlot class, RequiredWorkers list, WorkerProductionBonus (0-1 dependency), GetTotalRequiredWorkers()
+- Building: AssignedWorkerCount property, GetWorkerProductionModifier() formula: 1 - bonus * (1 - fillRatio)
+- SettlerPanelUI: two-column population panel (building workers + active workers), event-driven refresh
+- SettlerInfoUI: overlay panel on settler click, shows role/building/task/status
+- BuildingSelector: combined building+settler raycast selection, SphereCollider on settlers (r=0.8)
+- SettlerJobDataFactory: editor tools (Apply Default Worker Requirements, Show Report)
+- SettlerWalkerSave: Role + AssignedBuildingGridX/Z fields (backward compatible)
+- GameConfig: SettlerWorkDuration=8f, SettlerRestDuration=5f
+- UIManager: ToggleSettlerPanel(), Settler/BtnSettler panel registration
+- DebugHUD: F12 toggle, settler count display
+
+### Fixed
+- 6 BuildingData SOs with wrong m_Name (Barracks, Generator, Shelter, Storage, WaterWell, WoodFactory)
+- Hospital SO Type: 0 (CommandCenter) → Type: 11 (Hospital)
+- Deleted 9 legacy/yedek BuildingData SOs + 1 duplicate BuildingData.asset from root
+- Removed Man/Woman character models — incompatible skeleton (HumanArmature vs CharacterArmature)
+- CityPack character count reduced to 3: Worker, Adventurer, Suit (Business Man)
+
+### Changed
+- AGENTS.md: Faz 15 completed, Faz 16 documented, version 0.20.0
+- VERSION: 0.19.0 → 0.20.0
+
 ## [0.19.0] - 2026-04-30
 
 ### Added

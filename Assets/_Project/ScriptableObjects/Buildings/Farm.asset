@@ -39,6 +39,10 @@ MonoBehaviour:
   BaseProductionAmount: 10
   ProductionInterval: 300
   ProductionMultiplierPerLevel: 1.2
-  PopulationCapacity: 0
+  PopulationCapacity: 2
   StorageCapacity: 0
+  RequiredWorkers:
+  - Role: 2
+    Count: 2
+  WorkerProductionBonus: 0.5
   CommandCenterLevelRequired: 1

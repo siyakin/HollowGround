@@ -56,6 +56,8 @@ namespace HollowGround.Core
         public float SettlerIdleTime = 3f;
         [Tooltip("How often (seconds) SettlerManager checks population and adjusts count")]
         public float SettlerSpawnCheckInterval = 5f;
+        public float SettlerWorkDuration = 8f;
+        public float SettlerRestDuration = 5f;
 
         [Header("Settler Models")]
         public bool EnableWorker = true;

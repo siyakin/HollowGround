@@ -26,6 +26,8 @@ namespace HollowGround.Editor
             config.SettlerMoveSpeed = 2f;
             config.SettlerIdleTime = 3f;
             config.SettlerSpawnCheckInterval = 5f;
+            config.SettlerWorkDuration = 8f;
+            config.SettlerRestDuration = 5f;
             config.DisableSettlers = false;
             config.EnableWorker = true;
             config.EnableAdventurer = true;
