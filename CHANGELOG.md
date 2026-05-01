@@ -27,6 +27,8 @@ Versioning follows [SemVer](https://semver.org/): MAJOR.MINOR.PATCH
 - Deleted 9 legacy/yedek BuildingData SOs + 1 duplicate BuildingData.asset from root
 - Removed Man/Woman character models — incompatible skeleton (HumanArmature vs CharacterArmature)
 - CityPack character count reduced to 3: Worker, Adventurer, Suit (Business Man)
+- SettlerWalker.OnMouseDown race condition: BuildingSelector.Update same-frame HideSettlerInfo override → removed OnMouseDown, unified selection in BuildingSelector.TrySelect()
+- LoadSettlers missing SphereCollider → settlers unclickable after save/load
 
 ### Changed
 - AGENTS.md: Faz 15 completed, Faz 16 documented, version 0.20.0

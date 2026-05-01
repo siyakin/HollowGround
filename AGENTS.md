@@ -492,6 +492,8 @@ Tum sistemler playtest edildi, 13/13 test gecti:
 35. `AnimationUtility.SetEditorCurve()` ile bake edilen clip'ler PreviewAnimationClip (type 1108) yerine AnimationClip (type 74) olur — runtime'da calisir.Ama FBX'ten dogrudan `LoadAllAssetsAtPath()` ile alinan preview clip'ler calismaz
 36. FBX Instantiate sonrasi `Destroy()` ile Animator silmek yerine `DestroyImmediate()` kullanilmali — `Destroy()` frame sonuna bekler, arada Animator bosta kalir
 37. `Animator.Rebind()` setup sonrasi cagrilmali — skeleton binding refresh olmadan animasyon oynamaz
+38. `OnMouseDown()` + `BuildingSelector.Update()` ayni frame'de race condition: OnMouseDown panel açar, BuildingSelector aynı click'i isleyip paneli kapatır. Çözüm: OnMouseDown sil, tüm selection BuildingSelector.TrySelect() üzerinden tek merkezde yapılmalı
+39. `LoadSettlers()` path'inde SphereCollider eklenmezse save/load sonrasi settler tıklanamaz — CreatePoolSettler() ile LoadSettlers() collider setup aynı olmalı
 
 ---
 
@@ -698,6 +700,8 @@ Bu kurallar tekrarlanan hataları ve gereksiz kod tekrarını önlemek için Faz
 - Man (HumanArmature) ve Woman (HumanArmature) kaldırıldı — farklı iskelet, Generic rig'de uyumsuz
 - `GameConfig.DisableSettlers` ile settler sistemi tamamen kapatilabilir
 - Save/Load uyumlu: settler pozisyonu, state, waitTimer kaydedilir (`SettlerWalkerSave`)
+- **OnMouseDown YASAK** — settler secimi BuildingSelector.TrySelect() uzerinden merkezi yapilir (Discovery #38)
+- **LoadSettlers** SphereCollider eklemeli — CreatePoolSettler ile ayni collider setup (Discovery #39)
 
 ### Settler Job System (Faz 16)
 - **SettlerRole.cs** — 12-role enum: None, Builder, Farmer, Miner, Woodcutter, WaterCarrier, Engineer, Medic, Guard, Researcher, Trader, Hauler + SettlerRoleInfo display names

@@ -450,6 +450,10 @@ namespace HollowGround.NPCs
                 walker.Initialize(moveSpeed);
                 walker.RestoreFromSave(save);
 
+                var clickCol = go.AddComponent<SphereCollider>();
+                clickCol.radius = 0.8f;
+                clickCol.center = new Vector3(0f, 0.7f, 0f);
+
                 CreateSettlerVisual(go.transform);
 
                 _pool.Add(walker);

@@ -99,10 +99,6 @@ namespace HollowGround.UI
                 UIColors.Default.Muted, TextAlignmentOptions.MidlineLeft, UIStyleType.BodyText);
             _statusText.gameObject.AddComponent<LayoutElement>().preferredHeight = 24;
 
-            var tipText = UIPrimitiveFactory.AddThemedText(root, "Click elsewhere to close", 12,
-                UIColors.TextDim, TextAlignmentOptions.Center, UIStyleType.LabelText);
-            tipText.gameObject.AddComponent<LayoutElement>().preferredHeight = 20;
-
             _built = true;
         }
 

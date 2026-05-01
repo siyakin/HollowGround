@@ -194,6 +194,8 @@ namespace HollowGround.NPCs
             _active = false;
         }
 
+
+
         private void Update()
         {
             if (!_active || _task == SettlerTask.None) return;

@@ -16,6 +16,7 @@ namespace HollowGround.Buildings
         private SettlerInfoUI _settlerInfoUI;
 
         public Building SelectedBuilding => _selectedBuilding;
+        public SettlerWalker SelectedSettler => _selectedSettler;
 
         public event System.Action<Building> OnBuildingSelected;
         public event System.Action OnBuildingDeselected;
@@ -63,52 +64,81 @@ namespace HollowGround.Buildings
 
             var hits = Physics.RaycastAll(ray, _raycastDistance);
 
-            SettlerWalker closestSettler = null;
-            float closestSettlerDist = float.MaxValue;
             Building closestBuilding = null;
             float closestBuildingDist = float.MaxValue;
+            SettlerWalker closestSettler = null;
+            float closestSettlerDist = float.MaxValue;
 
             foreach (var hit in hits)
             {
-                var settler = hit.collider.GetComponent<SettlerWalker>();
-                if (settler == null) settler = hit.collider.GetComponentInParent<SettlerWalker>();
-                if (settler != null && settler.IsActive && hit.distance < closestSettlerDist)
+                Building building = hit.collider.GetComponent<Building>();
+                if (building == null) building = hit.collider.GetComponentInParent<Building>();
+                if (building != null)
                 {
-                    closestSettler = settler;
-                    closestSettlerDist = hit.distance;
+                    if (hit.distance < closestBuildingDist)
+                    {
+                        closestBuilding = building;
+                        closestBuildingDist = hit.distance;
+                    }
                     continue;
                 }
 
-                Building building = hit.collider.GetComponent<Building>();
-                if (building == null) building = hit.collider.GetComponentInParent<Building>();
-                if (building != null && hit.distance < closestBuildingDist)
+                SettlerWalker settler = hit.collider.GetComponent<SettlerWalker>();
+                if (settler == null) settler = hit.collider.GetComponentInParent<SettlerWalker>();
+                if (settler != null && settler.IsActive)
                 {
-                    closestBuilding = building;
-                    closestBuildingDist = hit.distance;
+                    if (hit.distance < closestSettlerDist)
+                    {
+                        closestSettler = settler;
+                        closestSettlerDist = hit.distance;
+                    }
                 }
             }
 
             if (closestSettler != null && closestSettlerDist <= closestBuildingDist)
             {
-                DeselectAll();
+                DeselectBuilding();
                 SelectSettler(closestSettler);
+                return;
             }
-            else if (closestBuilding != null)
+
+            if (closestBuilding != null)
             {
-                DeselectAll();
+                DeselectSettler();
+                HideSettlerInfo();
                 SelectBuilding(closestBuilding);
+                return;
             }
-            else
-            {
-                DeselectAll();
-            }
+
+            DeselectAll();
+        }
+
+        private void SelectSettler(SettlerWalker settler)
+        {
+            _selectedSettler = settler;
+            if (_settlerInfoUI == null)
+                _settlerInfoUI = FindAnyObjectByType<SettlerInfoUI>(FindObjectsInactive.Include);
+            if (_settlerInfoUI != null)
+                _settlerInfoUI.ShowInfo(settler);
+        }
+
+        private void DeselectSettler()
+        {
+            _selectedSettler = null;
+        }
+
+        public void DeselectAll()
+        {
+            DeselectBuilding();
+            DeselectSettler();
+            HideSettlerInfo();
         }
 
         public void SelectBuilding(Building building)
         {
             if (_selectedBuilding == building) return;
 
-            DeselectAll();
+            DeselectBuilding();
             if (_buildingInfoUI == null)
                 _buildingInfoUI = FindAnyObjectByType<BuildingInfoUI>(FindObjectsInactive.Include);
 
@@ -117,17 +147,6 @@ namespace HollowGround.Buildings
 
             if (_buildingInfoUI != null)
                 _buildingInfoUI.ShowInfo(building);
-        }
-
-        private void SelectSettler(SettlerWalker walker)
-        {
-            _selectedSettler = walker;
-
-            if (_settlerInfoUI == null)
-                _settlerInfoUI = FindAnyObjectByType<SettlerInfoUI>(FindObjectsInactive.Include);
-
-            if (_settlerInfoUI != null)
-                _settlerInfoUI.ShowInfo(walker);
         }
 
         public void DeselectBuilding()
@@ -141,18 +160,12 @@ namespace HollowGround.Buildings
                 _buildingInfoUI.HideInfo();
         }
 
-        private void DeselectSettler()
+        private void HideSettlerInfo()
         {
-            _selectedSettler = null;
-
+            if (_settlerInfoUI == null)
+                _settlerInfoUI = FindAnyObjectByType<SettlerInfoUI>(FindObjectsInactive.Include);
             if (_settlerInfoUI != null)
                 _settlerInfoUI.HideInfo();
-        }
-
-        public void DeselectAll()
-        {
-            DeselectBuilding();
-            DeselectSettler();
         }
     }
 }
