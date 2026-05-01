@@ -119,7 +119,7 @@ namespace HollowGround.UI
             }
 
             lines.Add("");
-            lines.Add("<color=#888888>F1/F2/F3 = Speed | ESC = Pause</color>");
+            lines.Add("<color=#888888>F1/F2/F3 = Speed | F12 = Debug | ESC = Pause</color>");
 
             _debugText.text = string.Join("\n", lines);
         }

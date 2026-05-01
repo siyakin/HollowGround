@@ -24,6 +24,7 @@ namespace HollowGround.UI
         [SerializeField] private GameObject _factionTradePanel;
         [SerializeField] private GameObject _saveMenuPanel;
         [SerializeField] private GameObject _aboutPanel;
+        [SerializeField] private GameObject _debugPanel;
 
         private PanelManager _panels;
         private Dictionary<string, Button> _actionBarButtons;
@@ -177,6 +178,8 @@ namespace HollowGround.UI
                 QuickSave();
             if (kb.f9Key.wasPressedThisFrame)
                 QuickLoad();
+            if (kb.f12Key.wasPressedThisFrame)
+                ToggleDebugHUD();
             if (kb.f1Key.wasPressedThisFrame)
                 ToggleAbout();
         }
@@ -186,6 +189,12 @@ namespace HollowGround.UI
             if (HollowGround.Core.SaveSystem.Instance == null) return;
             HollowGround.Core.SaveSystem.Instance.QuickSave();
             ToastUI.Show("Quick saved!", UIColors.Default.Ok);
+        }
+
+        private void ToggleDebugHUD()
+        {
+            if (_debugPanel != null)
+                _debugPanel.SetActive(!_debugPanel.activeSelf);
         }
 
         private void QuickLoad()
