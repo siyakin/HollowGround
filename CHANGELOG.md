@@ -13,7 +13,9 @@ Versioning follows [SemVer](https://semver.org/): MAJOR.MINOR.PATCH
 - BuildingData: WorkerSlot class, RequiredWorkers list, WorkerProductionBonus (0-1 dependency), GetTotalRequiredWorkers()
 - Building: AssignedWorkerCount property, GetWorkerProductionModifier() formula: 1 - bonus * (1 - fillRatio)
 - SettlerPanelUI: two-column population panel (building workers + active workers), event-driven refresh
-- SettlerInfoUI: overlay panel on settler click, shows role/building/task/status
+- SettlerWalker: OnMouseDown() on SphereCollider for click selection
+- SettlerInfoUI: overlay panel on settler click, auto-close on outside click/building select/ESC
+- BuildingSelector: HideSettlerInfo() on deselect/ESC/building select, raycast unchanged
 - BuildingSelector: combined building+settler raycast selection, SphereCollider on settlers (r=0.8)
 - SettlerJobDataFactory: editor tools (Apply Default Worker Requirements, Show Report)
 - SettlerWalkerSave: Role + AssignedBuildingGridX/Z fields (backward compatible)
