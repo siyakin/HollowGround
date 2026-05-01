@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using HollowGround.NPCs;
 using HollowGround.Resources;
 using UnityEngine;
 
@@ -80,8 +82,21 @@ namespace HollowGround.Buildings
         public int PopulationCapacity;
         public int StorageCapacity;
 
+        [Header("Workers")]
+        public List<WorkerSlot> RequiredWorkers = new();
+
+        [Range(0f, 1f)]
+        [Tooltip("How much production depends on workers. 0=no dependency, 1=no workers=no production")]
+        public float WorkerProductionBonus = 0.5f;
+
         [Header("Requirements")]
         public int CommandCenterLevelRequired = 1;
+
+        public int GetTotalRequiredWorkers()
+        {
+            if (RequiredWorkers == null || RequiredWorkers.Count == 0) return 0;
+            return RequiredWorkers.Sum(w => w.Count);
+        }
 
         public Dictionary<ResourceType, int> GetCostForLevel(int level)
         {
@@ -114,5 +129,12 @@ namespace HollowGround.Buildings
         {
             return Models != null ? Models.GetModelForState(state, level) : null;
         }
+    }
+
+    [Serializable]
+    public class WorkerSlot
+    {
+        public SettlerRole Role;
+        public int Count = 1;
     }
 }

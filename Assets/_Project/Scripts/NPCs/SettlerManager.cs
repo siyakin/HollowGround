@@ -18,13 +18,11 @@ namespace HollowGround.NPCs
 
         private readonly List<SettlerWalker> _pool = new();
         private GameObject _settlerParent;
-        private float _idleSpawnTimer;
         private float _lastDispatchTime;
         private const float MinDispatchInterval = 2f;
 
         private const string SettlerParentName = "Settlers";
         private const float SettlerYOffset = 0.05f;
-        private const float IdleSpawnInterval = 15f;
 
         public int SettlerCount => _pool.Count;
         public int ActiveCount { get; private set; }
@@ -53,12 +51,7 @@ namespace HollowGround.NPCs
             var cfg = GameConfig.Instance;
             if (cfg != null && cfg.DisableSettlers) return;
 
-            _idleSpawnTimer += Time.deltaTime;
-            if (_idleSpawnTimer >= IdleSpawnInterval)
-            {
-                _idleSpawnTimer = 0f;
-                DispatchIdleWalker();
-            }
+            TrySpawnSettlers();
         }
 
         private void SubscribeEvents()
@@ -74,13 +67,11 @@ namespace HollowGround.NPCs
         private void OnBuildingAdded(Building building)
         {
             building.OnConstructionComplete += OnConstructionComplete;
-            building.OnProduced += OnProduced;
         }
 
         private void OnBuildingRemoved(Building building)
         {
             building.OnConstructionComplete -= OnConstructionComplete;
-            building.OnProduced -= OnProduced;
         }
 
         private void OnConstructionComplete(Building building)
@@ -92,34 +83,18 @@ namespace HollowGround.NPCs
                 DispatchFromRandom(building.GetDoorCell(), 3f);
         }
 
-        private void OnProduced(Building building, ResourceType type, int amount)
+        private void TrySpawnSettlers()
         {
-            if (ActiveCount >= 3) return;
-            var storage = FindNearestStorage(building);
-            Vector2Int dest = storage != null ? storage.GetDoorCell() : FindCommandCenter()?.GetDoorCell() ?? building.GetDoorCell();
-            Dispatch(building.GetDoorCell(), dest, 2f);
-        }
-
-        private void DispatchIdleWalker()
-        {
+            int max = GetMaxSettlers();
+            if (_pool.Count >= max) return;
             if (RoadManager.Instance == null || !RoadManager.Instance.HasRoads) return;
-            if (ActiveCount >= GetMaxSettlers()) return;
 
-            var doors = RoadManager.Instance.GetActiveBuildingDoorCells();
-            if (doors.Count < 2) return;
-
-            Vector2Int origin = doors[Random.Range(0, doors.Count)];
-            Vector2Int dest;
-            int attempts = 0;
-            do
+            int toSpawn = max - _pool.Count;
+            for (int i = 0; i < toSpawn; i++)
             {
-                dest = doors[Random.Range(0, doors.Count)];
-                attempts++;
-            } while (dest == origin && attempts < 10);
-
-            if (dest == origin) return;
-
-            Dispatch(origin, dest, Random.Range(1f, 4f));
+                var walker = CreatePoolSettler();
+                if (walker == null) break;
+            }
         }
 
         private void Dispatch(Vector2Int origin, Vector2Int destination, float waitDuration)
@@ -158,36 +133,11 @@ namespace HollowGround.NPCs
                 .FirstOrDefault(b => b.State == BuildingState.Active && b.Data.Type == BuildingType.CommandCenter);
         }
 
-        private Building FindNearestStorage(Building source)
-        {
-            if (BuildingManager.Instance == null) return null;
-            if (GridSystem.Instance == null) return null;
-
-            Vector2Int srcCell = source.GetDoorCell();
-            Building best = null;
-            int bestDist = int.MaxValue;
-
-            foreach (var b in BuildingManager.Instance.AllBuildings)
-            {
-                if (b.State != BuildingState.Active) continue;
-                if (b.Data.Type != BuildingType.Storage && b.Data.Type != BuildingType.CommandCenter) continue;
-
-                int dist = Mathf.Abs(b.GetDoorCell().x - srcCell.x) + Mathf.Abs(b.GetDoorCell().y - srcCell.y);
-                if (dist < bestDist)
-                {
-                    bestDist = dist;
-                    best = b;
-                }
-            }
-
-            return best;
-        }
-
         private SettlerWalker GetFreeSettler()
         {
             foreach (var s in _pool)
             {
-                if (s != null && !s.IsBusy && s.IsActive)
+                if (s != null && !s.IsBusy && s.IsActive && !s.HasJob)
                     return s;
             }
 
@@ -229,11 +179,19 @@ namespace HollowGround.NPCs
             float moveSpeed = GameConfig.Instance != null ? GameConfig.Instance.SettlerMoveSpeed : 2f;
             walker.Initialize(moveSpeed);
 
+            var clickCol = go.AddComponent<SphereCollider>();
+            clickCol.radius = 0.8f;
+            clickCol.center = new Vector3(0f, 0.7f, 0f);
+
             CreateSettlerVisual(go.transform);
             go.SetActive(false);
 
             _pool.Add(walker);
             OnSettlerSpawned?.Invoke(walker);
+
+            if (SettlerJobManager.Instance != null)
+                SettlerJobManager.Instance.RegisterSettler(walker);
+
             return walker;
         }
 
@@ -453,6 +411,9 @@ namespace HollowGround.NPCs
             {
                 if (_pool[i] != null)
                 {
+                    if (SettlerJobManager.Instance != null)
+                        SettlerJobManager.Instance.UnregisterSettler(_pool[i]);
+
                     OnSettlerRemoved?.Invoke(_pool[i]);
                     Destroy(_pool[i].gameObject);
                 }
@@ -492,7 +453,13 @@ namespace HollowGround.NPCs
                 CreateSettlerVisual(go.transform);
 
                 _pool.Add(walker);
+
+                if (SettlerJobManager.Instance != null)
+                    SettlerJobManager.Instance.RegisterSettler(walker);
             }
+
+            if (SettlerJobManager.Instance != null)
+                SettlerJobManager.Instance.RebuildAssignmentsFromLoad();
         }
     }
 }

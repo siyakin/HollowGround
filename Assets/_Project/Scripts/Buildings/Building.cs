@@ -28,6 +28,7 @@ namespace HollowGround.Buildings
         public int Rotation { get; private set; }
         public float ConstructionProgress { get; private set; }
         public float UpgradeProgress { get; private set; }
+        public int AssignedWorkerCount { get; set; }
 
         private float _productionTimer;
         private GameObject _currentModel;
@@ -131,6 +132,10 @@ namespace HollowGround.Buildings
             if (productionBonus > 0f)
                 productionInterval *= (1f - productionBonus);
 
+            float workerModifier = GetWorkerProductionModifier();
+            if (workerModifier <= 0.01f) return;
+            productionInterval /= workerModifier;
+
             if (_productionTimer >= productionInterval)
             {
                 _productionTimer = 0f;
@@ -143,6 +148,16 @@ namespace HollowGround.Buildings
                     OnProduced?.Invoke(this, resType, amount);
                 }
             }
+        }
+
+        private float GetWorkerProductionModifier()
+        {
+            int required = _data.GetTotalRequiredWorkers();
+            if (required == 0) return 1f;
+
+            float ratio = Mathf.Clamp01((float)AssignedWorkerCount / required);
+            float dependency = _data.WorkerProductionBonus;
+            return 1f - dependency * (1f - ratio);
         }
 
         private float GetTotalProductionBonus()

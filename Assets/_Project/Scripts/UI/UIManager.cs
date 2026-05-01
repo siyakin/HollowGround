@@ -24,6 +24,7 @@ namespace HollowGround.UI
         [SerializeField] private GameObject _factionTradePanel;
         [SerializeField] private GameObject _saveMenuPanel;
         [SerializeField] private GameObject _aboutPanel;
+        [SerializeField] private GameObject _settlerPanel;
         [SerializeField] private GameObject _debugPanel;
 
         private PanelManager _panels;
@@ -66,6 +67,7 @@ namespace HollowGround.UI
             _panels.Register("QuestLog", _questLogPanel);
             _panels.Register("TechTree", _techTreePanel);
             _panels.Register("FactionTrade", _factionTradePanel);
+            _panels.Register("Settler", _settlerPanel);
             _panels.Register("BattleReport", _battleReportPanel);
             _panels.Register("BuildingInfo", _buildingInfoPanel);
             _panels.Register("Toast", _toastPanel);
@@ -89,6 +91,7 @@ namespace HollowGround.UI
                 ("TechTree", "BtnResearch"),
                 ("Training", "BtnArmy"),
                 ("Hero", "BtnHero"),
+                ("Settler", "BtnSettler"),
                 ("QuestLog", "BtnQuest"),
                 ("FactionTrade", "BtnTrade"),
                 ("WorldMap", "BtnMap")
@@ -309,6 +312,7 @@ namespace HollowGround.UI
         public void ToggleQuestLog() => _panels.Toggle("QuestLog");
         public void ToggleTechTree() => _panels.Toggle("TechTree");
         public void ToggleFactionTrade() => _panels.Toggle("FactionTrade");
+        public void ToggleSettlerPanel() => _panels.Toggle("Settler");
         public void ToggleBattleReport() => _panels.Toggle("BattleReport");
 
         public void TogglePause() => TogglePauseMenu();

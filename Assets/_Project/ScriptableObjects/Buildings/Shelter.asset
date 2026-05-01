@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 6c7055fb7298b4c44877c972cfbd95b5, type: 3}
-  m_Name: Town House
+  m_Name: Shelter
   m_EditorClassIdentifier: Assembly-CSharp::HollowGround.Buildings.BuildingData
   DisplayName: Shelter
   Description: Increases population capacity.
@@ -41,4 +41,6 @@ MonoBehaviour:
   ProductionMultiplierPerLevel: 1.2
   PopulationCapacity: 10
   StorageCapacity: 0
+  RequiredWorkers: []
+  WorkerProductionBonus: 0
   CommandCenterLevelRequired: 1

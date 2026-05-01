@@ -14,15 +14,20 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::HollowGround.Core.GameConfig
   DevMode: 1
   DisableMutantAttacks: 1
+  DisableSettlers: 0
   EnableSessionLog: 1
   BoostStartingResources: 0
   BoostMultiplier: 10
+  EnableAutoSave: 0
+  AutoSaveInterval: 300
+  EnableWeather: 1
+  EnableDebugHUD: 1
   BuildTimeMultiplier: 0.1
   ProductionIntervalMultiplier: 0.1
   TrainingTimeMultiplier: 0.1
   ResearchTimeMultiplier: 0.1
   ExpeditionTimeMultiplier: 0.1
-  MutantAttackIntervalMultiplier: 0.1
+  MutantAttackIntervalMultiplier: 0.1016128
   NormalBuildTimeMultiplier: 1
   NormalProductionIntervalMultiplier: 1
   NormalTrainingTimeMultiplier: 1
@@ -33,3 +38,13 @@ MonoBehaviour:
   RepairCostRatio: 0.5
   WallDefenseBonus: 20
   DefeatTroopLossRatio: 0.6
+  SettlersPerPopulation: 0.2
+  MaxSettlers: 20
+  SettlerMoveSpeed: 2
+  SettlerIdleTime: 3
+  SettlerSpawnCheckInterval: 5
+  SettlerWorkDuration: 8
+  SettlerRestDuration: 5
+  EnableWorker: 1
+  EnableAdventurer: 1
+  EnableSuit: 0

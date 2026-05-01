@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 6c7055fb7298b4c44877c972cfbd95b5, type: 3}
-  m_Name: Depo
+  m_Name: Storage
   m_EditorClassIdentifier: Assembly-CSharp::HollowGround.Buildings.BuildingData
   DisplayName: Storage
   Description: Increases resource storage capacity.
@@ -37,6 +37,10 @@ MonoBehaviour:
   BaseProductionAmount: 0
   ProductionInterval: 0
   ProductionMultiplierPerLevel: 1.2
-  PopulationCapacity: 0
+  PopulationCapacity: 2
   StorageCapacity: 500
+  RequiredWorkers:
+  - Role: 11
+    Count: 1
+  WorkerProductionBonus: 0.2
   CommandCenterLevelRequired: 1
