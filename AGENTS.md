@@ -301,6 +301,13 @@ Tum sistemler playtest edildi, 13/13 test gecti:
 - `SettlerMoveSpeed` (2) — hareket hizi
 - `SettlerIdleTime` (3) — kapida bekleme suresi
 - `SettlerSpawnCheckInterval` (5s) — nufus kontrol sıklığı
+- `EnableWorker/EnableAdventurer/EnableSuit` — individual model toggle
+
+**GameConfig Runtime Toggle'lar:**
+- `EnableAutoSave` (false) — otomatik kayit (main thread hitch yapabilir)
+- `AutoSaveInterval` (300s) — auto-save sıklığı
+- `EnableWeather` (true) — hava durumu sistemi
+- `EnableDebugHUD` (true) — debug panel gosterimi
 
 **Save/Load:**
 - `SettlerWalkerSave`: GridX, GridZ, State, WaitTimer
@@ -312,14 +319,15 @@ Tum sistemler playtest edildi, 13/13 test gecti:
 - [x] CityPack karakter FBX'leri ile placeholder visual degistirme (Animator + Avatar)
 - [ ] Settler sayisi DebugPanel'de gosterim
 - [ ] SessionLogger'a OnSettlerSpawned/Removed loglama
-- [ ] Fazladan karakter modellerini SettlerModels dizisine ekleme (Worker harici 4 karakter daha var)
 
 **Settler Animasyon Sistemi:**
-- CityPack karakter modelleri: Worker, Adventurer, Suit (Business Man), Casual_2 (Casual Character) → 4 FBX Avatar aktif
+- CityPack karakter modelleri: Worker, Adventurer, Suit (Business Man) → 3 FBX aktif (CharacterArmature iskeleti)
+- Man (HumanArmature) ve Woman (HumanArmature) kaldırıldı — farklı iskelet, Generic rig'de uyumsuz
 - FBX import: Generic rig + `avatarSetup=1` (CreateAnAvatarFromThisModel) ZORUNLU
 - `SettlerAnimationSetup` editor araclari:
   - `Fix: Enable Avatar on All Characters` — tum CityPack karakterlerde Avatar uretimini aktif eder
-  - `Fix: Rebuild Clips + Controller` — FBX clip'lerini bake eder, SettlerController olusturur
+  - `Fix: Rebuild All Clips + Controllers` — Worker'dan SettlerController bake eder
+  - `Fix: Revert All to Generic Rig` — Humanoid denemesini geri alir
   - `Test: Spawn Animated Settler in Scene` — sahnede test settler spawn eder, Avatar/Animator dogrulama
   - `Test: Verify Model Hierarchy` — FBX hiyerarsi, SMR bone, Avatar validasyon
 - BakeFreshClip: PreviewAnimationClip (type 1108) → AnimationClip (type 74) donusumu AnimationUtility ile
@@ -690,6 +698,7 @@ Bu kurallar tekrarlanan hataları ve gereksiz kod tekrarını önlemek için Faz
 - Settler'lar road hücreleri üzerinde hareket eder (grid-based, NavMesh yok)
 - `RoadManager.FindPublicPath()` 0-1 BFS ile yolu hesaplar, mevcut yolları tercih eder
 - Nüfus = sum(Aktif bina PopulationCapacity × Level)
-- CityPack FBX karakter modelleri: Worker, Adventurer, Suit, Casual_2 (4 aktif, daha fazla eklenebilir)
+- CityPack FBX karakter modelleri: Worker, Adventurer, Suit (3 aktif, CharacterArmature iskeleti)
+- Man (HumanArmature) ve Woman (HumanArmature) kaldirildi — Generic rig'de iskelet uyumsuzlugu
 - `GameConfig.DisableSettlers` ile settler sistemi tamamen kapatilabilir
 - Save/Load uyumlu: settler pozisyonu, state, waitTimer kaydedilir (`SettlerWalkerSave`)
