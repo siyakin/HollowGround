@@ -11,17 +11,11 @@ namespace HollowGround.Editor
         private const string MENU_PATH = "HollowGround/Settlers/";
         private const string CHARACTERS_FOLDER = "Assets/_Project/Models";
         private const string CONTROLLER_PATH = "Assets/_Project/Animations/Characters/SettlerController.controller";
-        private const string MAN_CONTROLLER_PATH = "Assets/_Project/Animations/Characters/ManSettlerController.controller";
-        private const string WOMAN_CONTROLLER_PATH = "Assets/_Project/Animations/Characters/WomanSettlerController.controller";
         private const string ANIMATIONS_FOLDER = "Assets/_Project/Animations/Characters";
-        private const string MAN_ANIMATIONS_FOLDER = "Assets/_Project/Animations/Characters/Man";
-        private const string WOMAN_ANIMATIONS_FOLDER = "Assets/_Project/Animations/Characters/Woman";
         private const string WORKER_FBX = "CityPack/Worker/Worker.fbx";
-        private const string MAN_FBX = "CityPack/Man/Male_Casual.fbx";
-        private const string WOMAN_FBX = "CityPack/Woman/Female_Alternative.fbx";
 
         private static readonly string[] CityPackCharacters = {
-            "Worker", "Adventurer", "Business Man", "Man", "Suit", "Woman"
+            "Worker", "Adventurer", "Business Man", "Suit"
         };
 
         [MenuItem(MENU_PATH + "Fix: Enable Avatar on All Characters")]
@@ -64,8 +58,7 @@ namespace HollowGround.Editor
         {
             int fixedCount = 0;
 
-            string[] allCharFolders = { "Worker", "Adventurer", "Business Man", "Man", "Woman",
-                "Punk", "Suit", "Casual Character", "Animated Woman" };
+            string[] allCharFolders = { "Worker", "Adventurer", "Business Man", "Suit" };
 
             foreach (var charName in allCharFolders)
             {
@@ -94,9 +87,7 @@ namespace HollowGround.Editor
         public static void FixAndRebuildAll()
         {
             BakeFromModel(WORKER_FBX, ANIMATIONS_FOLDER, CONTROLLER_PATH, "CharacterArmature|");
-            BakeFromModel(MAN_FBX, MAN_ANIMATIONS_FOLDER, MAN_CONTROLLER_PATH, "HumanArmature|");
-            BakeFromModel(WOMAN_FBX, WOMAN_ANIMATIONS_FOLDER, WOMAN_CONTROLLER_PATH, "HumanArmature|");
-            Debug.Log("[SettlerSetup] All 3 controller sets rebuilt. Assign controllers in SettlerManager Inspector.");
+            Debug.Log("[SettlerSetup] Worker controller rebuilt. Assign SettlerController in SettlerManager.");
         }
 
         private static void BakeFromModel(string fbxRelative, string animFolder, string controllerPath, string prefix)

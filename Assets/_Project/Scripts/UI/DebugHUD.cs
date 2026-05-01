@@ -18,6 +18,13 @@ namespace HollowGround.UI
 
         private void Update()
         {
+            var cfg = GameConfig.Instance;
+            if (cfg != null && !cfg.EnableDebugHUD)
+            {
+                if (_debugText != null) _debugText.gameObject.SetActive(false);
+                return;
+            }
+
             _timer += Time.unscaledDeltaTime;
             if (_timer < _updateInterval) return;
             _timer = 0f;

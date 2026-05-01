@@ -70,6 +70,8 @@ namespace HollowGround.Core
 
         private void Update()
         {
+            var cfg = GameConfig.Instance;
+            if (cfg != null && !cfg.EnableWeather) return;
             if (!_weatherEnabled) return;
 
             if (!_inTransition && Time.time >= _nextWeatherChangeTime)

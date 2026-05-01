@@ -30,8 +30,10 @@ namespace HollowGround.Editor
             config.EnableWorker = true;
             config.EnableAdventurer = true;
             config.EnableSuit = true;
-            config.EnableMan = false;
-            config.EnableWoman = false;
+            config.EnableAutoSave = false;
+            config.AutoSaveInterval = 300f;
+            config.EnableWeather = true;
+            config.EnableDebugHUD = true;
             config.BuildTimeMultiplier = 0.1f;
             config.ProductionIntervalMultiplier = 0.1f;
             config.TrainingTimeMultiplier = 0.1f;

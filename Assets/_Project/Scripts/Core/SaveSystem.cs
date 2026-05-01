@@ -21,7 +21,6 @@ namespace HollowGround.Core
 
         private const string SaveFolder = "Saves";
         private const string FileExtension = ".json";
-        private float _autoSaveInterval = 300f;
         private float _autoSaveTimer;
 
         public event System.Action OnSaveCompleted;
@@ -33,8 +32,11 @@ namespace HollowGround.Core
             if (GameManager.Instance == null || GameManager.Instance.CurrentState != GameState.Playing)
                 return;
 
+            var cfg = GameConfig.Instance;
+            if (cfg == null || !cfg.EnableAutoSave) return;
+
             _autoSaveTimer += Time.deltaTime;
-            if (_autoSaveTimer >= _autoSaveInterval)
+            if (_autoSaveTimer >= cfg.AutoSaveInterval)
             {
                 _autoSaveTimer = 0f;
                 AutoSave();

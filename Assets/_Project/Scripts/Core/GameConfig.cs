@@ -17,6 +17,13 @@ namespace HollowGround.Core
         [Tooltip("Start with multiplied resources (for testing)")]
         public bool BoostStartingResources = false;
         public int BoostMultiplier = 10;
+        [Tooltip("Enable auto-save every N seconds (may cause brief hitch)")]
+        public bool EnableAutoSave = false;
+        public float AutoSaveInterval = 300f;
+        [Tooltip("Enable weather system")]
+        public bool EnableWeather = true;
+        [Tooltip("Show debug HUD panel")]
+        public bool EnableDebugHUD = true;
 
         [Header("Speed Multipliers (DevMode ON)")]
         [Range(0.01f, 1f)] public float BuildTimeMultiplier = 0.1f;
@@ -54,8 +61,6 @@ namespace HollowGround.Core
         public bool EnableWorker = true;
         public bool EnableAdventurer = true;
         public bool EnableSuit = true;
-        public bool EnableMan;
-        public bool EnableWoman;
 
         public float GetBuildTimeMultiplier => DevMode ? BuildTimeMultiplier : NormalBuildTimeMultiplier;
         public float GetProductionIntervalMultiplier => DevMode ? ProductionIntervalMultiplier : NormalProductionIntervalMultiplier;
