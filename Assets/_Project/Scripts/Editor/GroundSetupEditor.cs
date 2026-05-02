@@ -70,7 +70,7 @@ namespace HollowGround.Editor
             var gridSystem = Object.FindAnyObjectByType<HollowGround.Grid.GridSystem>();
             float gridW = gridSystem != null ? gridSystem.Width * gridSystem.CellSize : 100f;
             float gridH = gridSystem != null ? gridSystem.Height * gridSystem.CellSize : 100f;
-            float groundScale = Mathf.Max(gridW, gridH) / 10f + 2f;
+            float groundScale = Mathf.Max(gridW, gridH) / 10f;
 
             groundGO.transform.position = new Vector3(gridW * 0.5f, -0.5f, gridH * 0.5f);
             groundGO.transform.localScale = new Vector3(groundScale, 1f, groundScale);

@@ -101,7 +101,7 @@ namespace HollowGround.Core
             }
             else
             {
-                target = new Vector3(50f, 0f, 50f);
+                target = new Vector3(100f, 0f, 100f);
             }
 
             strategyCam.transform.position = target;

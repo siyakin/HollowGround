@@ -5,8 +5,8 @@ namespace HollowGround.Grid
     [CreateAssetMenu(fileName = "MapTemplate", menuName = "HollowGround/MapTemplate")]
     public class MapTemplate : ScriptableObject
     {
-        public int Width = 50;
-        public int Height = 50;
+        public int Width = 100;
+        public int Height = 100;
         public TerrainType[] Tiles;
 
         public void Initialize(int width, int height)
