@@ -25,6 +25,24 @@ namespace HollowGround.Core
         public List<MapNodeSave> MapNodes = new();
         public List<IntIntEntry> RoadCells = new();
         public List<SettlerWalkerSave> Settlers = new();
+        public TerrainSave Terrain;
+    }
+
+    [Serializable]
+    public class TerrainSave
+    {
+        public string MapTemplateName;
+        public int Width;
+        public int Height;
+        public List<TerrainTileSave> ModifiedTiles = new();
+    }
+
+    [Serializable]
+    public class TerrainTileSave
+    {
+        public int X;
+        public int Z;
+        public int TerrainType;
     }
 
     [Serializable]

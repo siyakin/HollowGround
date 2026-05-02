@@ -16,7 +16,7 @@ MonoBehaviour:
   DisableMutantAttacks: 1
   DisableSettlers: 0
   EnableSessionLog: 1
-  BoostStartingResources: 0
+  BoostStartingResources: 1
   BoostMultiplier: 10
   EnableAutoSave: 0
   AutoSaveInterval: 300

@@ -5,15 +5,15 @@ namespace HollowGround.Core
     public class AtmosphereEffects : MonoBehaviour
     {
         [Header("Ambient Lighting")]
-        [SerializeField] private Color _ambientColor = new(0.25f, 0.22f, 0.18f, 1f);
-        [SerializeField] private float _ambientIntensity = 0.4f;
-        [SerializeField] private Color _fogColor = new(0.18f, 0.16f, 0.14f, 1f);
-        [SerializeField] private float _fogDensity = 0.004f;
+        [SerializeField] private Color _ambientColor = new(0.35f, 0.32f, 0.28f, 1f);
+        [SerializeField] private float _ambientIntensity = 0.7f;
+        [SerializeField] private Color _fogColor = new(0.22f, 0.20f, 0.18f, 1f);
+        [SerializeField] private float _fogDensity = 0.003f;
 
         [Header("Directional Light")]
-        [SerializeField] private Color _sunColor = new(1f, 0.85f, 0.65f, 1f);
-        [SerializeField] private float _sunIntensity = 0.8f;
-        [SerializeField] private Vector3 _sunRotation = new(50f, -30f, 0f);
+        [SerializeField] private Color _sunColor = new(1f, 0.92f, 0.78f, 1f);
+        [SerializeField] private float _sunIntensity = 1.2f;
+        [SerializeField] private Vector3 _sunRotation = new(55f, -30f, 0f);
 
         [Header("Dust Particles")]
         [SerializeField] private bool _enableDust = true;
@@ -46,12 +46,12 @@ namespace HollowGround.Core
         [Header("Day/Night Cycle")]
         [SerializeField] private bool _enableDayNight = false;
         [SerializeField] private float _dayDuration = 600f;
-        [SerializeField] private Color _dayAmbientColor = new(0.3f, 0.27f, 0.22f, 1f);
-        [SerializeField] private Color _nightAmbientColor = new(0.08f, 0.08f, 0.15f, 1f);
-        [SerializeField] private Color _daySunColor = new(1f, 0.85f, 0.65f, 1f);
-        [SerializeField] private Color _nightSunColor = new(0.15f, 0.18f, 0.35f, 1f);
-        [SerializeField] private float _daySunIntensity = 0.8f;
-        [SerializeField] private float _nightSunIntensity = 0.15f;
+        [SerializeField] private Color _dayAmbientColor = new(0.4f, 0.37f, 0.32f, 1f);
+        [SerializeField] private Color _nightAmbientColor = new(0.1f, 0.1f, 0.18f, 1f);
+        [SerializeField] private Color _daySunColor = new(1f, 0.92f, 0.78f, 1f);
+        [SerializeField] private Color _nightSunColor = new(0.18f, 0.2f, 0.4f, 1f);
+        [SerializeField] private float _daySunIntensity = 1.2f;
+        [SerializeField] private float _nightSunIntensity = 0.2f;
 
         private Light _sunLight;
         private ParticleSystem _dustSystem;
@@ -97,10 +97,6 @@ namespace HollowGround.Core
                 RenderSettings.fogColor = _fogColor;
                 RenderSettings.fogDensity = _fogDensity;
             }
-
-            _sunLight = FindAnyObjectByType<Light>();
-            if (_sunLight != null && _sunLight.type == LightType.Directional)
-                return;
 
             _sunLight = FindAnyObjectByType<Light>();
             if (_sunLight != null && _sunLight.type == LightType.Directional)

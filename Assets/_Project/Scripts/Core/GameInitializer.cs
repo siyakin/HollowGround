@@ -20,10 +20,15 @@ namespace HollowGround.Core
         [Header("Quests")]
         [SerializeField] private List<QuestData> _questPool = new();
 
+        [Header("Terrain")]
+        [SerializeField] private MapTemplate _mapTemplate;
+        [SerializeField] private bool _applyTerrainOnStart = false;
+
         private void Start()
         {
             ResetAllState();
             EnsureSessionLogger();
+            ApplyTerrain();
             ResetSettlers();
             CenterCamera();
             InitializeWorldMap();
@@ -135,6 +140,18 @@ namespace HollowGround.Core
         {
             if (SettlerManager.Instance == null) return;
             SettlerManager.Instance.RemoveAllSettlers();
+        }
+
+        private void ApplyTerrain()
+        {
+            if (!_applyTerrainOnStart) return;
+            if (GridSystem.Instance == null) return;
+            GridSystem.Instance.ClearTerrain();
+
+            if (_mapTemplate != null)
+            {
+                GridSystem.Instance.ApplyMapTemplate(_mapTemplate);
+            }
         }
     }
 }

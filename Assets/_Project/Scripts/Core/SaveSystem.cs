@@ -62,6 +62,7 @@ namespace HollowGround.Core
             CaptureMap(data);
             CaptureRoads(data);
             CaptureSettlers(data);
+            CaptureTerrain(data);
 
             return data;
         }
@@ -163,6 +164,7 @@ namespace HollowGround.Core
             ApplyMap(data);
             ApplyRoads(data);
             ApplySettlers(data);
+            ApplyTerrain(data);
         }
 
         #region Capture
@@ -618,6 +620,65 @@ namespace HollowGround.Core
         {
             if (SettlerManager.Instance == null || data.Settlers == null) return;
             SettlerManager.Instance.LoadSettlers(data.Settlers);
+        }
+
+        private void CaptureTerrain(SaveData data)
+        {
+            var grid = GridSystem.Instance;
+            if (grid == null) return;
+
+            var template = grid.ActiveTemplate;
+            data.Terrain = new TerrainSave
+            {
+                Width = grid.Width,
+                Height = grid.Height,
+                MapTemplateName = template != null ? template.name : ""
+            };
+
+            for (int x = 0; x < grid.Width; x++)
+            {
+                for (int z = 0; z < grid.Height; z++)
+                {
+                    var cell = grid.GetCell(x, z);
+                    if (cell == null) continue;
+                    if (cell.Terrain != TerrainType.Flat)
+                    {
+                        data.Terrain.ModifiedTiles.Add(new TerrainTileSave
+                        {
+                            X = x,
+                            Z = z,
+                            TerrainType = (int)cell.Terrain
+                        });
+                    }
+                }
+            }
+        }
+
+        private void ApplyTerrain(SaveData data)
+        {
+            if (data.Terrain == null) return;
+            var grid = GridSystem.Instance;
+            if (grid == null) return;
+
+            if (!string.IsNullOrEmpty(data.Terrain.MapTemplateName))
+            {
+#if UNITY_EDITOR
+                var template = UnityEditor.AssetDatabase.LoadAssetAtPath<MapTemplate>(
+                    $"Assets/_Project/ScriptableObjects/Maps/{data.Terrain.MapTemplateName}.asset");
+                if (template != null)
+                {
+                    grid.ApplyMapTemplate(template);
+                    return;
+                }
+#endif
+            }
+
+            grid.ClearTerrain();
+            foreach (var tile in data.Terrain.ModifiedTiles)
+            {
+                var type = (TerrainType)tile.TerrainType;
+                grid.SetTerrain(tile.X, tile.Z, type);
+            }
         }
 
         #endregion

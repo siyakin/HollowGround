@@ -42,10 +42,10 @@ namespace HollowGround.Core
 
         private static readonly float[] _weatherWeights = { 0.4f, 0.2f, 0.1f, 0.2f, 0.1f };
 
-        private readonly Color _baseFogColor = new(0.18f, 0.16f, 0.14f, 1f);
-        private readonly Color _baseAmbientColor = new(0.25f, 0.22f, 0.18f, 1f);
-        private readonly Color _baseColorFilter = new(0.95f, 0.9f, 0.85f, 1f);
-        private const float _baseFogDensity = 0.004f;
+        private readonly Color _baseFogColor = new(0.22f, 0.20f, 0.18f, 1f);
+        private readonly Color _baseAmbientColor = new(0.35f, 0.32f, 0.28f, 1f);
+        private readonly Color _baseColorFilter = new(0.98f, 0.95f, 0.92f, 1f);
+        private const float _baseFogDensity = 0.003f;
         private const float _baseVignette = 0.2f;
         private const float _baseSaturation = -10f;
         private const float _baseBloom = 0.2f;

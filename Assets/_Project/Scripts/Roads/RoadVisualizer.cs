@@ -12,7 +12,7 @@ namespace HollowGround.Roads
         private Material _roadMaterial;
         private Texture2D _dirtTexture;
 
-        private const float TileY = 0.012f;
+        private const float TileY = 0.05f;
         private const float PathHalf = 0.7f;
         private const float CellHalf = 1.0f;
         private const float AppearDuration = 1.5f;
@@ -237,7 +237,7 @@ namespace HollowGround.Roads
             _dirtTexture = BuildDirtTexture();
 
             _roadMaterial = new Material(Shader.Find("Universal Render Pipeline/Lit"));
-            _roadMaterial.SetColor("_BaseColor", Color.white);
+            _roadMaterial.SetColor("_BaseColor", new Color(0.55f, 0.45f, 0.35f));
             _roadMaterial.SetTexture("_BaseMap", _dirtTexture);
             _roadMaterial.SetFloat("_Smoothness", 0f);
             _roadMaterial.SetFloat("_Metallic", 0f);

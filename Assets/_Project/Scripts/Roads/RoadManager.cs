@@ -210,7 +210,7 @@ namespace HollowGround.Roads
                 {
                     foreach (var cell in path)
                     {
-                        if (_roadCells.Add(cell))
+                        if (CanPlaceRoad(cell) && _roadCells.Add(cell))
                             changed = true;
                     }
                 }
@@ -234,7 +234,7 @@ namespace HollowGround.Roads
                 {
                     foreach (var cell in path)
                     {
-                        if (_roadCells.Add(cell))
+                        if (CanPlaceRoad(cell) && _roadCells.Add(cell))
                             changed = true;
                     }
                 }
@@ -249,7 +249,7 @@ namespace HollowGround.Roads
             if (GridSystem.Instance == null) return false;
             if (!GridSystem.Instance.IsValidCoordinate(cell.x, cell.y)) return false;
             var gridCell = GridSystem.Instance.GetCell(cell.x, cell.y);
-            return gridCell != null && gridCell.State != CellState.Occupied;
+            return gridCell != null && gridCell.IsPassable;
         }
 
         private Vector2Int? FindNearestReachableCell(Vector2Int cell)
@@ -310,10 +310,10 @@ namespace HollowGround.Roads
                 {
                     var next = current + dir;
                     if (visited.Contains(next)) continue;
-                    if (!GridSystem.Instance.IsValidCoordinate(next.x, next.y)) continue;
-                    var cell = GridSystem.Instance.GetCell(next.x, next.y);
-                    if (cell == null || cell.State == CellState.Occupied) continue;
-                    visited.Add(next);
+                if (!GridSystem.Instance.IsValidCoordinate(next.x, next.y)) continue;
+                var cell = GridSystem.Instance.GetCell(next.x, next.y);
+                if (cell == null || !cell.IsPassable) continue;
+                visited.Add(next);
                     queue.Enqueue(next);
                 }
             }
@@ -349,7 +349,7 @@ namespace HollowGround.Roads
 
                     var cell = GridSystem.Instance.GetCell(next.x, next.y);
                     if (cell == null) continue;
-                    if (cell.State == CellState.Occupied) continue;
+                    if (!cell.IsPassable) continue;
 
                     visited.Add(next);
                     parent[next] = current;
@@ -399,12 +399,22 @@ namespace HollowGround.Roads
         {
             _roadCells.Clear();
             foreach (var cell in cells)
-                _roadCells.Add(cell);
+            {
+                if (CanPlaceRoad(cell))
+                    _roadCells.Add(cell);
+            }
             if (_visualizer != null)
                 _visualizer.RebuildVisuals(_roadCells);
         }
 
         public bool HasRoadAt(Vector2Int cell) => _roadCells.Contains(cell);
+
+        private bool CanPlaceRoad(Vector2Int cell)
+        {
+            if (GridSystem.Instance == null) return false;
+            var gridCell = GridSystem.Instance.GetCell(cell.x, cell.y);
+            return gridCell != null && gridCell.IsPassable && gridCell.Terrain.IsBuildable();
+        }
 
         public List<Vector2Int> FindPublicPath(Vector2Int start, Vector2Int end)
         {

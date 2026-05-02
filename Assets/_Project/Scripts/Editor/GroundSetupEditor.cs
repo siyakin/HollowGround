@@ -1,3 +1,4 @@
+using HollowGround.Grid;
 using UnityEngine;
 using UnityEditor;
 using UnityEditor.SceneManagement;
@@ -58,7 +59,6 @@ namespace HollowGround.Editor
 
         static GameObject CreateGroundPlane()
         {
-            Transform existing = Selection.activeGameObject?.transform;
             GameObject groundGO = GameObject.Find("Ground");
 
             if (groundGO == null)
@@ -67,30 +67,35 @@ namespace HollowGround.Editor
                 groundGO.name = "Ground";
             }
 
-            groundGO.transform.position = new Vector3(50f, 0f, 50f);
-            groundGO.transform.localScale = new Vector3(20f, 1f, 20f);
+            var gridSystem = Object.FindAnyObjectByType<HollowGround.Grid.GridSystem>();
+            float gridW = gridSystem != null ? gridSystem.Width * gridSystem.CellSize : 100f;
+            float gridH = gridSystem != null ? gridSystem.Height * gridSystem.CellSize : 100f;
+            float groundScale = Mathf.Max(gridW, gridH) / 10f + 2f;
+
+            groundGO.transform.position = new Vector3(gridW * 0.5f, -0.5f, gridH * 0.5f);
+            groundGO.transform.localScale = new Vector3(groundScale, 1f, groundScale);
 
             groundGO.layer = LayerMask.NameToLayer(GROUND_LAYER);
             foreach (Transform child in groundGO.transform)
                 child.gameObject.layer = LayerMask.NameToLayer(GROUND_LAYER);
 
-            Renderer renderer = groundGO.GetComponent<Renderer>();
-            if (renderer != null)
+            if (groundGO.GetComponent<Renderer>()?.sharedMaterial?.name != "GroundMaterial")
             {
-                Material groundMat = new(Shader.Find("Universal Render Pipeline/Lit"));
-                groundMat.name = "GroundMaterial";
-                groundMat.color = new Color(0.28f, 0.24f, 0.18f, 1f);
-                renderer.sharedMaterial = groundMat;
-
-                renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.On;
-                renderer.receiveShadows = true;
+                Renderer renderer = groundGO.GetComponent<Renderer>();
+                if (renderer != null)
+                {
+                    Material groundMat = new(Shader.Find("Universal Render Pipeline/Lit"));
+                    groundMat.name = "GroundMaterial";
+                    groundMat.color = new Color(0.28f, 0.24f, 0.18f, 1f);
+                    renderer.sharedMaterial = groundMat;
+                }
             }
 
             Collider collider = groundGO.GetComponent<Collider>();
             if (collider != null)
                 collider.enabled = true;
 
-            Debug.Log("[GroundSetup] Ground plane: pos=(50,0,50) scale=20x20 (200x200 units)");
+            Debug.Log($"[GroundSetup] Ground: pos=({gridW * 0.5f},-0.5,{gridH * 0.5f}) scale={groundScale:F0} ({groundScale * 10}x{groundScale * 10} units)");
             return groundGO;
         }
 
@@ -103,24 +108,30 @@ namespace HollowGround.Editor
                 return;
             }
 
+            var gridSystem = Object.FindAnyObjectByType<HollowGround.Grid.GridSystem>();
+            float gridW = gridSystem != null ? gridSystem.Width * gridSystem.CellSize : 100f;
+            float gridH = gridSystem != null ? gridSystem.Height * gridSystem.CellSize : 100f;
+            float margin = 15f;
+
             SerializedObject so = new SerializedObject(strategyCam);
 
             var boundsMin = so.FindProperty("_boundsMin");
-            if (boundsMin != null) boundsMin.vector2Value = new Vector2(-20f, -20f);
+            if (boundsMin != null) boundsMin.vector2Value = new Vector2(-margin, -margin);
 
             var boundsMax = so.FindProperty("_boundsMax");
-            if (boundsMax != null) boundsMax.vector2Value = new Vector2(120f, 120f);
+            if (boundsMax != null) boundsMax.vector2Value = new Vector2(gridW + margin, gridH + margin);
 
             var initialZoom = so.FindProperty("_initialZoom");
             if (initialZoom != null) initialZoom.floatValue = 35f;
 
             so.ApplyModifiedProperties();
 
-            strategyCam.transform.position = new Vector3(50f, 0f, 50f);
-            strategyCam.FocusOn(new Vector3(50f, 0f, 50f));
+            Vector3 center = new(gridW * 0.5f, 0f, gridH * 0.5f);
+            strategyCam.transform.position = center;
+            strategyCam.FocusOn(center);
 
             EditorUtility.SetDirty(strategyCam);
-            Debug.Log("[GroundSetup] Camera positioned at grid center (50,0,50), zoom=35, bounds=[-20,120]");
+            Debug.Log($"[GroundSetup] Camera bounds=[{-margin} to {gridW + margin}, {-margin} to {gridH + margin}], centered at {center}");
         }
 
         static void SetupLighting()

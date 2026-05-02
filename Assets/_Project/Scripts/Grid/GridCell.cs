@@ -16,6 +16,7 @@ namespace HollowGround.Grid
         public CellState State { get; set; }
         public GameObject Occupant { get; set; }
         public Vector3 WorldPosition { get; }
+        public TerrainType Terrain { get; set; }
 
         public GridCell(int x, int z, Vector3 worldPosition)
         {
@@ -24,8 +25,10 @@ namespace HollowGround.Grid
             WorldPosition = worldPosition;
             State = CellState.Empty;
             Occupant = null;
+            Terrain = TerrainType.Flat;
         }
 
-        public bool IsBuildable => State == CellState.Empty;
+        public bool IsBuildable => State == CellState.Empty && Terrain.IsBuildable();
+        public bool IsPassable => State != CellState.Occupied && Terrain.IsPassable();
     }
 }

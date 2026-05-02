@@ -15,6 +15,7 @@ namespace HollowGround.Buildings
         [SerializeField] private LayerMask _groundMask;
         [SerializeField] private Material _validMaterial;
         [SerializeField] private Material _invalidMaterial;
+        [SerializeField] private float _groundY = 0f;
 
         private BuildingData _currentBuilding;
         private GameObject _ghostObject;
@@ -100,6 +101,18 @@ namespace HollowGround.Buildings
             OnPlacementCancelled?.Invoke();
         }
 
+        private bool TryGetGroundPoint(Ray ray, out Vector3 point)
+        {
+            var plane = new Plane(Vector3.up, new Vector3(0f, _groundY, 0f));
+            if (plane.Raycast(ray, out float dist))
+            {
+                point = ray.GetPoint(dist);
+                return true;
+            }
+            point = Vector3.zero;
+            return false;
+        }
+
         private void UpdateGhostPosition()
         {
             if (_ghostObject == null) return;
@@ -109,9 +122,9 @@ namespace HollowGround.Buildings
 
             Vector2 mousePos = Mouse.current.position.ReadValue();
             Ray ray = _cam.ScreenPointToRay(mousePos);
-            if (!Physics.Raycast(ray, out RaycastHit hit, Mathf.Infinity, _groundMask)) return;
+            if (!TryGetGroundPoint(ray, out Vector3 groundPoint)) return;
 
-            _cachedCoords = GridSystem.Instance.GetGridCoordinates(hit.point);
+            _cachedCoords = GridSystem.Instance.GetGridCoordinates(groundPoint);
 
             if (!_manualRotate)
                 AutoRotateToRoad();
@@ -128,6 +141,15 @@ namespace HollowGround.Buildings
             _isValidPlacement = GridSystem.Instance.IsAreaBuildable(_cachedCoords.x, _cachedCoords.y, sx, sz);
 
             SetGhostMaterial(_isValidPlacement ? _validMaterial : _invalidMaterial);
+
+            if (!_isValidPlacement && Mouse.current.leftButton.wasPressedThisFrame)
+            {
+                var blockedCell = GridSystem.Instance.GetCell(_cachedCoords.x, _cachedCoords.y);
+                if (blockedCell != null && blockedCell.Terrain != TerrainType.Flat)
+                    ToastUI.Show($"Cannot build on {blockedCell.Terrain}!");
+                else if (blockedCell != null && blockedCell.State == CellState.Occupied)
+                    ToastUI.Show("Area already occupied!");
+            }
         }
 
         private void HandlePlacementInput()
@@ -154,9 +176,9 @@ namespace HollowGround.Buildings
             if (_cam == null) return;
             Vector2 mousePos = Mouse.current.position.ReadValue();
             Ray ray = _cam.ScreenPointToRay(mousePos);
-            if (!Physics.Raycast(ray, out RaycastHit hit, Mathf.Infinity, _groundMask)) return;
+            if (!TryGetGroundPoint(ray, out Vector3 groundPoint)) return;
 
-            var coords = GridSystem.Instance.GetGridCoordinates(hit.point);
+            var coords = GridSystem.Instance.GetGridCoordinates(groundPoint);
             (int sx, int sz) = GetRotatedSize();
 
             if (!GridSystem.Instance.IsAreaBuildable(coords.x, coords.y, sx, sz)) return;
@@ -181,9 +203,9 @@ namespace HollowGround.Buildings
                 if (_cam == null) return;
                 Vector2 placePos = Mouse.current.position.ReadValue();
                 Ray placeRay = _cam.ScreenPointToRay(placePos);
-                if (Physics.Raycast(placeRay, out RaycastHit placeHit, Mathf.Infinity, _groundMask))
+                if (TryGetGroundPoint(placeRay, out Vector3 placePoint))
                 {
-                    buildingObj.transform.position = GridSystem.Instance.SnapToGrid(placeHit.point);
+                    buildingObj.transform.position = GridSystem.Instance.SnapToGrid(placePoint);
                 }
             }
 

@@ -17,11 +17,42 @@ namespace HollowGround.Grid
         public float CellSize => _cellSize;
 
         private GridCell[,] _cells;
+        private MapRenderer _mapRenderer;
+        private MapTemplate _activeTemplate;
+
+        public MapRenderer Renderer => _mapRenderer;
+        public MapTemplate ActiveTemplate => _activeTemplate;
 
         protected override void Awake()
         {
             base.Awake();
             InitializeGrid();
+            EnsureMapRenderer();
+            RestoreTerrainFromTiles();
+        }
+
+        private void RestoreTerrainFromTiles()
+        {
+            var renderer = FindAnyObjectByType<MapRenderer>();
+            if (renderer == null)
+            {
+                Debug.LogWarning("[Terrain] No MapRenderer found for terrain restoration.");
+                return;
+            }
+
+            var tiles = renderer.GetComponentsInChildren<TerrainTile>();
+            if (tiles == null || tiles.Length == 0)
+                return;
+
+            foreach (var tile in tiles)
+            {
+                if (!IsValidCoordinate(tile.GridX, tile.GridZ)) continue;
+                var cell = _cells[tile.GridX, tile.GridZ];
+                cell.Terrain = tile.TerrainType;
+
+                if (!tile.TerrainType.IsBuildable() && !tile.TerrainType.IsPassable())
+                    cell.State = CellState.Blocked;
+            }
         }
 
         private void InitializeGrid()
@@ -35,6 +66,74 @@ namespace HollowGround.Grid
                     _cells[x, z] = new GridCell(x, z, worldPos);
                 }
             }
+        }
+
+        private void EnsureMapRenderer()
+        {
+            _mapRenderer = GetComponent<MapRenderer>();
+            if (_mapRenderer == null)
+                _mapRenderer = gameObject.AddComponent<MapRenderer>();
+        }
+
+        public void ApplyMapTemplate(MapTemplate template)
+        {
+            if (template == null) return;
+            if (_cells == null) InitializeGrid();
+            _activeTemplate = template;
+
+            for (int x = 0; x < _width; x++)
+            {
+                for (int z = 0; z < _height; z++)
+                {
+                    var terrain = template.GetTile(x, z);
+                    _cells[x, z].Terrain = terrain;
+
+                    if (!terrain.IsBuildable() && !terrain.IsPassable())
+                        _cells[x, z].State = CellState.Blocked;
+                    else if (_cells[x, z].State == CellState.Blocked)
+                        _cells[x, z].State = CellState.Empty;
+                }
+            }
+
+            if (_mapRenderer == null) EnsureMapRenderer();
+            _mapRenderer.RenderMap(template, this);
+        }
+
+        public void SetTerrain(int x, int z, TerrainType terrain)
+        {
+            var cell = GetCell(x, z);
+            if (cell == null) return;
+            cell.Terrain = terrain;
+
+            if (!terrain.IsBuildable() && !terrain.IsPassable())
+                cell.State = CellState.Blocked;
+            else if (cell.State == CellState.Blocked)
+                cell.State = CellState.Empty;
+
+            if (_activeTemplate != null)
+                _activeTemplate.SetTile(x, z, terrain);
+
+            if (_mapRenderer == null) EnsureMapRenderer();
+            _mapRenderer.RefreshSingleTile(x, z, terrain, this);
+        }
+
+        public void ClearTerrain()
+        {
+            if (_cells == null) return;
+
+            for (int x = 0; x < _width; x++)
+            {
+                for (int z = 0; z < _height; z++)
+                {
+                    _cells[x, z].Terrain = TerrainType.Flat;
+                    if (_cells[x, z].State == CellState.Blocked)
+                        _cells[x, z].State = CellState.Empty;
+                }
+            }
+
+            if (_mapRenderer == null) EnsureMapRenderer();
+            _mapRenderer.ClearAll();
+            _activeTemplate = null;
         }
 
         public Vector3 GetWorldPosition(int x, int z)
@@ -55,6 +154,7 @@ namespace HollowGround.Grid
 
         public GridCell GetCell(int x, int z)
         {
+            if (_cells == null) InitializeGrid();
             if (!IsValidCoordinate(x, z)) return null;
             return _cells[x, z];
         }
@@ -132,6 +232,15 @@ namespace HollowGround.Grid
                     _cells[x, z].Occupant = null;
                 }
             }
+        }
+
+        public TerrainType[] GetTerrainGridForSave()
+        {
+            var grid = new TerrainType[_width * _height];
+            for (int x = 0; x < _width; x++)
+                for (int z = 0; z < _height; z++)
+                    grid[z * _width + x] = _cells[x, z].Terrain;
+            return grid;
         }
     }
 }

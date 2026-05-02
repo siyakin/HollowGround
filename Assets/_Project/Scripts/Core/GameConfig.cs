@@ -64,6 +64,29 @@ namespace HollowGround.Core
         public bool EnableAdventurer = true;
         public bool EnableSuit = true;
 
+        [Header("Water")]
+        [Tooltip("Use fancy water shader (Gerstner waves, depth, foam). Off = simple flat quad.")]
+        public bool EnableFancyWater = true;
+        [Tooltip("Wave animation speed. 0 = still, 0.1 = calm lake, 0.5 = rough lake")]
+        [Range(0f, 2f)] public float WaterWaveSpeed = 0.15f;
+        [Tooltip("Wave vertex displacement height")]
+        [Range(0f, 0.2f)] public float WaterWaveHeight = 0.02f;
+        [Tooltip("Foam amount at edges and crests")]
+        [Range(0f, 1f)] public float WaterFoamAmount = 0.25f;
+        [Tooltip("Procedural surface normal strength")]
+        [Range(0f, 1f)] public float WaterNormalStrength = 0.3f;
+        [Tooltip("Fresnel reflection power")]
+        [Range(1f, 5f)] public float WaterFresnelPower = 2.5f;
+        [Tooltip("Depth-based color transition")]
+        [Range(0f, 5f)] public float WaterDepthFactor = 1.5f;
+        [Tooltip("Screen-space refraction distortion")]
+        [Range(0f, 0.1f)] public float WaterRefractionStrength = 0.01f;
+        [Tooltip("Water surface opacity")]
+        [Range(0f, 1f)] public float WaterOpacity = 0.85f;
+        public Color WaterBaseColor = new Color(0.04f, 0.12f, 0.30f, 0.90f);
+        public Color WaterShallowColor = new Color(0.10f, 0.50f, 0.60f, 0.60f);
+        public Color WaterFoamColor = new Color(0.85f, 0.92f, 0.95f, 1.00f);
+
         public float GetBuildTimeMultiplier => DevMode ? BuildTimeMultiplier : NormalBuildTimeMultiplier;
         public float GetProductionIntervalMultiplier => DevMode ? ProductionIntervalMultiplier : NormalProductionIntervalMultiplier;
         public float GetTrainingTimeMultiplier => DevMode ? TrainingTimeMultiplier : NormalTrainingTimeMultiplier;

@@ -25,7 +25,7 @@ namespace HollowGround.Core
         [SerializeField] private float _contrast = 15f;
         [SerializeField] private float _temperature = 10f;
         [SerializeField] private float _tint = -5f;
-        [SerializeField] private Color _colorFilter = new(0.95f, 0.9f, 0.85f, 1f);
+        [SerializeField] private Color _colorFilter = new(0.98f, 0.95f, 0.92f, 1f);
 
         [Header("Film Grain")]
         [SerializeField] private bool _enableFilmGrain = false;
