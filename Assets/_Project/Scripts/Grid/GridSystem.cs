@@ -28,31 +28,6 @@ namespace HollowGround.Grid
             base.Awake();
             InitializeGrid();
             EnsureMapRenderer();
-            RestoreTerrainFromTiles();
-        }
-
-        private void RestoreTerrainFromTiles()
-        {
-            var renderer = FindAnyObjectByType<MapRenderer>();
-            if (renderer == null)
-            {
-                Debug.LogWarning("[Terrain] No MapRenderer found for terrain restoration.");
-                return;
-            }
-
-            var tiles = renderer.GetComponentsInChildren<TerrainTile>();
-            if (tiles == null || tiles.Length == 0)
-                return;
-
-            foreach (var tile in tiles)
-            {
-                if (!IsValidCoordinate(tile.GridX, tile.GridZ)) continue;
-                var cell = _cells[tile.GridX, tile.GridZ];
-                cell.Terrain = tile.TerrainType;
-
-                if (!tile.TerrainType.IsBuildable() && !tile.TerrainType.IsPassable())
-                    cell.State = CellState.Blocked;
-            }
         }
 
         private void InitializeGrid()
