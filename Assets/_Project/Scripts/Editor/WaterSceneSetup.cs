@@ -39,7 +39,7 @@ namespace HollowGround.Editor
             }
 
             Undo.RecordObject(mapRenderer, "Setup Water Scene");
-            mapRenderer.RenderMap(template, gridSystem);
+            gridSystem.ApplyMapTemplate(template);
 
             int minX = int.MaxValue, maxX = int.MinValue;
             int minZ = int.MaxValue, maxZ = int.MinValue;
@@ -105,6 +105,24 @@ namespace HollowGround.Editor
             Undo.RecordObject(mapRenderer, "Clear Water");
             mapRenderer.ClearAllImmediate();
             Debug.Log("[WaterSceneSetup] Cleared all terrain and water.");
+        }
+
+        [MenuItem("HollowGround/Terrain/Reset MapTemplate to Flat")]
+        public static void ResetMapTemplate()
+        {
+            string[] paths = { TemplatePath, "Assets/_Project/ScriptableObjects/Maps/DefaultMap.asset" };
+            int count = 0;
+            foreach (var path in paths)
+            {
+                var template = AssetDatabase.LoadAssetAtPath<MapTemplate>(path);
+                if (template == null) continue;
+                Undo.RecordObject(template, "Reset MapTemplate to Flat");
+                template.Fill(TerrainType.Flat);
+                EditorUtility.SetDirty(template);
+                count++;
+            }
+            if (count > 0) AssetDatabase.SaveAssets();
+            Debug.Log($"[WaterSceneSetup] Reset {count} template(s) to all Flat.");
         }
 
         [MenuItem("HollowGround/Terrain/Create Lake in MapTemplate")]

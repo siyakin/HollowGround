@@ -37,6 +37,12 @@ namespace HollowGround.Editor
             config.EnableWeather = true;
             config.EnableDebugHUD = true;
             config.EnableFancyWater = true;
+            config.EnableWaterWaves = true;
+            config.EnableWaterFoam = true;
+            config.EnableWaterDepthEffects = true;
+            config.EnableWaterShoreNoise = true;
+            config.WaterShoreNoiseScale = 3f;
+            config.WaterShoreIrregularity = 0.35f;
             config.WaterWaveSpeed = 0.15f;
             config.WaterWaveHeight = 0.02f;
             config.WaterFoamAmount = 0.25f;

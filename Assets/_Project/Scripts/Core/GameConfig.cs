@@ -67,6 +67,18 @@ namespace HollowGround.Core
         [Header("Water")]
         [Tooltip("Use fancy water shader (Gerstner waves, depth, foam). Off = simple flat quad.")]
         public bool EnableFancyWater = true;
+        [Tooltip("Enable Gerstner wave vertex displacement")]
+        public bool EnableWaterWaves = true;
+        [Tooltip("Enable foam (edge foam, crest foam, patchy foam)")]
+        public bool EnableWaterFoam = true;
+        [Tooltip("Enable depth-based coloring, refraction and fresnel")]
+        public bool EnableWaterDepthEffects = true;
+        [Tooltip("Enable irregular coastline noise (subdivided mesh with Perlin displacement)")]
+        public bool EnableWaterShoreNoise = true;
+        [Tooltip("Perlin noise frequency for coastline irregularity")]
+        [Range(0.5f, 10f)] public float WaterShoreNoiseScale = 3f;
+        [Tooltip("How far shoreline vertices are displaced (0 = subtle, 1 = dramatic)")]
+        [Range(0f, 1f)] public float WaterShoreIrregularity = 0.35f;
         [Tooltip("Wave animation speed. 0 = still, 0.1 = calm lake, 0.5 = rough lake")]
         [Range(0f, 2f)] public float WaterWaveSpeed = 0.15f;
         [Tooltip("Wave vertex displacement height")]

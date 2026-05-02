@@ -103,7 +103,13 @@ namespace HollowGround.Grid
         {
             EnsureWaterSurface();
             if (_waterSurface != null)
-                return _waterSurface.CreateWaterTile(worldPos, cellSize, gx, gz);
+            {
+                bool npX = IsWaterTile(gx + 1, gz);
+                bool nnX = IsWaterTile(gx - 1, gz);
+                bool npZ = IsWaterTile(gx, gz + 1);
+                bool nnZ = IsWaterTile(gx, gz - 1);
+                return _waterSurface.CreateWaterTile(worldPos, cellSize, gx, gz, npX, nnX, npZ, nnZ);
+            }
             return CreateWaterTileFallback(worldPos, cellSize, _waterMaterial, CreateQuadMesh(cellSize));
         }
 
@@ -111,8 +117,22 @@ namespace HollowGround.Grid
         {
             EnsureWaterSurface();
             if (_waterSurface != null)
-                return _waterSurface.CreateWaterTile(worldPos, cellSize, gx, gz);
+            {
+                bool npX = IsWaterTile(gx + 1, gz);
+                bool nnX = IsWaterTile(gx - 1, gz);
+                bool npZ = IsWaterTile(gx, gz + 1);
+                bool nnZ = IsWaterTile(gx, gz - 1);
+                return _waterSurface.CreateWaterTile(worldPos, cellSize, gx, gz, npX, nnX, npZ, nnZ);
+            }
             return CreateRiverTileFallback(worldPos, cellSize, mat, quadMesh, gx, gz);
+        }
+
+        private bool IsWaterTile(int x, int z)
+        {
+            if (_currentTemplate == null) return false;
+            if (x < 0 || x >= _currentTemplate.Width || z < 0 || z >= _currentTemplate.Height) return false;
+            var t = _currentTemplate.GetTile(x, z);
+            return t == TerrainType.Water || t == TerrainType.River;
         }
 
         private void EnsureWaterSurface()

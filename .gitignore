@@ -37,4 +37,6 @@ __pycache__/
 
 *.fbx
 
+Assets/_Recovery/
+
 .kilo/

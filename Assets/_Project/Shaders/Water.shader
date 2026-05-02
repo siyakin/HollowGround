@@ -43,6 +43,10 @@ Shader "HollowGround/Water"
             #pragma multi_compile_fog
             #pragma multi_compile_instancing
 
+            #pragma multi_compile _ _HG_WATER_WAVES
+            #pragma multi_compile _ _HG_WATER_FOAM
+            #pragma multi_compile _ _HG_WATER_DEPTH
+
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DeclareDepthTexture.hlsl"
@@ -165,6 +169,7 @@ Shader "HollowGround/Water"
                 float3 posWS   = TransformObjectToWorld(input.positionOS.xyz);
                 float  time    = _Time.y * _WaveSpeed;
 
+#if defined(_HG_WATER_WAVES)
                 float3 disp    = (float3)0;
                 float3 tangent = float3(1, 0, 0);
                 float3 binorm  = float3(0, 0, 1);
@@ -179,8 +184,13 @@ Shader "HollowGround/Water"
 
                 output.positionWS = posWS;
                 output.normalWS   = normalize(cross(binorm, tangent));
-                output.uv         = input.uv;
                 output.waveDispY  = disp.y;
+#else
+                output.positionWS = posWS;
+                output.normalWS   = float3(0, 1, 0);
+                output.waveDispY  = 0;
+#endif
+                output.uv         = input.uv;
                 output.positionCS = TransformWorldToHClip(posWS);
                 output.screenPos  = ComputeScreenPos(output.positionCS);
                 output.fogCoord   = ComputeFogFactor(output.positionCS.z);
@@ -193,18 +203,24 @@ Shader "HollowGround/Water"
                 UNITY_SETUP_INSTANCE_ID(input);
 
                 float2 screenUV   = input.screenPos.xy / input.screenPos.w;
+                float3 geoNorm    = normalize(input.normalWS);
+                float3 viewDir    = normalize(GetCameraPositionWS() - input.positionWS);
+                float3 normalWS   = geoNorm;
 
+#if defined(_HG_WATER_DEPTH)
                 float  rawDepth   = SampleSceneDepth(screenUV);
                 float  sceneDepth = LinearEyeDepth(rawDepth, _ZBufferParams);
                 float  depthDiff  = max(0.0, sceneDepth - input.screenPos.w);
                 float  depthFade  = saturate(depthDiff * _DepthFactor);
-                float  edgeMask   = smoothstep(0.0, 0.15, depthDiff);
+#else
+                float  depthDiff  = 1.0;
+                float  depthFade  = 1.0;
+#endif
 
                 float3 procNorm   = ProceduralNormal(input.positionWS.xz, _Time.y);
-                float3 geoNorm    = normalize(input.normalWS);
-                float3 normalWS   = normalize(lerp(geoNorm, procNorm, _NormalStrength));
+                normalWS          = normalize(lerp(geoNorm, procNorm, _NormalStrength));
 
-                float3 viewDir    = normalize(GetCameraPositionWS() - input.positionWS);
+#if defined(_HG_WATER_DEPTH)
                 float  NdotV      = saturate(dot(normalWS, viewDir));
                 float  fresnel    = pow(1.0 - NdotV, _FresnelPower);
 
@@ -217,7 +233,12 @@ Shader "HollowGround/Water"
 
                 half4  waterColor = lerp(_ShallowColor, _BaseColor, depthFade);
                 waterColor.rgb    = lerp(refrColor, waterColor.rgb, saturate(depthFade * 0.7 + 0.15));
+#else
+                float  fresnel    = 0.0;
+                half4  waterColor = _BaseColor;
+#endif
 
+#if defined(_HG_WATER_FOAM)
                 float  t          = _Time.y * _WaveSpeed;
                 float2 wp         = input.positionWS.xz;
 
@@ -235,15 +256,20 @@ Shader "HollowGround/Water"
                 float  foam       = saturate((edgeFoam + crestFoam + patchyFoam) * _FoamAmount);
 
                 waterColor.rgb    = lerp(waterColor.rgb, _FoamColor.rgb, foam);
+#endif
 
                 Light  mainLight  = GetMainLight();
                 float3 halfDir    = normalize(viewDir + mainLight.direction);
                 float  spec       = pow(saturate(dot(normalWS, halfDir)), 128.0) * fresnel;
                 waterColor.rgb   += mainLight.color * spec * 0.70;
 
+#if defined(_HG_WATER_DEPTH)
                 float  edgeAlpha  = saturate(depthDiff * 6.0);
                 float  baseAlpha  = lerp(_ShallowColor.a, _Opacity, depthFade);
                 waterColor.a      = saturate(baseAlpha * edgeAlpha + fresnel * 0.15);
+#else
+                waterColor.a      = _Opacity;
+#endif
 
                 waterColor.rgb    = MixFog(waterColor.rgb, input.fogCoord);
 

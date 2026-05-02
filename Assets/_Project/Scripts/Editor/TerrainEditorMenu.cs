@@ -20,12 +20,12 @@ namespace HollowGround.Editor
 
             string path = $"{folder}/MapTemplate.asset";
             var template = ScriptableObject.CreateInstance<MapTemplate>();
-            template.Initialize(50, 50);
+            template.Initialize(100, 100);
             template.Fill(TerrainType.Flat);
             AssetDatabase.CreateAsset(template, path);
             AssetDatabase.SaveAssets();
             Selection.activeObject = template;
-            Debug.Log("[Terrain] Created empty MapTemplate (50x50, all Flat). Use Paint tool to add terrain.");
+            Debug.Log("[Terrain] Created empty MapTemplate (100x100, all Flat). Use Paint tool to add terrain.");
         }
 
         [MenuItem("HollowGround/Terrain/Create Terrain Materials")]

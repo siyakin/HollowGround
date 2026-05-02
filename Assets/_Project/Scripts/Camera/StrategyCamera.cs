@@ -12,7 +12,7 @@ namespace HollowGround.Camera
 
         [Header("Pan")]
         [SerializeField] private float _keyPanSpeed    = 25f;
-        [SerializeField] private float _mousePanSpeed  = 0.06f;
+        [SerializeField] private float _mousePanSpeed  = 0.4f;
         [SerializeField] private float _panSmoothing   = 8f;
 
         [Header("Edge Scroll")]
@@ -32,7 +32,10 @@ namespace HollowGround.Camera
         [SerializeField] private float _rotateSmooth = 8f;
 
         [Header("Camera Angle")]
-        [SerializeField] private float _tiltAngle = 60f;
+        [SerializeField] private float _initialTilt = 60f;
+        [SerializeField] private float _minTilt     = 15f;
+        [SerializeField] private float _maxTilt     = 85f;
+        [SerializeField] private float _tiltSpeed   = 80f;
 
         [Header("Bounds")]
         [SerializeField] private Vector2 _boundsMin = new(-10f, -10f);
@@ -41,10 +44,12 @@ namespace HollowGround.Camera
         private Vector3 _targetPos;
         private float   _targetYaw;
         private float   _targetZoom;
+        private float   _targetTilt;
 
         private Vector3 _currentPos;
         private float   _currentYaw;
         private float   _currentZoom;
+        private float   _currentTilt;
 
         private bool    _middleDragging;
         private Vector2 _lastMousePos;
@@ -59,10 +64,12 @@ namespace HollowGround.Camera
             _targetPos  = transform.position;
             _targetYaw  = transform.eulerAngles.y;
             _targetZoom = _initialZoom;
+            _targetTilt = _initialTilt;
 
             _currentPos  = _targetPos;
             _currentYaw  = _targetYaw;
             _currentZoom = _targetZoom;
+            _currentTilt = _targetTilt;
 
             ApplyTransform();
         }
@@ -87,8 +94,8 @@ namespace HollowGround.Camera
         private void HandleDragState()
         {
             bool overUI = EventSystem.current != null && EventSystem.current.IsPointerOverGameObject();
+            bool shift = Keyboard.current != null && Keyboard.current.leftShiftKey.isPressed;
 
-            // Orta mouse → pan
             if (Mouse.current.middleButton.wasPressedThisFrame && !overUI)
             {
                 _middleDragging = true;
@@ -97,14 +104,24 @@ namespace HollowGround.Camera
             if (Mouse.current.middleButton.wasReleasedThisFrame)
                 _middleDragging = false;
 
-            // Sağ mouse → döndür
             if (Mouse.current.rightButton.wasPressedThisFrame && !overUI)
             {
-                _rightDragging = true;
-                _lastMousePos  = Mouse.current.position.ReadValue();
+                if (shift)
+                {
+                    _middleDragging = true;
+                    _lastMousePos   = Mouse.current.position.ReadValue();
+                }
+                else
+                {
+                    _rightDragging = true;
+                    _lastMousePos  = Mouse.current.position.ReadValue();
+                }
             }
             if (Mouse.current.rightButton.wasReleasedThisFrame)
+            {
                 _rightDragging = false;
+                _middleDragging = false;
+            }
         }
 
         // ── Pan ────────────────────────────────────────────────────────────────
@@ -135,7 +152,7 @@ namespace HollowGround.Camera
 
             if (delta.sqrMagnitude < 0.01f) return;
 
-            float scale = _currentZoom * _mousePanSpeed;
+            float scale = Mathf.Sqrt(_currentZoom) * _mousePanSpeed;
             _targetPos -= GetMoveDir(delta * scale * Time.unscaledDeltaTime);
         }
 
@@ -168,9 +185,12 @@ namespace HollowGround.Camera
 
             Vector2 currentMousePos = Mouse.current.position.ReadValue();
             float deltaX = currentMousePos.x - _lastMousePos.x;
+            float deltaY = currentMousePos.y - _lastMousePos.y;
             _lastMousePos = currentMousePos;
 
-            _targetYaw += deltaX * _rotateSpeed * Time.unscaledDeltaTime;
+            _targetYaw  += deltaX * _rotateSpeed * Time.unscaledDeltaTime;
+            _targetTilt -= deltaY * _tiltSpeed * Time.unscaledDeltaTime;
+            _targetTilt  = Mathf.Clamp(_targetTilt, _minTilt, _maxTilt);
         }
 
         // ── Zoom ───────────────────────────────────────────────────────────────
@@ -200,6 +220,7 @@ namespace HollowGround.Camera
             _currentPos  = Vector3.Lerp(_currentPos,  _targetPos,  _panSmoothing    * t);
             _currentYaw  = Mathf.LerpAngle(_currentYaw, _targetYaw, _rotateSmooth   * t);
             _currentZoom = Mathf.Lerp(_currentZoom,  _targetZoom,  _zoomSmooth      * t);
+            _currentTilt = Mathf.Lerp(_currentTilt,  _targetTilt,  _rotateSmooth    * t);
 
             ApplyTransform();
         }
@@ -211,12 +232,12 @@ namespace HollowGround.Camera
 
             if (_cam != null)
             {
-                float rad    = _tiltAngle * Mathf.Deg2Rad;
+                float rad    = _currentTilt * Mathf.Deg2Rad;
                 float height = _currentZoom * Mathf.Sin(rad);
                 float depth  = _currentZoom * Mathf.Cos(rad);
 
                 _cam.transform.localPosition = new Vector3(0f, height, -depth);
-                _cam.transform.localRotation = Quaternion.Euler(_tiltAngle, 0f, 0f);
+                _cam.transform.localRotation = Quaternion.Euler(_currentTilt, 0f, 0f);
             }
         }
 

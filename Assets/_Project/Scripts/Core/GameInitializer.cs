@@ -22,7 +22,7 @@ namespace HollowGround.Core
 
         [Header("Terrain")]
         [SerializeField] private MapTemplate _mapTemplate;
-        [SerializeField] private bool _applyTerrainOnStart = false;
+        [SerializeField] private bool _applyTerrainOnStart = true;
 
         private void Start()
         {
@@ -146,12 +146,8 @@ namespace HollowGround.Core
         {
             if (!_applyTerrainOnStart) return;
             if (GridSystem.Instance == null) return;
-            GridSystem.Instance.ClearTerrain();
-
             if (_mapTemplate != null)
-            {
                 GridSystem.Instance.ApplyMapTemplate(_mapTemplate);
-            }
         }
     }
 }

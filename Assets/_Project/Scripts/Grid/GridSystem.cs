@@ -7,8 +7,8 @@ namespace HollowGround.Grid
     {
 
         [Header("Grid Settings")]
-        [SerializeField] private int _width = 50;
-        [SerializeField] private int _height = 50;
+        [SerializeField] private int _width = 100;
+        [SerializeField] private int _height = 100;
         [SerializeField] private float _cellSize = 2f;
         [SerializeField] private Vector3 _origin = Vector3.zero;
 

@@ -47,4 +47,22 @@ MonoBehaviour:
   SettlerRestDuration: 5
   EnableWorker: 1
   EnableAdventurer: 1
-  EnableSuit: 0
+  EnableSuit: 1
+  EnableFancyWater: 0
+  EnableWaterWaves: 0
+  EnableWaterFoam: 0
+  EnableWaterDepthEffects: 0
+  EnableWaterShoreNoise: 0
+  WaterShoreNoiseScale: 3
+  WaterShoreIrregularity: 0.35
+  WaterWaveSpeed: 0.15
+  WaterWaveHeight: 0.02
+  WaterFoamAmount: 0.25
+  WaterNormalStrength: 0.3
+  WaterFresnelPower: 2.5
+  WaterDepthFactor: 1.5
+  WaterRefractionStrength: 0.01
+  WaterOpacity: 0.85
+  WaterBaseColor: {r: 0.04, g: 0.12, b: 0.3, a: 0.9}
+  WaterShallowColor: {r: 0.1, g: 0.5, b: 0.6, a: 0.6}
+  WaterFoamColor: {r: 0.85, g: 0.92, b: 0.95, a: 1}

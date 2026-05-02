@@ -4,6 +4,29 @@ All notable changes to Hollow Ground are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Versioning follows [SemVer](https://semver.org/): MAJOR.MINOR.PATCH
 
+## [0.22.0] - 2026-05-02
+
+### Added
+- Water shader (HollowGround/Water): Gerstner waves, depth-based coloring, fresnel, foam, refraction, procedural normals
+- Water.shader multi_compile keywords: _HG_WATER_WAVES, _HG_WATER_FOAM, _HG_WATER_DEPTH
+- GameConfig water settings: EnableFancyWater, EnableWaterWaves, EnableWaterFoam, EnableWaterDepthEffects, EnableWaterShoreNoise, WaterShoreNoiseScale, WaterShoreIrregularity, wave/foam/depth/color parameters
+- WaterSurface: [ExecuteAlways], GameConfig-driven material properties, subdivided mesh with Perlin shore noise
+- StrategyCamera: Caesar IV-style controls — right-click rotate+tilt (15-85 range, start 60), Shift+right-click pan, sqrt-based zoom scaling
+- Grid expansion: default 50x50 → 100x100
+- MapRenderer: neighbor-aware water tile creation (IsWaterTile check), shore noise neighbor params
+- WaterSceneSetup: Reset both MapTemplate.asset and DefaultMap.asset to Flat
+
+### Fixed
+- WaterSurface.RefreshWaterObjectList: name mismatch after MapRenderer renames tiles from Water_ to Terrain_Water_ — now uses TerrainTile.IsWater() component check
+- WaterSurface.GetTerrainRoot: lazy _mapRenderer re-resolution on domain reload
+- WaterSurface: added serialized _waterShader field for runtime Shader.Find safety
+- Building on water/river prevented — TerrainType.IsBuildable() returns false for Water/River, BuildingPlacer shows toast
+
+### Changed
+- GameInitializer: ClearTerrain() removed, _applyTerrainOnStart default true
+- WaterSceneSetup: editor menu toggles removed, all water config via GameConfig SO only
+- Deleted 6 stale branches (feature/npc-pedestrians, feature/settler-walker, feature/visual-enhancements, juniper-raclette, rainy-tabletop, speckle-candytuft, verbose-silk)
+
 ## [0.20.0] - 2026-05-01
 
 ### Added
