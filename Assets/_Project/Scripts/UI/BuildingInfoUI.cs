@@ -1,7 +1,9 @@
 using HollowGround.Core;
 using System.Collections.Generic;
+using System.Linq;
 using HollowGround.Buildings;
 using HollowGround.Grid;
+using HollowGround.NPCs;
 using HollowGround.Resources;
 using TMPro;
 using UnityEngine;
@@ -30,6 +32,9 @@ namespace HollowGround.UI
         [SerializeField] private Button _demolishButton;
         [SerializeField] private Button _repairButton;
         [SerializeField] private TMP_Text _repairCostText;
+
+        [Header("Workers")]
+        [SerializeField] private TMP_Text _workersText;
 
         private Building _current;
         private UnityEngine.Camera _cam;
@@ -100,6 +105,7 @@ namespace HollowGround.UI
             if (_current == null) return;
             UpdateProgress();
             UpdateProductionProgress();
+            UpdateWorkersInfo();
 
             if (UnityEngine.InputSystem.Keyboard.current != null && UnityEngine.InputSystem.Keyboard.current.dKey.wasPressedThisFrame)
             {
@@ -152,6 +158,7 @@ namespace HollowGround.UI
 
             UpdateUpgradeButton();
             UpdateRepairButton();
+            UpdateWorkersInfo();
         }
 
         private void UpdateProgress()
@@ -245,6 +252,40 @@ namespace HollowGround.UI
                     parts.Add($"{kvp.Key}: {Mathf.CeilToInt(kvp.Value * (GameConfig.Instance != null ? GameConfig.Instance.RepairCostRatio : 0.5f))}");
                 _repairCostText.text = string.Join("  ", parts);
             }
+        }
+
+        private void UpdateWorkersInfo()
+        {
+            if (_workersText == null) return;
+
+            if (_current.Data.RequiredWorkers == null || _current.Data.RequiredWorkers.Count == 0)
+            {
+                _workersText.gameObject.SetActive(false);
+                return;
+            }
+
+            _workersText.gameObject.SetActive(true);
+
+            int assigned = _current.AssignedWorkerCount;
+            int required = _current.Data.GetTotalRequiredWorkers();
+
+            var jm = SettlerJobManager.Instance;
+            if (jm == null)
+            {
+                _workersText.text = $"Workers: {assigned}/{required}";
+                return;
+            }
+
+            var lines = new List<string> { $"Workers: {assigned}/{required}" };
+
+            foreach (var slot in _current.Data.RequiredWorkers)
+            {
+                int count = jm.GetAssignedWorkerCountForRole(_current, slot.Role);
+                string roleName = SettlerRoleInfo.GetDisplayName(slot.Role);
+                lines.Add($"  {roleName}: {count}/{slot.Count}");
+            }
+
+            _workersText.text = string.Join("\n", lines);
         }
 
         public void OnRepairClicked()

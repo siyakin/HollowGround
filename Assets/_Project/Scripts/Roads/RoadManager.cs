@@ -1,7 +1,9 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using HollowGround.Buildings;
 using HollowGround.Core;
+using HollowGround.Domain.Pathfinding;
 using HollowGround.Grid;
 using HollowGround.UI;
 using UnityEngine;
@@ -9,12 +11,14 @@ using UnityEngine.InputSystem;
 
 namespace HollowGround.Roads
 {
-    public class RoadManager : Singleton<RoadManager>
+    public class RoadManager : Singleton<RoadManager>, IGridDataProvider
     {
         private readonly HashSet<Vector2Int> _roadCells = new();
         private RoadVisualizer _visualizer;
         private Coroutine _cleanupCoroutine;
         private int _groundMask;
+
+        public event Action OnRoadsChanged;
 
         private static readonly Vector2Int[] Directions = {
             new(0, 1),
@@ -80,6 +84,7 @@ namespace HollowGround.Roads
 
             _roadCells.Remove(coords);
             _visualizer.FadeOutAndRemove(new HashSet<Vector2Int> { coords });
+            OnRoadsChanged?.Invoke();
         }
 
         private void OnBuildingAdded(Building building)
@@ -164,6 +169,7 @@ namespace HollowGround.Roads
                 _roadCells.Remove(cell);
 
             _visualizer.FadeOutAndRemove(orphaned);
+            OnRoadsChanged?.Invoke();
         }
 
         private void RemoveRoadCellsUnderBuilding(Building building)
@@ -241,7 +247,10 @@ namespace HollowGround.Roads
             }
 
             if (changed)
+            {
                 _visualizer.RebuildVisuals(_roadCells);
+                OnRoadsChanged?.Invoke();
+            }
         }
 
         private bool IsReachableCell(Vector2Int cell)
@@ -323,64 +332,29 @@ namespace HollowGround.Roads
 
         private List<Vector2Int> FindPath(Vector2Int start, Vector2Int end)
         {
-            var deque = new LinkedList<Vector2Int>();
-            var visited = new HashSet<Vector2Int>();
-            var parent = new Dictionary<Vector2Int, Vector2Int>();
+            var preferred = new HashSet<GridPos>();
+            foreach (var cell in _roadCells)
+                preferred.Add(new GridPos(cell.x, cell.y));
 
-            deque.AddLast(start);
-            visited.Add(start);
+            var result = PathfinderService.BFS(this, preferred, new GridPos(start.x, start.y), new GridPos(end.x, end.y), MaxBfsIterations);
+            if (result == null) return null;
 
-            int iterations = 0;
-            while (deque.Count > 0 && iterations < MaxBfsIterations)
-            {
-                iterations++;
-                var current = deque.First.Value;
-                deque.RemoveFirst();
-
-                if (current == end)
-                    return ReconstructPath(parent, start, end);
-
-                foreach (var dir in Directions)
-                {
-                    var next = current + dir;
-
-                    if (visited.Contains(next)) continue;
-                    if (!GridSystem.Instance.IsValidCoordinate(next.x, next.y)) continue;
-
-                    var cell = GridSystem.Instance.GetCell(next.x, next.y);
-                    if (cell == null) continue;
-                    if (!cell.IsPassable) continue;
-
-                    visited.Add(next);
-                    parent[next] = current;
-
-                    if (_roadCells.Contains(next))
-                        deque.AddFirst(next);
-                    else
-                        deque.AddLast(next);
-                }
-            }
-
-            return null;
+            var path = new List<Vector2Int>();
+            foreach (var p in result)
+                path.Add(new Vector2Int(p.X, p.Z));
+            return path;
         }
 
-        private List<Vector2Int> ReconstructPath(Dictionary<Vector2Int, Vector2Int> parent, Vector2Int start, Vector2Int end)
+        public bool IsValid(int x, int z)
         {
-            var path = new List<Vector2Int>();
-            var current = end;
-            int safety = 0;
+            return GridSystem.Instance != null && GridSystem.Instance.IsValidCoordinate(x, z);
+        }
 
-            while (current != start && safety < MaxBfsIterations)
-            {
-                path.Add(current);
-                if (!parent.ContainsKey(current)) return null;
-                current = parent[current];
-                safety++;
-            }
-
-            path.Add(start);
-            path.Reverse();
-            return path;
+        public bool IsPassable(int x, int z)
+        {
+            if (GridSystem.Instance == null) return false;
+            var cell = GridSystem.Instance.GetCell(x, z);
+            return cell != null && cell.IsPassable;
         }
 
         public void ClearAllRoads()
@@ -388,6 +362,7 @@ namespace HollowGround.Roads
             _roadCells.Clear();
             if (_visualizer != null)
                 _visualizer.RebuildVisuals(_roadCells);
+            OnRoadsChanged?.Invoke();
         }
 
         public List<Vector2Int> GetRoadCellsForSave()
@@ -405,6 +380,7 @@ namespace HollowGround.Roads
             }
             if (_visualizer != null)
                 _visualizer.RebuildVisuals(_roadCells);
+            OnRoadsChanged?.Invoke();
         }
 
         public bool HasRoadAt(Vector2Int cell) => _roadCells.Contains(cell);

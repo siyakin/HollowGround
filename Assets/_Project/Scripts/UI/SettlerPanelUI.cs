@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using HollowGround.Buildings;
 using HollowGround.Core;
+using HollowGround.Domain.Walkers;
 using HollowGround.NPCs;
 using TMPro;
 using UnityEngine;
@@ -267,10 +268,10 @@ namespace HollowGround.UI
                     : "-";
                 string taskStr = walker.CurrentTask switch
                 {
-                    SettlerTask.WalkingToTarget => "> Working",
-                    SettlerTask.WaitingAtTarget => "= Working",
-                    SettlerTask.ReturningHome => "< Returning",
-                    SettlerTask.Resting => "~ Resting",
+                    WalkerState.WalkingToTarget => "> Working",
+                    WalkerState.WaitingAtTarget => "= Working",
+                    WalkerState.ReturningHome => "< Returning",
+                    WalkerState.Resting => "~ Resting",
                     _ => ""
                 };
 

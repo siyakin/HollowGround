@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using HollowGround.Core;
+using HollowGround.Domain.Production;
 using HollowGround.Grid;
 using HollowGround.Resources;
 using UnityEngine;
@@ -153,11 +154,8 @@ namespace HollowGround.Buildings
         private float GetWorkerProductionModifier()
         {
             int required = _data.GetTotalRequiredWorkers();
-            if (required == 0) return 1f;
-
-            float ratio = Mathf.Clamp01((float)AssignedWorkerCount / required);
             float dependency = _data.WorkerProductionBonus;
-            return 1f - dependency * (1f - ratio);
+            return ProductionCalc.WorkerModifier(AssignedWorkerCount, required, dependency);
         }
 
         private float GetTotalProductionBonus()

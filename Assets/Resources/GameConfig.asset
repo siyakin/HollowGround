@@ -38,8 +38,8 @@ MonoBehaviour:
   RepairCostRatio: 0.5
   WallDefenseBonus: 20
   DefeatTroopLossRatio: 0.6
-  SettlersPerPopulation: 0.2
-  MaxSettlers: 20
+  SettlersPerPopulation: 1
+  MaxSettlers: 50
   SettlerMoveSpeed: 2
   SettlerIdleTime: 3
   SettlerSpawnCheckInterval: 5
@@ -48,11 +48,11 @@ MonoBehaviour:
   EnableWorker: 1
   EnableAdventurer: 1
   EnableSuit: 1
-  EnableFancyWater: 0
-  EnableWaterWaves: 0
-  EnableWaterFoam: 0
+  EnableFancyWater: 1
+  EnableWaterWaves: 1
+  EnableWaterFoam: 1
   EnableWaterDepthEffects: 0
-  EnableWaterShoreNoise: 0
+  EnableWaterShoreNoise: 1
   WaterShoreNoiseScale: 3
   WaterShoreIrregularity: 0.35
   WaterWaveSpeed: 0.15

@@ -138,6 +138,8 @@ namespace HollowGround.Core
 
         private void ResetSettlers()
         {
+            if (WalkerManager.Instance != null)
+                WalkerManager.Instance.ClearRecyclePool();
             if (SettlerManager.Instance == null) return;
             SettlerManager.Instance.RemoveAllSettlers();
         }
