@@ -27,7 +27,10 @@ namespace HollowGround.Buildings
             _buildings.Add(building);
 
             if (building.Data.Type == BuildingType.CommandCenter)
+            {
                 _commandCenter = building;
+                OnCommandCenterLevelChanged?.Invoke(building.Level);
+            }
 
             building.OnUpgradeComplete += HandleBuildingUpgraded;
             building.OnDestroyed += HandleBuildingDestroyed;
@@ -74,8 +77,9 @@ namespace HollowGround.Buildings
 
         public bool CanAffordBuilding(BuildingData data, int level)
         {
+            if (ResourceManager.Instance == null) return true;
             var costs = data.GetCostForLevel(level);
-            return ResourceManager.Instance != null && ResourceManager.Instance.CanAfford(costs);
+            return ResourceManager.Instance.CanAfford(costs);
         }
 
         private void HandleBuildingUpgraded(Building building)

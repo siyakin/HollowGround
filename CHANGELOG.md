@@ -4,6 +4,22 @@ All notable changes to Hollow Ground are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Versioning follows [SemVer](https://semver.org/): MAJOR.MINOR.PATCH
 
+## [0.23.0] - 2026-05-03
+
+### Added
+- AGENTS.md: Sahne root nesne tablosu (8 zorunlu nesne, degistirilemez kurallar)
+- GameInitializer: EnsureBuildingPlacer() — eksik BuildingPlacer safety check
+- ResourceBarUI: CommandCenter level event subscription (OnCommandCenterLevelChanged)
+- BuildMenuUI: BuildingPlacer SerializeField cache, null-safe fallback
+
+### Fixed
+- BattleCalc: `Random` → `System.Random` (namespace collision)
+- AboutPanelUI: `Object` → `UnityEngine.Object` (namespace collision)
+- Null-check optimist pattern: ArmyManager, HeroManager, ResearchManager, BuildingManager, BuildMenuUI, BuildingInfoUI — ResourceManager null ise optimistik true doner (timing fix)
+- SettlerManager: FindAnyObjectByType<WalkerManager>() safety check (duplicate GO destroy fix — Discovery #40)
+- BuildingManager: CommandCenter register oldugunda OnCommandCenterLevelChanged event tetikle
+- GameInitializer: Starting buildings SerializeField kaldırıldı (BaseStarter uzerinden yonetilecek)
+
 ## [0.22.0] - 2026-05-03
 
 ### Added

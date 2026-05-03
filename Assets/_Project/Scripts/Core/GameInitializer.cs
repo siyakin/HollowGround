@@ -24,24 +24,11 @@ namespace HollowGround.Core
         [SerializeField] private MapTemplate _mapTemplate;
         [SerializeField] private bool _applyTerrainOnStart = true;
 
-        [Header("Starting Buildings")]
-        [SerializeField] private BuildingData _commandCenterData;
-        [SerializeField] private BuildingData _farmData;
-        [SerializeField] private BuildingData _woodFactoryData;
-        [SerializeField] private BuildingData _waterWellData;
-
-        [Header("Starting Grid Positions")]
-        [SerializeField] private Vector2Int _ccPos = new(24, 24);
-        [SerializeField] private Vector2Int _farmPos = new(26, 24);
-        [SerializeField] private Vector2Int _woodPos = new(24, 26);
-        [SerializeField] private Vector2Int _waterPos = new(26, 26);
-
-        private bool _isNewGame = true;
-
         private void Start()
         {
             ResetAllState();
             EnsureSessionLogger();
+            EnsureBuildingPlacer();
             ApplyTerrain();
             ResetSettlers();
             CenterCamera();
@@ -97,6 +84,20 @@ namespace HollowGround.Core
         {
             if (FindAnyObjectByType<SessionLogger>() == null)
                 gameObject.AddComponent<SessionLogger>();
+        }
+
+        private void EnsureBuildingPlacer()
+        {
+            if (BuildingPlacer.Instance != null) return;
+            // Component exists but Instance is null (e.g. after hot reload) — OnEnable in
+            // Singleton<T> will have already re-registered it, so just warn and bail out.
+            if (FindAnyObjectByType<BuildingPlacer>() != null)
+            {
+                Debug.LogWarning("[GameInitializer] BuildingPlacer component found but Instance is null — possible hot reload artifact.");
+                return;
+            }
+            gameObject.AddComponent<BuildingPlacer>();
+            Debug.Log("[GameInitializer] BuildingPlacer was missing, added to Managers.");
         }
 
         private void CenterCamera()

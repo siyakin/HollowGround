@@ -43,6 +43,7 @@ namespace HollowGround.NPCs
         private void EnsureWalkerManager()
         {
             if (WalkerManager.Instance != null) return;
+            if (FindAnyObjectByType<WalkerManager>() != null) return;
             var go = new GameObject("WalkerManager");
             go.transform.SetParent(transform);
             go.AddComponent<WalkerManager>();

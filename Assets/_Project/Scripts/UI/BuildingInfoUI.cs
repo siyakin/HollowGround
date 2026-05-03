@@ -392,7 +392,7 @@ namespace HollowGround.UI
 
         private bool CanAffordUpgrade()
         {
-            if (ResourceManager.Instance == null) return false;
+            if (ResourceManager.Instance == null) return true;
             var costs = _current.Data.GetCostForLevel(_current.Level + 1);
             return ResourceManager.Instance.CanAfford(costs);
         }

@@ -26,9 +26,9 @@ namespace HollowGround.Domain.Combat
             public float PowerRatio;
         }
 
-        public static BattleResult Calculate(BattleSide attacker, BattleSide defender, Random rng = null)
+        public static BattleResult Calculate(BattleSide attacker, BattleSide defender, System.Random rng = null)
         {
-            rng ??= new Random();
+            rng ??= new System.Random();
 
             int atkPower = CalculateSidePower(attacker);
             int defPower = CalculateSidePower(defender);
@@ -72,9 +72,9 @@ namespace HollowGround.Domain.Combat
         }
 
         public static Dictionary<int, int> CalculateLosses(
-            Dictionary<int, int> troops, float ratio, bool won, Random rng = null)
+            Dictionary<int, int> troops, float ratio, bool won, System.Random rng = null)
         {
-            rng ??= new Random();
+            rng ??= new System.Random();
             var losses = new Dictionary<int, int>();
 
             float baseLossRate = won

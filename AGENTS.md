@@ -151,7 +151,33 @@ Assets/_Project/
 
 ## Sahne Obje Yapisi
 
-### GameManager Objeleri (GameManager GameObject uzerinde)
+### Sahne Root Nesneleri (DEGISTIRILEMEZ)
+
+Asagidaki 8 root nesne sahnede **ZORUNLU** olarak bulunur. Bu liste **tek kaynak**tir.
+**Yeni root nesne OLUSTURULMAZ**, **mevcut nesne SILINMEZ**, **isim DEGISTIRILMEZ** — kullanici acikca istemedikce.
+
+| # | Nesne Adi | Aciklama | Not |
+|---|-----------|----------|-----|
+| 1 | `Directional Light` | Ana isik kaynagi | URP sun direction |
+| 2 | `GameObject` | GameManager GO — tum manager'lar burada | Asagida listesi |
+| 3 | `CameraRig` | Kamera sistemi | Altinda Main Camera |
+| 4 | `GameCanvas` | Tum UI bu Canvas altinda | Canvas + CanvasScaler |
+| 5 | `EventSystem` | Unity EventSystem | StandaloneInputModule |
+| 6 | `UIManager` | UI yonetim objesi | UIManager component + panel referanslari |
+| 7 | `GameInitializer` | Oyun baslangic kontrolcusu | StartGame() tetikler |
+| 8 | `Ground` | Yer duzlemi | Layer: Ground (8), editor'de olusturulur |
+
+**Neden bu kurallar?**
+- Birden fazla ajan (AI/insan) ayni projede calisirken herkes ayni sahne yapisini bilir
+- Singleton manager'lar hep ayni GO (`GameObject`) uzerindedir — yeni GO uretimi YASAK
+- `Setup Ground & Camera` editor menusu bu yapiyi olusturur, elle mudahale YASAK
+- Herhangi bir script'in `new GameObject("GameManager")` veya benzeri kod uretmesi YASAK
+
+### GameManager Objeleri (`GameObject` root nesnesi uzerinde)
+
+Tum manager'lar **tek bir** `GameObject` root nesnesi uzerindedir. Yeni component buraya eklenir,
+yeni bir root GO **OLUSTURULMAZ**.
+
 GameManager, TimeManager, ResourceManager, GridSystem, GridVisualizer,
 BuildingPlacer, BuildingSelector, BuildingManager, ArmyManager,
 BattleManager, HeroManager, WorldMap, ExpeditionSystem,
@@ -175,11 +201,11 @@ SettlerManager, SettlerJobManager, WalkerManager, MapRenderer
 - SettlerInfoPanel (Overlay — tiklaninca acilir, BuildingSelector ile yonetilir)
 - PausePanel (ESC ile acilir, Resume/Save-Load/Quit butonlari, runtime olusturulur)
 - DebugPanel (DebugText + DebugHUD)
-- UIManager objesi (UIManager component + tum panel referanslari)
 
-### Camera
+### Camera (`CameraRig` root nesnesi)
 - CameraRig altinda Main Camera (MainCamera tag'i atanmali, tek Audio Listener olmali)
 - ScreenShake component CameraRig uzerinde
+- StrategyCamera component Main Camera uzerinde
 
 ---
 
@@ -535,6 +561,10 @@ Tum sistemler playtest edildi, 13/13 test gecti:
 37. `Animator.Rebind()` setup sonrasi cagrilmali — skeleton binding refresh olmadan animasyon oynamaz
 38. `OnMouseDown()` + `BuildingSelector.Update()` ayni frame'de race condition: OnMouseDown panel açar, BuildingSelector aynı click'i isleyip paneli kapatır. Çözüm: OnMouseDown sil, tüm selection BuildingSelector.TrySelect() üzerinden tek merkezde yapılmalı
 39. `LoadSettlers()` path'inde SphereCollider eklenmezse save/load sonrasi settler tıklanamaz — CreatePoolSettler() ile LoadSettlers() collider setup aynı olmalı
+40. `SettlerManager.EnsureWalkerManager()` sadece `WalkerManager.Instance` null kontrolu yapıyor — WalkerManager henüz Awake çalışmamışsa Instance null olur, yeni GO + duplicate WalkerManager oluşturulur, Singleton `Destroy(gameObject)` ile **tüm GameManager GO'sunu siler**. Çözüm: `FindAnyObjectByType<WalkerManager>()` ile sahne kontrolu de yapilmali
+41. `HasEnoughResources()` ve `CanAffordBuilding()` ResourceManager.Instance null oldugunda `false` donerse butonlar hic enable olmaz. Timing issue: BuildMenuUI OnEnable ResourceManager'dan once calisabilir. Cozum: null ise `true` don (optimistik) — 1 sn polling ile tekrar kontrol edilir
+42. `BuildMenuFixer.cs` buton isimleri case-sensitive — sahnedeki buton adi `BtnCommandCenter` (buyuk B) ama aranan `btnCommandCenter` (kucuk b). Case-insensitive lookup kullanilmali
+43. `git checkout HEAD -- scene.unity` sahneyi commit'teki haline dondurur — local (kaydedilmemis) sahne degisiklikleri kaybolur. GameManager GO ve SerializeField baglantilari kalici olarak kaybolabilir
 
 ---
 

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using HollowGround.Army;
+using HollowGround.Buildings;
 using HollowGround.Core;
 using HollowGround.Heroes;
 using HollowGround.NPCs;
@@ -91,6 +92,12 @@ namespace HollowGround.UI
                 SettlerManager.Instance.OnSettlerSpawned += OnSettlerChanged;
                 SettlerManager.Instance.OnSettlerRemoved += OnSettlerChanged;
             }
+
+            if (BuildingManager.Instance != null)
+            {
+                BuildingManager.Instance.OnCommandCenterLevelChanged -= UpdateLevel;
+                BuildingManager.Instance.OnCommandCenterLevelChanged += UpdateLevel;
+            }
         }
 
         private void UnsubscribeEvents()
@@ -112,6 +119,9 @@ namespace HollowGround.UI
                 SettlerManager.Instance.OnSettlerSpawned -= OnSettlerChanged;
                 SettlerManager.Instance.OnSettlerRemoved -= OnSettlerChanged;
             }
+
+            if (BuildingManager.Instance != null)
+                BuildingManager.Instance.OnCommandCenterLevelChanged -= UpdateLevel;
         }
 
         private void HandleResourceChanged(ResourceType type, int amount)
@@ -126,6 +136,7 @@ namespace HollowGround.UI
                 UpdateSlot(slot);
             UpdatePopulation();
             UpdateTime();
+            UpdateLevel(BuildingManager.Instance != null ? BuildingManager.Instance.GetCommandCenterLevel() : 0);
         }
 
         private void UpdateSlot(ResourceSlot slot)

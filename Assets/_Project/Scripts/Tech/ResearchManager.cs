@@ -47,13 +47,14 @@ namespace HollowGround.Tech
             if (_currentResearch != null) return false;
             if (!node.CanResearch()) return false;
 
-            if (ResourceManager.Instance == null) return false;
+            if (ResourceManager.Instance == null) return true;
             return ResourceManager.Instance.CanAfford(node.GetCost());
         }
 
         public bool StartResearch(TechNode node)
         {
             if (!CanStartResearch(node)) return false;
+            if (ResourceManager.Instance == null) return false;
 
             var costs = node.GetCost();
             ResourceManager.Instance.SpendMultiple(costs);

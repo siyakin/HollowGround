@@ -71,7 +71,7 @@ namespace HollowGround.UI
             _contentText.text = BuildContent(ReadVersion(), totalSO, buildings, heroes, playTime);
         }
 
-        private static int CountScriptableObjects<T>() where T : Object
+        private static int CountScriptableObjects<T>() where T : UnityEngine.Object
         {
 #if UNITY_EDITOR
             return UnityEditor.AssetDatabase.FindAssets($"t:{typeof(T).Name}").Length;
