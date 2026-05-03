@@ -28,6 +28,7 @@ namespace HollowGround.Core
         {
             ResetAllState();
             EnsureSessionLogger();
+            EnsureBuildingPlacer();
             ApplyTerrain();
             ResetSettlers();
             CenterCamera();
@@ -85,6 +86,20 @@ namespace HollowGround.Core
                 gameObject.AddComponent<SessionLogger>();
         }
 
+        private void EnsureBuildingPlacer()
+        {
+            if (BuildingPlacer.Instance != null) return;
+            // Component exists but Instance is null (e.g. after hot reload) — OnEnable in
+            // Singleton<T> will have already re-registered it, so just warn and bail out.
+            if (FindAnyObjectByType<BuildingPlacer>() != null)
+            {
+                Debug.LogWarning("[GameInitializer] BuildingPlacer component found but Instance is null — possible hot reload artifact.");
+                return;
+            }
+            gameObject.AddComponent<BuildingPlacer>();
+            Debug.Log("[GameInitializer] BuildingPlacer was missing, added to Managers.");
+        }
+
         private void CenterCamera()
         {
             if (!_centerCameraOnStart) return;
@@ -138,6 +153,8 @@ namespace HollowGround.Core
 
         private void ResetSettlers()
         {
+            if (WalkerManager.Instance != null)
+                WalkerManager.Instance.ClearRecyclePool();
             if (SettlerManager.Instance == null) return;
             SettlerManager.Instance.RemoveAllSettlers();
         }

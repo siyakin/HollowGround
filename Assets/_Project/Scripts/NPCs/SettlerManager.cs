@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using HollowGround.Buildings;
@@ -36,6 +37,16 @@ namespace HollowGround.NPCs
             base.Awake();
             _settlerParent = new GameObject(SettlerParentName);
             _settlerParent.transform.SetParent(transform);
+            EnsureWalkerManager();
+        }
+
+        private void EnsureWalkerManager()
+        {
+            if (WalkerManager.Instance != null) return;
+            if (FindAnyObjectByType<WalkerManager>() != null) return;
+            var go = new GameObject("WalkerManager");
+            go.transform.SetParent(transform);
+            go.AddComponent<WalkerManager>();
         }
 
         private void Start()
@@ -49,7 +60,8 @@ namespace HollowGround.NPCs
             if (TimeManager.Instance != null && TimeManager.Instance.IsPaused) return;
 
             var cfg = GameConfig.Instance;
-            if (cfg != null && cfg.DisableSettlers) return;
+            if (cfg != null && cfg.DisableSettlers)
+                return;
 
             TrySpawnSettlers();
         }
@@ -76,6 +88,12 @@ namespace HollowGround.NPCs
 
         private void OnConstructionComplete(Building building)
         {
+            StartCoroutine(DelayedDispatch(building));
+        }
+
+        private IEnumerator DelayedDispatch(Building building)
+        {
+            yield return null;
             var cc = FindCommandCenter();
             if (cc != null)
                 Dispatch(cc.GetDoorCell(), building.GetDoorCell(), 3f);
@@ -87,7 +105,8 @@ namespace HollowGround.NPCs
         {
             int max = GetMaxSettlers();
             if (_pool.Count >= max) return;
-            if (RoadManager.Instance == null || !RoadManager.Instance.HasRoads) return;
+            if (RoadManager.Instance == null || !RoadManager.Instance.HasRoads)
+                return;
 
             int toSpawn = max - _pool.Count;
             for (int i = 0; i < toSpawn; i++)
@@ -162,13 +181,17 @@ namespace HollowGround.NPCs
 
         private SettlerWalker CreatePoolSettler()
         {
-            if (RoadManager.Instance == null || !RoadManager.Instance.HasRoads) return null;
-            if (GridSystem.Instance == null) return null;
+            if (RoadManager.Instance == null || !RoadManager.Instance.HasRoads)
+                return null;
+            if (GridSystem.Instance == null)
+                return null;
 
             var doors = RoadManager.Instance.GetActiveBuildingDoorCells();
-            if (doors.Count == 0) return null;
+            if (doors.Count == 0)
+                return null;
 
             Vector2Int spawnCell = doors[Random.Range(0, doors.Count)];
+
             Vector3 worldPos = GridSystem.Instance.GetWorldPosition(spawnCell.x, spawnCell.y);
 
             var go = new GameObject("Settler");
@@ -188,6 +211,9 @@ namespace HollowGround.NPCs
 
             _pool.Add(walker);
             OnSettlerSpawned?.Invoke(walker);
+
+            if (WalkerManager.Instance != null)
+                WalkerManager.Instance.Register(walker);
 
             if (SettlerJobManager.Instance != null)
                 SettlerJobManager.Instance.RegisterSettler(walker);
@@ -415,11 +441,17 @@ namespace HollowGround.NPCs
                         SettlerJobManager.Instance.UnregisterSettler(_pool[i]);
 
                     OnSettlerRemoved?.Invoke(_pool[i]);
+
+                    if (WalkerManager.Instance != null)
+                        WalkerManager.Instance.Unregister(_pool[i]);
+
                     Destroy(_pool[i].gameObject);
                 }
             }
             _pool.Clear();
             ActiveCount = 0;
+            if (WalkerManager.Instance != null)
+                WalkerManager.Instance.ClearRecyclePool();
         }
 
         public List<SettlerWalkerSave> CaptureSettlersSave()
@@ -457,6 +489,9 @@ namespace HollowGround.NPCs
                 CreateSettlerVisual(go.transform);
 
                 _pool.Add(walker);
+
+                if (WalkerManager.Instance != null)
+                    WalkerManager.Instance.Register(walker);
 
                 if (SettlerJobManager.Instance != null)
                     SettlerJobManager.Instance.RegisterSettler(walker);

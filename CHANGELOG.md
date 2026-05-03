@@ -4,7 +4,59 @@ All notable changes to Hollow Ground are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Versioning follows [SemVer](https://semver.org/): MAJOR.MINOR.PATCH
 
-## [0.22.0] - 2026-05-02
+## [0.23.0] - 2026-05-03
+
+### Added
+- AGENTS.md: Sahne root nesne tablosu (8 zorunlu nesne, degistirilemez kurallar)
+- GameInitializer: EnsureBuildingPlacer() — eksik BuildingPlacer safety check
+- ResourceBarUI: CommandCenter level event subscription (OnCommandCenterLevelChanged)
+- BuildMenuUI: BuildingPlacer SerializeField cache, null-safe fallback
+
+### Fixed
+- BattleCalc: `Random` → `System.Random` (namespace collision)
+- AboutPanelUI: `Object` → `UnityEngine.Object` (namespace collision)
+- Null-check optimist pattern: ArmyManager, HeroManager, ResearchManager, BuildingManager, BuildMenuUI, BuildingInfoUI — ResourceManager null ise optimistik true doner (timing fix)
+- SettlerManager: FindAnyObjectByType<WalkerManager>() safety check (duplicate GO destroy fix — Discovery #40)
+- BuildingManager: CommandCenter register oldugunda OnCommandCenterLevelChanged event tetikle
+- GameInitializer: Starting buildings SerializeField kaldırıldı (BaseStarter uzerinden yonetilecek)
+
+## [0.22.0] - 2026-05-03
+
+### Added
+- Domain layer architecture: Scripts/Domain/ with pure C# (no UnityEngine dependency)
+  - Combat/BattleCalc.cs — battle calculation with injectable Random
+  - Production/ProductionCalc.cs — WorkerModifier, TotalProductionBonus, ModifiedInterval
+  - Pathfinding/PathfinderService.cs — BFS with IGridDataProvider interface, 0-1 deque
+  - Walkers/WalkerStateMachine.cs — state machine (None/Walk/Wait/Return/Rest), TickResult, Snapshot save/load
+- WalkerBase.cs — abstract base for grid-based walkers (movement, path, rotation, anim)
+- WalkerManager.cs — singleton central tick loop, path cache, cell occupancy, recycle pool
+- SettlerWalker refactored: inherits WalkerBase, uses WalkerStateMachine, ReassignJob support
+- SettlerJobManager: delayed assignment via coroutine, worker rebalancing (steal from excess)
+- SettlerManager: WalkerManager integration, recycle pool, EnsureWalkerManager()
+- BattleCalculator: thin wrapper delegating to BattleCalc domain class
+- Building.cs: ProductionCalc.WorkerModifier for production formula
+- RoadManager: OnRoadsChanged event for path cache invalidation
+- BuildingInfoUI: worker assigned/required display
+- Unit tests: WalkerStateMachine (12 tests), BattleCalc, ProductionCalc, Pathfinder
+- GameConfig: SettlersPerPopulation=1.0, MaxSettlers=50
+- Water shader (HollowGround/Water): 5-layer Gerstner waves, FBM noise, depth-based color, foam, refraction
+- WaterSurface.cs: GameConfig-driven settings (EnableFancyWater toggle, adjustable wave/foam/depth)
+- WaterSceneSetup editor: setup water, create lake, URP requirement check/auto-enable
+- Terrain system: MapTemplate SO, MapRenderer, 8 terrain types, TerrainTile, TerrainRules
+- TerrainEditorMenu, MapRendererEditor (visual paint editor)
+- Lighting improvements: sun intensity 1.2, ambient 0.7, brighter color filter
+
+### Fixed
+- SettlerManager.CreatePoolSettler() return null (was bare return)
+- AtmosphereEffects duplicate light search code
+- PostProcessing/WeatherSystem base color values too dark
+
+### Changed
+- SettlersPerPopulation: 0.2 → 1.0, MaxSettlers: 20 → 50
+- Sun intensity: 0.8 → 1.2, ambient intensity: 0.4 → 0.7
+- Mobile_RPAsset: depth texture + opaque texture enabled
+
+## [0.21.0] - 2026-05-02
 
 ### Added
 - Water shader (HollowGround/Water): Gerstner waves, depth-based coloring, fresnel, foam, refraction, procedural normals

@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using HollowGround.Buildings;
@@ -48,6 +49,12 @@ namespace HollowGround.NPCs
         private void OnBuildingActivated(Building building)
         {
             if (building.Data.RequiredWorkers == null || building.Data.RequiredWorkers.Count == 0) return;
+            StartCoroutine(DelayedAssign(building));
+        }
+
+        private IEnumerator DelayedAssign(Building building)
+        {
+            yield return null;
             AssignWorkersToBuilding(building);
         }
 
@@ -125,8 +132,18 @@ namespace HollowGround.NPCs
                 for (int i = 0; i < missing; i++)
                 {
                     SettlerWalker idle = FindIdleSettler();
-                    if (idle == null) return;
-                    AssignWorker(idle, slot.Role, building);
+                    if (idle != null)
+                    {
+                        AssignWorker(idle, slot.Role, building);
+                        continue;
+                    }
+
+                    SettlerWalker stolen = FindReassignableWorker(building);
+                    if (stolen == null) return;
+
+                    var prevBuilding = stolen.AssignedBuilding;
+                    ReleaseSingleWorker(stolen);
+                    ReassignWorker(stolen, slot.Role, building);
                 }
             }
         }
@@ -140,6 +157,18 @@ namespace HollowGround.NPCs
             building.AssignedWorkerCount = GetAssignedWorkerCount(building);
 
             walker.AssignJob(role, building);
+            OnJobAssigned?.Invoke(walker, building);
+        }
+
+        private void ReassignWorker(SettlerWalker walker, SettlerRole role, Building building)
+        {
+            if (!_buildingWorkers.ContainsKey(building))
+                _buildingWorkers[building] = new List<SettlerWalker>();
+
+            _buildingWorkers[building].Add(walker);
+            building.AssignedWorkerCount = GetAssignedWorkerCount(building);
+
+            walker.ReassignJob(role, building);
             OnJobAssigned?.Invoke(walker, building);
         }
 
@@ -180,6 +209,71 @@ namespace HollowGround.NPCs
             return _allSettlers.FirstOrDefault(s => s != null && s.Role == SettlerRole.None && s.IsActive);
         }
 
+        private SettlerWalker FindReassignableWorker(Building needyBuilding)
+        {
+            int needyCount = GetAssignedWorkerCount(needyBuilding);
+            SettlerWalker best = null;
+            int bestAssigned = 0;
+
+            foreach (var kvp in _buildingWorkers)
+            {
+                var bldg = kvp.Key;
+                var workers = kvp.Value;
+                if (bldg == needyBuilding) continue;
+                if (workers.Count == 0) continue;
+
+                int required = bldg.Data?.GetTotalRequiredWorkers() ?? 0;
+                int assigned = workers.Count;
+                int excess = assigned - required;
+
+                if (excess > 0)
+                {
+                    foreach (var w in workers)
+                    {
+                        if (w != null && w.IsActive)
+                        {
+                            best = w;
+                            bestAssigned = assigned;
+                            break;
+                        }
+                    }
+                    continue;
+                }
+
+                if (needyCount == 0 && best == null)
+                {
+                    foreach (var w in workers)
+                    {
+                        if (w != null && w.IsActive && assigned > bestAssigned)
+                        {
+                            best = w;
+                            bestAssigned = assigned;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            return best;
+        }
+
+        private void ReleaseSingleWorker(SettlerWalker walker)
+        {
+            if (walker == null || walker.AssignedBuilding == null) return;
+
+            if (_buildingWorkers.TryGetValue(walker.AssignedBuilding, out var list))
+            {
+                list.Remove(walker);
+                if (walker.AssignedBuilding != null)
+                    walker.AssignedBuilding.AssignedWorkerCount = list.Count;
+            }
+
+            var prevBuilding = walker.AssignedBuilding;
+            OnJobReleased?.Invoke(walker, prevBuilding);
+
+            walker.ClearPathOnly();
+        }
+
         private List<WorkerNeed> GetUnmetWorkerNeeds()
         {
             var needs = new List<WorkerNeed>();
@@ -203,13 +297,20 @@ namespace HollowGround.NPCs
                             Role = slot.Role,
                             RequiredCount = slot.Count,
                             MissingCount = missing,
-                            Priority = GetBuildingPriority(building.Data.Type)
+                            Priority = GetBuildingPriority(building.Data.Type),
+                            FillRatio = current > 0 ? (float)current / slot.Count : 0f
                         });
                     }
                 }
             }
 
-            needs.Sort((a, b) => a.Priority.CompareTo(b.Priority));
+            needs.Sort((a, b) =>
+            {
+                int aRound = a.FillRatio > 0f ? 1 : 0;
+                int bRound = b.FillRatio > 0f ? 1 : 0;
+                if (aRound != bRound) return aRound.CompareTo(bRound);
+                return a.Priority.CompareTo(b.Priority);
+            });
             return needs;
         }
 
@@ -266,6 +367,7 @@ namespace HollowGround.NPCs
             public int RequiredCount;
             public int MissingCount;
             public int Priority;
+            public float FillRatio;
         }
     }
 }

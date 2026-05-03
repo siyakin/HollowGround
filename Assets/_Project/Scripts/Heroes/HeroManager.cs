@@ -76,13 +76,14 @@ namespace HollowGround.Heroes
 
         public bool CanSummon(HeroData data)
         {
-            if (ResourceManager.Instance == null) return false;
+            if (ResourceManager.Instance == null) return true;
             return ResourceManager.Instance.Get(data.SummonResource) >= data.SummonCost;
         }
 
         public bool SummonHero(HeroData data)
         {
             if (!CanSummon(data)) return false;
+            if (ResourceManager.Instance == null) return false;
 
             ResourceManager.Instance.Spend(data.SummonResource, data.SummonCost);
             AddHero(data);

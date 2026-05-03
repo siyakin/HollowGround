@@ -284,3 +284,49 @@ BALANCE.md    — Dengeleme referans tablosu
 - [ ] Yol hücrelerine bina yerleştirme engeli — BuildingPlacer road cell kontrolü
 
 *Son güncelleme: AGENTS.md dokümantasyon guncellemesi — tum tamamlanan isler yansitildi*
+
+---
+
+## Faz 17 — Settler Visual & Depth
+
+### 17a — WalkerBase Refactoring (DONE)
+
+- [x] WalkerBase abstract sinifi — grid-based movement, path following, rotation smoothing
+- [x] WalkerBase abstract OnArrivedDestination() callback
+- [x] WalkerManager singleton — tum walker'larin merkezi Update() dongusu (tek Tick loop)
+- [x] SettlerWalker : WalkerBase refactoring — mevcut work cycle korunarak
+- [x] WalkerStateMachine entegrasyonu — domain layer state management
+- [x] Path cache — WalkerManager'da Dictionary<(start,end), path> cache
+- [x] Path cache invalidation — RoadManager.OnRoadsChanged event'inde cache temizleme
+- [x] GameObject pool — WalkerManager'da Stack<SettlerWalker> recycle mekanizmi
+- [x] Grid-cell occupancy — walker'larin ust uste binmesini onleme
+- [x] TimeManager.GameSpeed tek noktadan okuma
+- [x] SettlerManager sadelestirme — tick delegasyonu WalkerManager'a
+- [x] Save/load uyumlulugu — SettlerWalkerSave format degismemeli
+- [x] Worker rebalancing — yeni bina aktif oldugunda worker yeniden dagitimi (ReassignJob)
+- [x] BuildingInfoUI worker bilgisi — assigned/required worker gosterimi
+- [x] GameConfig dengeleme — SettlersPerPopulation=1.0, MaxSettlers=50
+- [x] Playtest 13/13 gecmeli, Settler job system calismali
+
+### 17b — NPC Visual Feedback (#23)
+
+- [ ] Settler tasima efekti: toz particle + ayak sesi SFX
+- [ ] Farm hasat animasyonu: yesil isik + hasat particle burst
+- [ ] Mine/WoodFactory is animasyonu: kaynak particle efekti
+- [ ] Atak sirasinda Defender settler davranisi
+- [ ] Settler calisma durumu mini ikon/indicator
+
+### 17c — SettlerPanel Enrichment (#24)
+
+- [ ] Genel ozet satiri: "7/12 settler calisiyor"
+- [ ] Bina bazli isci dagilimi gosterimi
+- [ ] Rol dagilimi pasta grafik
+- [ ] Bosta settler uyarisi
+- [ ] Eksik isci olan binalar listesi
+
+### 17d — Quick Tooltips (#25)
+
+- [ ] Bina hover tooltip: worker fill ratio + production bonus
+- [ ] Settler tikla tooltip: rol, atama suresi, moral
+
+*Son güncelleme: Faz 17a tamamen tamamlandi — WalkerBase + pool + occupancy + WalkerStateMachine + rebalancing + GameConfig*

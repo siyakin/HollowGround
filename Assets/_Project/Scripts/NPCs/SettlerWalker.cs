@@ -1,62 +1,33 @@
 ﻿using System;
-using System.Collections.Generic;
 using HollowGround.Buildings;
 using HollowGround.Core;
+using HollowGround.Domain.Walkers;
 using HollowGround.Grid;
 using HollowGround.Roads;
 using UnityEngine;
 
 namespace HollowGround.NPCs
 {
-    public enum SettlerTask
+    public class SettlerWalker : WalkerBase
     {
-        None,
-        WalkingToTarget,
-        WaitingAtTarget,
-        ReturningHome,
-        Resting
-    }
-
-    public class SettlerWalker : MonoBehaviour
-    {
-        private static readonly int SpeedHash = Animator.StringToHash("Speed");
-
-        private List<Vector2Int> _currentPath;
-        private int _pathIndex;
-        private float _moveSpeed = 2f;
-        private float _yOffset = 0.05f;
-        private bool _active = true;
-        private SettlerTask _task = SettlerTask.None;
-        private Vector3 _targetWorldPos;
-        private Vector2Int _homeCell = new Vector2Int(-1, -1);
-        private float _waitTimer;
-        private float _waitDuration;
+        private readonly WalkerStateMachine _sm = new();
         private Action _onDone;
-        private Animator _animator;
 
         private SettlerRole _role = SettlerRole.None;
         private Building _assignedBuilding;
-        private float _restTimer;
-        private float _restDuration = 5f;
 
-        public SettlerTask CurrentTask => _task;
-        public bool IsActive => _active;
-        public bool IsBusy => _task != SettlerTask.None;
+        public WalkerState CurrentTask => _sm.State;
+        public bool IsBusy => _sm.State != WalkerState.None;
         public SettlerRole Role => _role;
         public Building AssignedBuilding => _assignedBuilding;
         public bool HasJob => _assignedBuilding != null && _role != SettlerRole.None;
 
-        public void Initialize(float moveSpeed)
+        public override void Initialize(float moveSpeed)
         {
-            _moveSpeed = moveSpeed;
+            base.Initialize(moveSpeed);
             var cfg = GameConfig.Instance;
             if (cfg != null)
-                _restDuration = cfg.SettlerRestDuration;
-        }
-
-        public void SetAnimator(Animator animator)
-        {
-            _animator = animator;
+                _sm.SetRestDuration(cfg.SettlerRestDuration);
         }
 
         public void AssignJob(SettlerRole role, Building building)
@@ -67,16 +38,45 @@ namespace HollowGround.NPCs
             StartWorkCycle();
         }
 
+        public void ReassignJob(SettlerRole role, Building building)
+        {
+            _role = role;
+            _assignedBuilding = building;
+            _onDone = null;
+            WalkToNewBuilding(building);
+        }
+
+        public void ResetForReuse()
+        {
+            ClearPath();
+            _onDone = null;
+            _sm.ClearJob();
+            _role = SettlerRole.None;
+            _assignedBuilding = null;
+            _active = true;
+            SetAnimSpeed(0f);
+            if (WalkerManager.Instance != null)
+                WalkerManager.Instance.ReleaseOccupiedCell(this);
+        }
+
         public void ClearJob()
         {
             _role = SettlerRole.None;
             _assignedBuilding = null;
-            _currentPath = null;
+            ClearPath();
             _onDone = null;
-            _task = SettlerTask.None;
-            _restTimer = 0f;
+            _sm.ClearJob();
             SetAnimSpeed(0f);
+            if (WalkerManager.Instance != null)
+                WalkerManager.Instance.ReleaseOccupiedCell(this);
             gameObject.SetActive(false);
+        }
+
+        public void ClearPathOnly()
+        {
+            ClearPath();
+            _sm.ClearJob();
+            SetAnimSpeed(1f);
         }
 
         private void StartWorkCycle()
@@ -90,48 +90,89 @@ namespace HollowGround.NPCs
 
             var cfg = GameConfig.Instance;
             float workDuration = cfg != null ? cfg.SettlerWorkDuration : 8f;
-            _waitDuration = workDuration;
 
-            Vector2Int startCell = _homeCell;
-            if (startCell.x < 0)
-                startCell = FindHomeCell();
-
-            if (_homeCell.x < 0)
-                _homeCell = startCell;
-
+            Vector2Int startCell = GetHomeCell();
             Vector2Int destCell = _assignedBuilding.GetDoorCell();
 
             if (startCell == destCell)
             {
-                _task = SettlerTask.WaitingAtTarget;
-                _waitTimer = 0f;
-                var wp = GridSystem.Instance.GetWorldPosition(startCell.x, startCell.y);
-                transform.position = new Vector3(wp.x, _yOffset, wp.z);
+                SnapToCell(startCell.x, startCell.y);
+                _sm.SetHomeCell(startCell.x, startCell.y);
+                _sm.AssignJob(startCell.x, startCell.y, workDuration);
+                _sm.StartWaiting();
                 gameObject.SetActive(true);
                 SetAnimSpeed(0f);
                 return;
             }
 
-            var path = RoadManager.Instance != null
-                ? RoadManager.Instance.FindPublicPath(startCell, destCell)
-                : null;
+            var path = FindPath(startCell, destCell);
 
             if (path == null || path.Count < 2)
             {
-                _task = SettlerTask.Resting;
-                _restTimer = 0f;
+                _sm.SetHomeCell(startCell.x, startCell.y);
+                _sm.AssignJob(startCell.x, startCell.y, workDuration);
+                _sm.StartResting();
                 return;
             }
 
-            var worldPos = GridSystem.Instance.GetWorldPosition(startCell.x, startCell.y);
-            transform.position = new Vector3(worldPos.x, _yOffset, worldPos.z);
+            _sm.SetHomeCell(startCell.x, startCell.y);
+            _sm.AssignJob(startCell.x, startCell.y, workDuration);
+            _sm.StartWalkingToTarget((destCell.x, destCell.y));
 
-            _currentPath = path;
-            _pathIndex = 1;
-            _targetWorldPos = GridSystem.Instance.GetWorldPosition(path[1].x, path[1].y);
-            _task = SettlerTask.WalkingToTarget;
+            SnapToCell(startCell.x, startCell.y);
+            SetPath(path);
             gameObject.SetActive(true);
             SetAnimSpeed(1f);
+        }
+
+        private void WalkToNewBuilding(Building building)
+        {
+            if (building == null || GridSystem.Instance == null) return;
+            if (building.State == BuildingState.Destroyed)
+            {
+                ClearJob();
+                return;
+            }
+
+            var cfg = GameConfig.Instance;
+            float workDuration = cfg != null ? cfg.SettlerWorkDuration : 8f;
+
+            Vector2Int currentCell = GridSystem.Instance.GetGridCoordinates(transform.position);
+            Vector2Int destCell = building.GetDoorCell();
+
+            _sm.AssignJob(currentCell.x, currentCell.y, workDuration);
+            _sm.StartWalkingToTarget((destCell.x, destCell.y));
+
+            if (currentCell == destCell)
+            {
+                _sm.StartWaiting();
+                SetAnimSpeed(0f);
+                return;
+            }
+
+            var path = FindPath(currentCell, destCell);
+            if (path == null || path.Count < 2)
+            {
+                _sm.StartResting();
+                _sm.SetRestDuration(cfg != null ? cfg.SettlerRestDuration : 5f);
+                SetAnimSpeed(0f);
+                return;
+            }
+
+            SetPath(path);
+            gameObject.SetActive(true);
+            SetAnimSpeed(1f);
+        }
+
+        private Vector2Int GetHomeCell()
+        {
+            var home = _sm.HomeCell;
+            if (home.HasValue)
+                return new Vector2Int(home.Value.x, home.Value.z);
+
+            var cell = FindHomeCell();
+            _sm.SetHomeCell(cell.x, cell.y);
+            return cell;
         }
 
         private Vector2Int FindHomeCell()
@@ -164,13 +205,10 @@ namespace HollowGround.NPCs
         {
             if (GridSystem.Instance == null) return;
 
-            _homeCell = origin;
             _onDone = onDone;
-            _waitDuration = waitAtDest;
+            _sm.SetHomeCell(origin.x, origin.y);
 
-            var path = RoadManager.Instance != null
-                ? RoadManager.Instance.FindPublicPath(origin, destination)
-                : null;
+            var path = FindPath(origin, destination);
 
             if (path == null || path.Count < 2)
             {
@@ -178,28 +216,16 @@ namespace HollowGround.NPCs
                 return;
             }
 
-            var worldPos = GridSystem.Instance.GetWorldPosition(origin.x, origin.y);
-            transform.position = new Vector3(worldPos.x, _yOffset, worldPos.z);
-
-            _currentPath = path;
-            _pathIndex = 1;
-            _targetWorldPos = GridSystem.Instance.GetWorldPosition(path[1].x, path[1].y);
-            _task = SettlerTask.WalkingToTarget;
+            SnapToCell(origin.x, origin.y);
+            SetPath(path);
+            _sm.StartWalkingToTarget((destination.x, destination.y));
             gameObject.SetActive(true);
             SetAnimSpeed(1f);
         }
 
-        public void Deactivate()
+        protected override void OnTick(float dt, float gameSpeed)
         {
-            _active = false;
-        }
-
-
-
-        private void Update()
-        {
-            if (!_active || _task == SettlerTask.None) return;
-            if (TimeManager.Instance != null && TimeManager.Instance.IsPaused) return;
+            if (_sm.State == WalkerState.None) return;
 
             if (HasJob && _assignedBuilding == null)
             {
@@ -213,121 +239,69 @@ namespace HollowGround.NPCs
                 return;
             }
 
-            float speed = TimeManager.Instance != null ? TimeManager.Instance.GameSpeed : 1f;
-            if (speed <= 0f) return;
+            var result = _sm.Tick(dt, gameSpeed);
 
-            switch (_task)
+            switch (result)
             {
-                case SettlerTask.WalkingToTarget:
-                case SettlerTask.ReturningHome:
-                    TickWalking(speed);
+                case TickResult.Walking:
+                    HandleWalking(dt, gameSpeed);
                     break;
-                case SettlerTask.WaitingAtTarget:
-                    TickWaiting(speed);
+                case TickResult.WaitComplete:
+                    HandleWaitComplete();
                     break;
-                case SettlerTask.Resting:
-                    TickResting(speed);
+                case TickResult.RestComplete:
+                    HandleRestComplete();
                     break;
             }
         }
 
-        private void TickWalking(float speed)
+        private void HandleWalking(float dt, float gameSpeed)
         {
-            if (_currentPath == null || _pathIndex >= _currentPath.Count)
+            bool complete = TickMovement(dt, gameSpeed);
+            if (complete)
             {
-                OnPathComplete();
-                return;
+                ClearPath();
+                _sm.OnPathComplete();
+
+                if (_sm.State == WalkerState.WaitingAtTarget)
+                    SetAnimSpeed(0f);
+                else if (_sm.State == WalkerState.Resting || _sm.State == WalkerState.None)
+                    HandleArrivalAfterReturn();
             }
+        }
 
-            Vector3 targetPos = _targetWorldPos;
-            targetPos.y = _yOffset;
-
-            Vector3 currentPos = transform.position;
-            Vector3 direction = targetPos - currentPos;
-            direction.y = 0f;
-
-            float dist = direction.magnitude;
-            float step = _moveSpeed * speed * Time.deltaTime;
-
-            if (dist < step || dist < 0.05f)
+        private void HandleArrivalAfterReturn()
+        {
+            if (_sm.State == WalkerState.None)
             {
-                transform.position = new Vector3(targetPos.x, _yOffset, targetPos.z);
-                _pathIndex++;
-
-                if (_pathIndex < _currentPath.Count)
-                {
-                    var nextCell = _currentPath[_pathIndex];
-                    _targetWorldPos = GridSystem.Instance != null
-                        ? GridSystem.Instance.GetWorldPosition(nextCell.x, nextCell.y)
-                        : Vector3.zero;
-                }
+                SetAnimSpeed(0f);
+                _onDone?.Invoke();
+                _onDone = null;
+                gameObject.SetActive(false);
             }
             else
             {
-                direction.Normalize();
-                transform.position = currentPos + direction * step;
-
-                if (direction != Vector3.zero)
-                {
-                    Quaternion targetRot = Quaternion.LookRotation(direction);
-                    transform.rotation = Quaternion.Slerp(transform.rotation, targetRot, Time.deltaTime * 8f);
-                }
-            }
-        }
-
-        private void OnPathComplete()
-        {
-            _currentPath = null;
-
-            if (_task == SettlerTask.WalkingToTarget)
-            {
-                _task = SettlerTask.WaitingAtTarget;
-                _waitTimer = 0f;
                 SetAnimSpeed(0f);
             }
-            else if (_task == SettlerTask.ReturningHome)
-            {
-                Retire();
-            }
         }
 
-        private void TickWaiting(float speed)
+        private void HandleWaitComplete()
         {
-            _waitTimer += Time.deltaTime * speed;
-            if (_waitTimer >= _waitDuration)
-                StartReturnHome();
-        }
+            var home = _sm.HomeCell;
+            if (!home.HasValue) { Retire(); return; }
 
-        private void TickResting(float speed)
-        {
-            _restTimer += Time.deltaTime * speed;
-            if (_restTimer >= _restDuration)
-            {
-                if (HasJob)
-                    StartWorkCycle();
-                else
-                {
-                    _task = SettlerTask.None;
-                    gameObject.SetActive(false);
-                }
-            }
-        }
-
-        private void StartReturnHome()
-        {
+            Vector2Int homeCell = new(home.Value.x, home.Value.z);
             Vector2Int currentCell = GridSystem.Instance != null
                 ? GridSystem.Instance.GetGridCoordinates(transform.position)
-                : _homeCell;
+                : homeCell;
 
-            if (currentCell == _homeCell)
+            if (currentCell == homeCell)
             {
                 Retire();
                 return;
             }
 
-            var path = RoadManager.Instance != null
-                ? RoadManager.Instance.FindPublicPath(currentCell, _homeCell)
-                : null;
+            var path = FindPath(currentCell, homeCell);
 
             if (path == null || path.Count < 2)
             {
@@ -335,55 +309,50 @@ namespace HollowGround.NPCs
                 return;
             }
 
-            _currentPath = path;
-            _pathIndex = 1;
-            _targetWorldPos = GridSystem.Instance.GetWorldPosition(path[1].x, path[1].y);
-            _task = SettlerTask.ReturningHome;
+            SetPath(path);
+            _sm.StartWalkingHome();
             SetAnimSpeed(1f);
+        }
+
+        private void HandleRestComplete()
+        {
+            if (HasJob)
+                StartWorkCycle();
+            else
+            {
+                gameObject.SetActive(false);
+            }
         }
 
         private void Retire()
         {
-            if (HasJob)
+            ClearPath();
+            _sm.OnPathComplete();
+
+            if (_sm.State == WalkerState.None)
             {
-                _task = SettlerTask.Resting;
-                _restTimer = 0f;
-                _currentPath = null;
                 SetAnimSpeed(0f);
-                return;
+                _onDone?.Invoke();
+                _onDone = null;
+                gameObject.SetActive(false);
             }
-
-            _task = SettlerTask.None;
-            _currentPath = null;
-            _onDone?.Invoke();
-            _onDone = null;
-            SetAnimSpeed(0f);
-            gameObject.SetActive(false);
-        }
-
-        private void SetAnimSpeed(float speed)
-        {
-            if (_animator == null) return;
-            _animator.SetFloat(SpeedHash, speed);
-            if (speed > 0.1f)
-                _animator.CrossFade("Walk", 0.1f);
             else
-                _animator.CrossFade("Idle", 0.1f);
+            {
+                SetAnimSpeed(0f);
+            }
         }
 
         public SettlerWalkerSave CaptureSave()
         {
-            var gridPos = GridSystem.Instance != null
-                ? GridSystem.Instance.GetGridCoordinates(transform.position)
-                : Vector2Int.zero;
+            var gridPos = GetGridPosition();
 
             return new SettlerWalkerSave
             {
                 GridX = gridPos.x,
                 GridZ = gridPos.y,
-                Task = _task.ToString(),
-                HomeCellX = _homeCell.x,
-                HomeCellZ = _homeCell.y,
+                Task = _sm.State.ToString(),
+                HomeCellX = _sm.HomeCell?.x ?? -1,
+                HomeCellZ = _sm.HomeCell?.z ?? -1,
                 Role = _role.ToString(),
                 AssignedBuildingGridX = _assignedBuilding != null ? _assignedBuilding.GridOrigin.x : -1,
                 AssignedBuildingGridZ = _assignedBuilding != null ? _assignedBuilding.GridOrigin.y : -1
@@ -398,14 +367,8 @@ namespace HollowGround.NPCs
                 transform.position = new Vector3(worldPos.x, _yOffset, worldPos.z);
             }
 
-            _homeCell = new Vector2Int(save.HomeCellX, save.HomeCellZ);
-            if (_homeCell.x < 0)
-                _homeCell = new Vector2Int(save.GridX, save.GridZ);
-
-            if (System.Enum.TryParse<SettlerTask>(save.Task, out var task))
-                _task = task;
-            else
-                _task = SettlerTask.None;
+            if (save.HomeCellX >= 0)
+                _sm.SetHomeCell(save.HomeCellX, save.HomeCellZ);
 
             if (System.Enum.TryParse<SettlerRole>(save.Role, out var role))
                 _role = role;
@@ -424,10 +387,96 @@ namespace HollowGround.NPCs
                 }
             }
 
-            if (_task == SettlerTask.None && !HasJob)
+            if (!HasJob)
+            {
+                _sm.ClearJob();
                 gameObject.SetActive(false);
+                return;
+            }
 
-            _currentPath = null;
+            var cfg = GameConfig.Instance;
+            float workDuration = cfg != null ? cfg.SettlerWorkDuration : 8f;
+            Vector2Int startCell = new(save.GridX, save.GridZ);
+            _sm.AssignJob(_sm.HomeCell?.x ?? startCell.x, _sm.HomeCell?.z ?? startCell.y, workDuration);
+
+            if (!System.Enum.TryParse<WalkerState>(save.Task, out var state) || state == WalkerState.None)
+            {
+                _sm.StartResting();
+                _sm.SetRestDuration(cfg != null ? cfg.SettlerRestDuration : 5f);
+                gameObject.SetActive(false);
+                return;
+            }
+
+            Vector2Int destCell = _assignedBuilding.GetDoorCell();
+
+            if (state == WalkerState.WaitingAtTarget)
+            {
+                SnapToCell(save.GridX, save.GridZ);
+                _sm.StartWaiting();
+                gameObject.SetActive(true);
+                SetAnimSpeed(0f);
+                return;
+            }
+
+            if (state == WalkerState.Resting)
+            {
+                _sm.StartResting();
+                _sm.SetRestDuration(cfg != null ? cfg.SettlerRestDuration : 5f);
+                gameObject.SetActive(false);
+                return;
+            }
+
+            Vector2Int target;
+            bool toWork = state == WalkerState.WalkingToTarget;
+
+            if (toWork)
+                target = destCell;
+            else
+            {
+                var home = _sm.HomeCell;
+                target = home.HasValue ? new Vector2Int(home.Value.x, home.Value.z) : startCell;
+            }
+
+            if (startCell == target)
+            {
+                if (toWork)
+                {
+                    _sm.StartWaiting();
+                    gameObject.SetActive(true);
+                    SetAnimSpeed(0f);
+                }
+                else
+                {
+                    _sm.StartResting();
+                    _sm.SetRestDuration(cfg != null ? cfg.SettlerRestDuration : 5f);
+                    SetAnimSpeed(0f);
+                }
+                return;
+            }
+
+            var path = FindPath(startCell, target);
+            if (path == null || path.Count < 2)
+            {
+                _sm.StartResting();
+                _sm.SetRestDuration(cfg != null ? cfg.SettlerRestDuration : 5f);
+                gameObject.SetActive(false);
+                return;
+            }
+
+            SnapToCell(save.GridX, save.GridZ);
+            SetPath(path);
+
+            if (toWork)
+            {
+                _sm.StartWalkingToTarget((destCell.x, destCell.y));
+            }
+            else
+            {
+                _sm.StartWalkingHome();
+            }
+
+            gameObject.SetActive(true);
+            SetAnimSpeed(1f);
         }
 
         private static Building FindBuildingByGrid(int gridX, int gridZ)

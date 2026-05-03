@@ -78,7 +78,7 @@ namespace HollowGround.Army
 
         public bool CanAffordTraining(TroopData data, int amount)
         {
-            if (ResourceManager.Instance == null) return false;
+            if (ResourceManager.Instance == null) return true;
 
             var cost = data.GetTrainingCost();
             foreach (var kvp in cost)
@@ -92,6 +92,7 @@ namespace HollowGround.Army
         public bool StartTraining(TroopData data, int amount)
         {
             if (!CanAffordTraining(data, amount)) return false;
+            if (ResourceManager.Instance == null) return false;
 
             var cost = data.GetTrainingCost();
             foreach (var kvp in cost)

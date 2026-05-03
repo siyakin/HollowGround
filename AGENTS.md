@@ -1,6 +1,6 @@
 # Hollow Ground — AGENTS.md
 
-## Mevcut Versiyon: 0.20.0
+## Mevcut Versiyon: 0.23.0
 
 ## Versiyon Kurallari
 
@@ -90,7 +90,8 @@ Assets/_Project/
 │   │                PostProcessingSetup, AtmosphereEffects, GameConfig, SessionLogger,
 │   │                WeatherSystem, CostEntryHelper
 │   ├── Camera/      StrategyCamera, ScreenShake
-│   ├── Grid/        GridSystem, GridCell, GridVisualizer, GridOverlayRenderer
+│   ├── Grid/        GridSystem, GridCell, GridVisualizer, GridOverlayRenderer,
+│   │                MapRenderer, MapTemplate, TerrainTile, TerrainType, WaterSurface
 │   ├── Buildings/   BuildingType, BuildingData, Building, BuildingManager,
 │   │                BuildingPlacer, BuildingSelector, BuildingDatabase,
 │   │                BuildingConstructionAnimation, BuildingHighlight, DamageEffects
@@ -102,7 +103,10 @@ Assets/_Project/
 │   ├── Heroes/      HeroEnums, HeroData, Hero, HeroManager
 │   ├── World/       MapNodeData, WorldMap, ExpeditionSystem
 │   ├── Tech/        TechNode, ResearchManager
-│   ├── NPCs/        FactionData, TradeSystem, SettlerWalker, SettlerManager
+│   ├── NPCs/        FactionData, TradeSystem, SettlerWalker, SettlerManager,
+│   │                SettlerJobManager, WalkerBase, WalkerManager
+│   ├── Domain/      Walkers/WalkerStateMachine, Combat/BattleCalc,
+│   │                Production/ProductionCalc, Pathfinding/PathfinderService
 │   ├── Quests/      QuestEnums, QuestData, QuestInstance, QuestManager
 │   ├── UI/          UIManager, PanelManager, ResourceBarUI, BuildMenuUI, BuildingInfoUI,
 │   │                ToastUI, TrainingPanelUI, ArmyPanelUI, BattleReportUI,
@@ -115,11 +119,14 @@ Assets/_Project/
 │                     UIThemeApplier, SceneSetupEditor, GameConfigCreator,
 │                     PostProcessingProfileFactory, GroundSetupEditor
 ├── ScriptableObjects/
-│   ├── Buildings/   9 aktif SO + 10 yedek (silinmesi gerekiyor)
+│   ├── Buildings/   15 aktif bina SO
 │   ├── Targets/     5 BattleTarget SO
-│   ├── Troops/      Klasor var, SO'lar henutz olusturulmadi
-│   ├── Heroes/      Klasor henutz olusturulmadi
-│   ├── TechNodes/   Klasor henutz olusturulmadi
+│   ├── Troops/      5 birlik SO
+│   ├── Heroes/      5 hero SO
+│   ├── TechNodes/   10 tech SO
+│   ├── Factions/    3 faction SO
+│   ├── Quests/      5 quest SO
+│   └── Maps/        MapTemplate, DefaultMap
 │   ├── Factions/    Klasor henuzz olusturulmadi
 │   └── Quests/      5 quest SO olusturuldu, 10 daha eklenmeli
 ├── Models/
@@ -132,9 +139,11 @@ Assets/_Project/
 │   └── UI/          NodeButton prefab henuzz olusturulmadi
 ├── Settings/
 │   └── StrategyControls.inputactions
+├── Shaders/
+│   └── Water.shader (URP custom)
 └── Docs/
     ├── GDD.md       Oyun tasarim dokumani
-    ├── ROADMAP.md   Gelistirme plani (10 faz tamamlandi)
+    ├── ROADMAP.md   Gelistirme plani (17 faz tamamlandi)
     └── BALANCE.md   Dengeleme referans tablosu
 ```
 
@@ -142,13 +151,39 @@ Assets/_Project/
 
 ## Sahne Obje Yapisi
 
-### GameManager Objeleri (GameManager GameObject uzerinde)
+### Sahne Root Nesneleri (DEGISTIRILEMEZ)
+
+Asagidaki 8 root nesne sahnede **ZORUNLU** olarak bulunur. Bu liste **tek kaynak**tir.
+**Yeni root nesne OLUSTURULMAZ**, **mevcut nesne SILINMEZ**, **isim DEGISTIRILMEZ** — kullanici acikca istemedikce.
+
+| # | Nesne Adi | Aciklama | Not |
+|---|-----------|----------|-----|
+| 1 | `Directional Light` | Ana isik kaynagi | URP sun direction |
+| 2 | `GameObject` | GameManager GO — tum manager'lar burada | Asagida listesi |
+| 3 | `CameraRig` | Kamera sistemi | Altinda Main Camera |
+| 4 | `GameCanvas` | Tum UI bu Canvas altinda | Canvas + CanvasScaler |
+| 5 | `EventSystem` | Unity EventSystem | StandaloneInputModule |
+| 6 | `UIManager` | UI yonetim objesi | UIManager component + panel referanslari |
+| 7 | `GameInitializer` | Oyun baslangic kontrolcusu | StartGame() tetikler |
+| 8 | `Ground` | Yer duzlemi | Layer: Ground (8), editor'de olusturulur |
+
+**Neden bu kurallar?**
+- Birden fazla ajan (AI/insan) ayni projede calisirken herkes ayni sahne yapisini bilir
+- Singleton manager'lar hep ayni GO (`GameObject`) uzerindedir — yeni GO uretimi YASAK
+- `Setup Ground & Camera` editor menusu bu yapiyi olusturur, elle mudahale YASAK
+- Herhangi bir script'in `new GameObject("GameManager")` veya benzeri kod uretmesi YASAK
+
+### GameManager Objeleri (`GameObject` root nesnesi uzerinde)
+
+Tum manager'lar **tek bir** `GameObject` root nesnesi uzerindedir. Yeni component buraya eklenir,
+yeni bir root GO **OLUSTURULMAZ**.
+
 GameManager, TimeManager, ResourceManager, GridSystem, GridVisualizer,
 BuildingPlacer, BuildingSelector, BuildingManager, ArmyManager,
 BattleManager, HeroManager, WorldMap, ExpeditionSystem,
 QuestManager, MutantAttackManager, ResearchManager, TradeSystem,
 SaveSystem, BaseStarter, GameInitializer, WeatherSystem, RoadManager,
-SettlerManager, SettlerJobManager
+SettlerManager, SettlerJobManager, WalkerManager, MapRenderer
 
 ### GameCanvas Alt Yapisi
 - ResourceBar
@@ -166,15 +201,15 @@ SettlerManager, SettlerJobManager
 - SettlerInfoPanel (Overlay — tiklaninca acilir, BuildingSelector ile yonetilir)
 - PausePanel (ESC ile acilir, Resume/Save-Load/Quit butonlari, runtime olusturulur)
 - DebugPanel (DebugText + DebugHUD)
-- UIManager objesi (UIManager component + tum panel referanslari)
 
-### Camera
+### Camera (`CameraRig` root nesnesi)
 - CameraRig altinda Main Camera (MainCamera tag'i atanmali, tek Audio Listener olmali)
 - ScreenShake component CameraRig uzerinde
+- StrategyCamera component Main Camera uzerinde
 
 ---
 
-## Tamamlanan Fazlar (1-14)
+## Tamamlanan Fazlar (1-17a)
 
 | Faz | Durum | Aciklama |
 |-----|-------|----------|
@@ -194,6 +229,8 @@ SettlerManager, SettlerJobManager
 | 14 | ✅ | Visual & Polish: Grid overlay, weather, highlight, damage efektleri |
 | 15 | ✅ | Settler Walker: NPC yolu yurume, nufus bazli spawn, save/load |
 | 16 | ✅ | Settler Job System: Roller, is atama, isci bazli uretim, SettlerPanelUI, SettlerInfoUI |
+| 17 | ✅ | Terrain System: MapTemplate, MapRenderer, 8 terrain type, water shader, lighting |
+| 17a | ✅ | Domain Layer: WalkerBase, WalkerManager, WalkerStateMachine, BattleCalc, PathfinderService |
 
 ---
 
@@ -272,14 +309,41 @@ Tum sistemler playtest edildi, 13/13 test gecti:
 
 ### Visual Faz 14 (Tamamlandi) ✅
 
-### Settler Walker Faz 15 (WIP)
+### Settler Walker Faz 15-17a (Tamamlandi) ✅
 
-**SettlerWalker.cs — Bireysel NPC AI:**
-- State machine: `Idle → Walking → WaitingAtDoor → Walking...`
-- `PickNewTarget()`: aktif bina kapilarindan rastgele hedef secer, `RoadManager.FindPublicPath()` ile yol bulur
-- Grid-based hareket: hucreden hucreye smooth lerp, `Quaternion.Slerp` ile yone donus
-- `TimeManager.GameSpeed` ile hiz carpani, pause'da durur
-- `GameConfig.SettlerMoveSpeed` (2) ve `GameConfig.SettlerIdleTime` (3s) ile ayarlanir
+**Domain Layer (Scripts/Domain/):**
+- `Walkers/WalkerStateMachine.cs` — Pure C# state machine (None/WalkToTarget/WaitAtTarget/ReturnHome/Rest)
+  - `Tick(dt, gameSpeed)` → TickResult (Idle/Walking/Waiting/WaitComplete/Resting/RestComplete)
+  - `OnPathComplete()` → auto state transition (Walk→Wait, Return→Rest/None)
+  - `CaptureSnapshot()` / `RestoreFromSnapshot()` — save/load desteği
+  - No UnityEngine dependency — unit-testable
+- `Combat/BattleCalc.cs` — Pure C# battle calculation (no UnityEngine)
+- `Production/ProductionCalc.cs` — WorkerModifier, TotalProductionBonus, ModifiedInterval
+- `Pathfinding/PathfinderService.cs` — BFS with IGridDataProvider interface, 0-1 deque
+
+**WalkerBase.cs — Abstract Base:**
+- Grid-based movement, path following, rotation smoothing
+- `Tick(dt, gameSpeed)` called by WalkerManager
+- `TickMovement()` — cell-to-cell smooth lerp, Quaternion.Slerp rotation
+- `FindPath()` — WalkerManager path cache → RoadManager fallback
+- `SetAnimSpeed()` — Animator CrossFade (Walk/Idle via Speed hash)
+- Cell occupancy reporting via WalkerManager
+
+**WalkerManager.cs — Central Tick Loop:**
+- Singleton, GameManager GO uzerinde
+- Single `Update()` drives all walkers (no individual MonoBehaviour updates)
+- Path cache: `Dictionary<(start,end), List<Vector2Int>>`, invalidated on road changes
+- Grid-cell occupancy: `Dictionary<Vector2Int, WalkerBase>` prevents stacking
+- Recycle pool: `Stack<SettlerWalker>` for object reuse (GetRecycled/Recycle)
+- `Register()`/`Unregister()` — walker lifecycle
+
+**SettlerWalker.cs : WalkerBase:**
+- Uses WalkerStateMachine for state management
+- Work cycle: WalkToTarget → WaitAtTarget → ReturnHome → Rest → repeat
+- `AssignJob(role, building)` / `ReassignJob(role, building)` — job assignment
+- `Dispatch(origin, dest, wait, onDone)` — generic walk dispatch
+- `ResetForReuse()` — pool recycle, ClearJob for destruction
+- Save: `CaptureSave()` / `RestoreFromSave()` — SettlerWalkerSave format preserved
 
 **SettlerManager.cs — Nufus Bazli Spawn:**
 - Singleton, GameManager GO uzerinde
@@ -299,11 +363,13 @@ Tum sistemler playtest edildi, 13/13 test gecti:
 
 **GameConfig Settler Ayarlari:**
 - `DisableSettlers` — settler spawn'ini tamamen kapatir (developer toggle)
-- `SettlersPerPopulation` (0.2) — nufus basina settler orani
-- `MaxSettlers` (20) — maksimum settler sayisi
+- `SettlersPerPopulation` (1.0) — nufus basina settler orani
+- `MaxSettlers` (50) — maksimum settler sayisi
 - `SettlerMoveSpeed` (2) — hareket hizi
 - `SettlerIdleTime` (3) — kapida bekleme suresi
 - `SettlerSpawnCheckInterval` (5s) — nufus kontrol sıklığı
+- `SettlerWorkDuration` (8f) — is yerinde bekleme suresi
+- `SettlerRestDuration` (5f) — dinlenme suresi
 
 **Save/Load:**
 - `SettlerWalkerSave`: GridX, GridZ, State, WaitTimer
@@ -311,11 +377,12 @@ Tum sistemler playtest edildi, 13/13 test gecti:
 - GameInitializer: `ResetSettlers()` ile yeni oyunda temizler
 - Load sirasinda: settler pozisyon ve state geri yuklenir, visual yeniden olusturulur
 
-**Yapilacaklar (Faz 15 kalan):**
-- [x] CityPack karakter FBX'leri ile placeholder visual degistirme (Animator + Avatar)
+**Yapilacaklar (Faz 17b+):**
 - [ ] Settler sayisi DebugPanel'de gosterim
-- [x] SessionLogger'a OnSettlerSpawned/Removed loglama
 - [ ] Fazladan karakter modellerini SettlerModels dizisine ekleme (Worker harici 4 karakter daha var)
+- [ ] NPC Visual Feedback (Faz 17b): toz particle, ayak sesi SFX, hasat animasyonu
+- [ ] SettlerPanel Enrichment (Faz 17c): ozet satiri, bina bazli dagilim, rol pasta grafik
+- [ ] Quick Tooltips (Faz 17d): bina hover, settler tikla tooltip
 
 **Settler Animasyon Sistemi:**
 - CityPack karakter modelleri: Worker, Adventurer, Suit (Business Man) → 3 FBX aktif (CharacterArmature iskeleti)
@@ -494,6 +561,10 @@ Tum sistemler playtest edildi, 13/13 test gecti:
 37. `Animator.Rebind()` setup sonrasi cagrilmali — skeleton binding refresh olmadan animasyon oynamaz
 38. `OnMouseDown()` + `BuildingSelector.Update()` ayni frame'de race condition: OnMouseDown panel açar, BuildingSelector aynı click'i isleyip paneli kapatır. Çözüm: OnMouseDown sil, tüm selection BuildingSelector.TrySelect() üzerinden tek merkezde yapılmalı
 39. `LoadSettlers()` path'inde SphereCollider eklenmezse save/load sonrasi settler tıklanamaz — CreatePoolSettler() ile LoadSettlers() collider setup aynı olmalı
+40. `SettlerManager.EnsureWalkerManager()` sadece `WalkerManager.Instance` null kontrolu yapıyor — WalkerManager henüz Awake çalışmamışsa Instance null olur, yeni GO + duplicate WalkerManager oluşturulur, Singleton `Destroy(gameObject)` ile **tüm GameManager GO'sunu siler**. Çözüm: `FindAnyObjectByType<WalkerManager>()` ile sahne kontrolu de yapilmali
+41. `HasEnoughResources()` ve `CanAffordBuilding()` ResourceManager.Instance null oldugunda `false` donerse butonlar hic enable olmaz. Timing issue: BuildMenuUI OnEnable ResourceManager'dan once calisabilir. Cozum: null ise `true` don (optimistik) — 1 sn polling ile tekrar kontrol edilir
+42. `BuildMenuFixer.cs` buton isimleri case-sensitive — sahnedeki buton adi `BtnCommandCenter` (buyuk B) ama aranan `btnCommandCenter` (kucuk b). Case-insensitive lookup kullanilmali
+43. `git checkout HEAD -- scene.unity` sahneyi commit'teki haline dondurur — local (kaydedilmemis) sahne degisiklikleri kaybolur. GameManager GO ve SerializeField baglantilari kalici olarak kaybolabilir
 
 ---
 

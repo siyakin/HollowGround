@@ -1,5 +1,6 @@
 using HollowGround.Buildings;
 using HollowGround.Core;
+using HollowGround.Domain.Walkers;
 using HollowGround.NPCs;
 using TMPro;
 using UnityEngine;
@@ -132,14 +133,14 @@ namespace HollowGround.UI
             {
                 string taskDesc = _current.CurrentTask switch
                 {
-                    SettlerTask.WalkingToTarget => "Walking to work",
-                    SettlerTask.WaitingAtTarget => "Working",
-                    SettlerTask.ReturningHome => "Returning home",
-                    SettlerTask.Resting => "Resting",
+                    WalkerState.WalkingToTarget => "Walking to work",
+                    WalkerState.WaitingAtTarget => "Working",
+                    WalkerState.ReturningHome => "Returning home",
+                    WalkerState.Resting => "Resting",
                     _ => "Idle"
                 };
-                var taskColor = _current.CurrentTask == SettlerTask.WaitingAtTarget ? UIColors.Default.Ok :
-                    _current.CurrentTask == SettlerTask.Resting ? UIColors.Default.Muted :
+                var taskColor = _current.CurrentTask == WalkerState.WaitingAtTarget ? UIColors.Default.Ok :
+                    _current.CurrentTask == WalkerState.Resting ? UIColors.Default.Muted :
                     UIColors.Default.Text;
                 _taskText.text = $"Status: <color=#{ColorUtility.ToHtmlStringRGB(taskColor)}>{taskDesc}</color>";
             }

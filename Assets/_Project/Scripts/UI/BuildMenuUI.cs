@@ -1,7 +1,17 @@
 using System.Collections.Generic;
 using System.Text;
+using HollowGround.Army;
 using HollowGround.Buildings;
+using HollowGround.Combat;
+using HollowGround.Core;
+using HollowGround.Grid;
+using HollowGround.Heroes;
+using HollowGround.NPCs;
+using HollowGround.Quests;
 using HollowGround.Resources;
+using HollowGround.Roads;
+using HollowGround.Tech;
+using HollowGround.World;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -31,6 +41,7 @@ namespace HollowGround.UI
             }
         }
 
+        [SerializeField] private BuildingPlacer _buildingPlacer;
         [SerializeField] private List<BuildingCard> _cards = new();
         [SerializeField] private BuildingCategory _currentCategory = BuildingCategory.Resource;
         [SerializeField] private Transform _cardContainer;
@@ -134,7 +145,7 @@ namespace HollowGround.UI
 
         private bool HasEnoughResources(BuildingData data)
         {
-            if (ResourceManager.Instance == null) return false;
+            if (ResourceManager.Instance == null) return true;
             var costs = data.GetCostForLevel(1);
             if (costs.Count == 0) return true;
             return ResourceManager.Instance.CanAfford(costs);
@@ -161,9 +172,12 @@ namespace HollowGround.UI
                 return;
             }
 
-            if (BuildingPlacer.Instance != null)
+            if (_buildingPlacer == null)
+                _buildingPlacer = FindAnyObjectByType<BuildingPlacer>();
+
+            if (_buildingPlacer != null)
             {
-                BuildingPlacer.Instance.StartPlacement(card.Data);
+                _buildingPlacer.StartPlacement(card.Data);
                 if (UIManager.Instance != null)
                     UIManager.Instance.ToggleBuildMenu();
                 else
