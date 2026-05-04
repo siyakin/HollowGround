@@ -16,7 +16,13 @@ namespace HollowGround.World
 
         public event Action<ActiveExpedition> OnExpeditionLaunched;
         public event Action<ActiveExpedition> OnExpeditionCompleted;
-        public event Action OnExpeditionUpdated;
+
+        [Serializable]
+        public class TroopEntry
+        {
+            public TroopType Type;
+            public int Count;
+        }
 
         [Serializable]
         public class ActiveExpedition
@@ -25,11 +31,23 @@ namespace HollowGround.World
             public Vector2Int TargetPosition;
             public string TargetName;
             public BattleTarget BattleTarget;
-            public Dictionary<TroopType, int> Troops;
+            public List<TroopEntry> Troops;
             public float TravelTime;
             public float RemainingTime;
             public bool IsReturning;
             public float Progress => TravelTime > 0 ? 1f - (RemainingTime / TravelTime) : 1f;
+
+            public Dictionary<TroopType, int> TroopsLookup
+            {
+                get
+                {
+                    var dict = new Dictionary<TroopType, int>();
+                    if (Troops != null)
+                        foreach (var e in Troops)
+                            dict[e.Type] = e.Count;
+                    return dict;
+                }
+            }
         }
 
         private void Update()
@@ -53,8 +71,6 @@ namespace HollowGround.World
                     }
                 }
             }
-
-            OnExpeditionUpdated?.Invoke();
         }
 
         public bool CanSendExpedition(Vector2Int target, Dictionary<TroopType, int> troops)
@@ -98,7 +114,7 @@ namespace HollowGround.World
                 TargetPosition = target,
                 TargetName = node.DisplayName,
                 BattleTarget = node.BattleTarget,
-                Troops = new Dictionary<TroopType, int>(troops),
+                Troops = ToTroopEntries(troops),
                 TravelTime = travelTime,
                 RemainingTime = travelTime,
                 IsReturning = false
@@ -115,7 +131,7 @@ namespace HollowGround.World
 
             if (expedition.BattleTarget != null && BattleManager.Instance != null)
             {
-                BattleManager.Instance.SendExpedition(expedition.BattleTarget, expedition.Troops);
+                BattleManager.Instance.SendExpedition(expedition.BattleTarget, expedition.TroopsLookup);
             }
             else
             {
@@ -130,16 +146,24 @@ namespace HollowGround.World
 
         private void ReturnExpedition(ActiveExpedition expedition)
         {
-            if (ArmyManager.Instance != null)
+            if (ArmyManager.Instance != null && expedition.Troops != null)
             {
-                foreach (var kvp in expedition.Troops)
-                    ArmyManager.Instance.AddTroops(kvp.Key, kvp.Value);
+                foreach (var entry in expedition.Troops)
+                    ArmyManager.Instance.AddTroops(entry.Type, entry.Count);
             }
         }
 
         public List<ActiveExpedition> GetActiveExpeditions()
         {
             return new List<ActiveExpedition>(_expeditions);
+        }
+
+        private static List<TroopEntry> ToTroopEntries(Dictionary<TroopType, int> troops)
+        {
+            var list = new List<TroopEntry>(troops.Count);
+            foreach (var kvp in troops)
+                list.Add(new TroopEntry { Type = kvp.Key, Count = kvp.Value });
+            return list;
         }
     }
 }

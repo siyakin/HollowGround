@@ -35,7 +35,7 @@ namespace HollowGround.Buildings
         private GameObject _currentModel;
         private float _destroyedTimer;
         private const float DestroyedDisplayDuration = 2.5f;
-        private const float GroundYOffset = 0.015f;
+        private const float GroundYOffset = 0.05f;
 
         public event Action<Building> OnConstructionComplete;
         public event Action<Building> OnUpgradeComplete;

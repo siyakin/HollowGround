@@ -27,6 +27,8 @@ namespace HollowGround.UI
         [SerializeField] private TMP_Text _timeText;
 
         private Dictionary<ResourceType, ResourceSlot> _slotMap;
+        private int _lastDisplayedSecond = -1;
+        private float _lastDisplayedSpeed = -1f;
 
         private void Awake()
         {
@@ -162,10 +164,14 @@ namespace HollowGround.UI
         {
             if (_timeText == null || TimeManager.Instance == null) return;
             int t = Mathf.FloorToInt(TimeManager.Instance.GameTime);
+            float speed = TimeManager.Instance.GameSpeed;
+            if (t == _lastDisplayedSecond && Mathf.Approximately(speed, _lastDisplayedSpeed)) return;
+            _lastDisplayedSecond = t;
+            _lastDisplayedSpeed = speed;
             int h = t / 3600;
             int m = (t % 3600) / 60;
             int s = t % 60;
-            _timeText.text = $"x{TimeManager.Instance.GameSpeed}  {h:D2}:{m:D2}:{s:D2}";
+            _timeText.text = $"x{speed:F0}  {h:D2}:{m:D2}:{s:D2}";
         }
 
         private void UpdatePopulation()

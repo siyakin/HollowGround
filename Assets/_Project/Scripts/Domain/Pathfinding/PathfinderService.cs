@@ -28,6 +28,11 @@ namespace HollowGround.Domain.Pathfinding
         private static readonly int[] DirX = { 0, 1, 0, -1 };
         private static readonly int[] DirZ = { 1, 0, -1, 0 };
 
+        private static readonly LinkedList<GridPos> _deque = new();
+        private static readonly HashSet<GridPos> _visited = new();
+        private static readonly Dictionary<GridPos, GridPos> _parent = new();
+        private static readonly List<GridPos> _pathBuffer = new();
+
         public static List<GridPos> BFS(
             IGridDataProvider grid,
             HashSet<GridPos> preferredCells,
@@ -35,65 +40,62 @@ namespace HollowGround.Domain.Pathfinding
             GridPos end,
             int maxIterations = 500)
         {
-            var deque = new LinkedList<GridPos>();
-            var visited = new HashSet<GridPos>();
-            var parent = new Dictionary<GridPos, GridPos>();
+            _deque.Clear();
+            _visited.Clear();
+            _parent.Clear();
 
-            deque.AddLast(start);
-            visited.Add(start);
+            _deque.AddLast(start);
+            _visited.Add(start);
 
             int iterations = 0;
-            while (deque.Count > 0 && iterations < maxIterations)
+            while (_deque.Count > 0 && iterations < maxIterations)
             {
                 iterations++;
-                var current = deque.First.Value;
-                deque.RemoveFirst();
+                var current = _deque.First.Value;
+                _deque.RemoveFirst();
 
                 if (current.X == end.X && current.Z == end.Z)
-                    return ReconstructPath(parent, start, end, maxIterations);
+                    return ReconstructPath(start, end, maxIterations);
 
                 for (int d = 0; d < 4; d++)
                 {
                     var next = new GridPos(current.X + DirX[d], current.Z + DirZ[d]);
 
-                    if (visited.Contains(next)) continue;
+                    if (_visited.Contains(next)) continue;
                     if (!grid.IsValid(next.X, next.Z)) continue;
                     if (!grid.IsPassable(next.X, next.Z)) continue;
 
-                    visited.Add(next);
-                    parent[next] = current;
+                    _visited.Add(next);
+                    _parent[next] = current;
 
                     if (preferredCells != null && preferredCells.Contains(next))
-                        deque.AddFirst(next);
+                        _deque.AddFirst(next);
                     else
-                        deque.AddLast(next);
+                        _deque.AddLast(next);
                 }
             }
 
             return null;
         }
 
-        private static List<GridPos> ReconstructPath(
-            Dictionary<GridPos, GridPos> parent,
-            GridPos start,
-            GridPos end,
-            int maxIterations)
+        private static List<GridPos> ReconstructPath(GridPos start, GridPos end, int maxIterations)
         {
-            var path = new List<GridPos>();
+            _pathBuffer.Clear();
             var current = end;
             int safety = 0;
 
             while (!(current.X == start.X && current.Z == start.Z) && safety < maxIterations)
             {
-                path.Add(current);
-                if (!parent.ContainsKey(current)) return null;
-                current = parent[current];
+                _pathBuffer.Add(current);
+                if (!_parent.ContainsKey(current)) return null;
+                current = _parent[current];
                 safety++;
             }
 
-            path.Add(start);
-            path.Reverse();
-            return path;
+            _pathBuffer.Add(start);
+            _pathBuffer.Reverse();
+
+            return new List<GridPos>(_pathBuffer);
         }
     }
 }
