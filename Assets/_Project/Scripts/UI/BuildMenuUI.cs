@@ -47,9 +47,18 @@ namespace HollowGround.UI
         [SerializeField] private Transform _cardContainer;
 
         private float _refreshTimer;
+        private bool _pendingFirstRefresh;
 
         private void Update()
         {
+            if (_pendingFirstRefresh)
+            {
+                _pendingFirstRefresh = false;
+                _refreshTimer = 0f;
+                RefreshCards();
+                return;
+            }
+
             _refreshTimer += Time.deltaTime;
             if (_refreshTimer >= 1f)
             {
@@ -60,20 +69,50 @@ namespace HollowGround.UI
 
         private void OnEnable()
         {
+            SubscribeEvents();
+            SetAllCardsLoading();
+            _pendingFirstRefresh = true;
+        }
+
+        private void OnDisable()
+        {
+            UnsubscribeEvents();
+        }
+
+        private void SubscribeEvents()
+        {
             if (BuildingManager.Instance != null)
             {
                 BuildingManager.Instance.OnBuildingAdded += HandleBuildingChanged;
                 BuildingManager.Instance.OnCommandCenterLevelChanged += HandleCCLevelChanged;
             }
-            RefreshCards();
         }
 
-        private void OnDisable()
+        private void UnsubscribeEvents()
         {
             if (BuildingManager.Instance != null)
             {
                 BuildingManager.Instance.OnBuildingAdded -= HandleBuildingChanged;
                 BuildingManager.Instance.OnCommandCenterLevelChanged -= HandleCCLevelChanged;
+            }
+        }
+
+        private void SetAllCardsLoading()
+        {
+            foreach (var card in _cards)
+            {
+                if (card.Data == null) continue;
+                if (card.Button != null)
+                    card.Button.interactable = false;
+                if (card.NameText != null)
+                {
+                    card.NameText.text = card.Data.DisplayName;
+                    card.NameText.color = UIColors.Default.Muted;
+                }
+                if (card.CostDisplay != null)
+                    card.CostDisplay.Clear();
+                if (card.LockedOverlay != null)
+                    card.LockedOverlay.SetActive(false);
             }
         }
 
@@ -95,7 +134,9 @@ namespace HollowGround.UI
 
         public void RefreshCards()
         {
-            var theme = UIThemeManager.Instance?.CurrentTheme;
+            if (BuildingManager.Instance == null || ResourceManager.Instance == null)
+                return;
+
             foreach (var card in _cards)
             {
                 if (card.Data == null) continue;
@@ -103,22 +144,23 @@ namespace HollowGround.UI
                 int ccLevel = BuildingManager.Instance != null ? BuildingManager.Instance.GetCommandCenterLevel() : 0;
                 bool ccUnlocked = card.Data.CommandCenterLevelRequired <= ccLevel;
                 bool hasResources = HasEnoughResources(card.Data);
-                bool enabled = ccUnlocked && hasResources;
 
                 if (card.Button != null)
                 {
                     card.Button.gameObject.SetActive(true);
-                    card.Button.interactable = enabled;
+                    card.Button.interactable = ccUnlocked && hasResources;
 
                     var tb = card.ThemedBtn;
                     if (tb != null && tb.styleType != UIStyleType.BuildingCardButton)
                         tb.styleType = UIStyleType.BuildingCardButton;
+                    else if (tb != null)
+                        tb.ApplyStyle();
                 }
 
                 if (card.NameText != null)
                 {
                     card.NameText.text = card.Data.DisplayName;
-                    card.NameText.color = enabled ? UIColors.Default.Text : UIColors.Default.Muted;
+                    card.NameText.color = ccUnlocked ? (hasResources ? UIColors.Default.Text : UIColors.Default.Warn) : UIColors.Default.Muted;
                 }
 
                 if (card.CostDisplay != null)
@@ -161,17 +203,16 @@ namespace HollowGround.UI
             BuildingCard card = _cards[cardIndex];
             if (card.Data == null) return;
 
-            if (!HasEnoughResources(card.Data))
+            int ccLevel = BuildingManager.Instance != null ? BuildingManager.Instance.GetCommandCenterLevel() : 0;
+            if (card.Data.CommandCenterLevelRequired > ccLevel)
             {
-                ShowMissingResources(card.Data);
+                ToastUI.Show($"Need Command Center Lv.{card.Data.CommandCenterLevelRequired}! (Current: Lv.{ccLevel})", UIColors.Default.Danger);
                 return;
             }
 
-            if (BuildingManager.Instance != null && !BuildingManager.Instance.CanBuild(card.Data))
+            if (!HasEnoughResources(card.Data))
             {
-                int ccLevel = BuildingManager.Instance.GetCommandCenterLevel();
-                int required = card.Data.CommandCenterLevelRequired;
-                ToastUI.Show($"Need Command Center Lv.{required}! (Current: Lv.{ccLevel})", UIColors.Default.Danger);
+                ShowMissingResources(card.Data);
                 return;
             }
 

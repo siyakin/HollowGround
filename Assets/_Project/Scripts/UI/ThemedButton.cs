@@ -37,7 +37,7 @@ namespace HollowGround.UI
             _label = GetComponentInChildren<TMP_Text>();
         }
 
-        private void ApplyStyle()
+        public void ApplyStyle()
         {
             var theme = UIThemeManager.Instance?.CurrentTheme;
             if (theme == null) return;
