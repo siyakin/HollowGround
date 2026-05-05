@@ -79,7 +79,7 @@ namespace HollowGround.Core
             string line = $"[{ts}] {message}";
             _sb.AppendLine(line);
             _logCount++;
-            if (_logCount % 50 == 0)
+            if (_logCount % 600 == 0)
                 Debug.Log($"[SessionLog] {_logCount} entries written");
         }
 

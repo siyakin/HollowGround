@@ -10,6 +10,20 @@ namespace HollowGround.UI
 {
     public class TechTreeUI : MonoBehaviour
     {
+        [Header("Layout")]
+        [SerializeField] private RectTransform _columnsContainer;
+        [SerializeField] private RectTransform _detailPanel;
+
+        [Header("Detail")]
+        [SerializeField] private TMP_Text _detailName;
+        [SerializeField] private TMP_Text _detailCategory;
+        [SerializeField] private TMP_Text _detailDesc;
+        [SerializeField] private TMP_Text _detailCost;
+        [SerializeField] private TMP_Text _detailBonuses;
+        [SerializeField] private TMP_Text _detailPrereqs;
+        [SerializeField] private Button _detailResearchBtn;
+        [SerializeField] private TMP_Text _detailResearchBtnText;
+
         private static readonly Color ColorColumnBg = new(0.11f, 0.12f, 0.14f, 1f);
         private static readonly Color ColorCardLocked = new(0.18f, 0.18f, 0.2f, 1f);
         private static readonly Color ColorCardAvailable = new(0.22f, 0.3f, 0.4f, 1f);
@@ -25,22 +39,10 @@ namespace HollowGround.UI
             { TechCategory.Exploration,  new Color(0.75f, 0.55f, 0.2f) },
         };
 
-        private RectTransform _root;
-        private RectTransform _columnsContainer;
-        private RectTransform _detailPanel;
-        private TMP_Text _detailName;
-        private TMP_Text _detailCategory;
-        private TMP_Text _detailDesc;
-        private TMP_Text _detailCost;
-        private TMP_Text _detailBonuses;
-        private TMP_Text _detailPrereqs;
-        private Button _detailResearchBtn;
-        private TMP_Text _detailResearchBtnText;
-
         private readonly Dictionary<TechNode, TechCardView> _cards = new();
         private TechNode _selectedTech;
         private List<TechNode> _allTechs = new();
-        private bool _built;
+
 
         private class TechCardView
         {
@@ -55,15 +57,15 @@ namespace HollowGround.UI
 
         private void OnEnable()
         {
-            if (!_built) BuildUI();
             ReloadTechs();
-            RefreshAll();
 
             if (ResearchManager.Instance != null)
             {
                 ResearchManager.Instance.OnResearchStarted += HandleResearchStarted;
                 ResearchManager.Instance.OnResearchCompleted += HandleResearchCompleted;
             }
+
+            RefreshAll();
         }
 
         private void OnDisable()
@@ -93,57 +95,17 @@ namespace HollowGround.UI
             _allTechs = UnityEngine.Resources.LoadAll<TechNode>("TechNodes").ToList();
         }
 
-        private void BuildUI()
+        private void RefreshAll()
         {
-            _root = GetComponent<RectTransform>();
-            if (_root == null)
-            {
-                Debug.LogError("[TechTreeUI] Must be on a RectTransform (UI Canvas child).");
-                return;
-            }
+            if (_columnsContainer == null) return;
 
-            UIPrimitiveFactory.StretchFull(_root, new Vector2(0f, 60f), Vector2.zero);
+            if (_cards.Count == 0 || _cards.Count != _allTechs.Count)
+                BuildColumns();
 
-            foreach (Transform child in _root)
-                Destroy(child.gameObject);
+            foreach (var view in _cards.Values)
+                UpdateCardVisual(view);
 
-            var bg = UIPrimitiveFactory.CreateUIObject("Background", _root);
-            UIPrimitiveFactory.StretchFull(bg);
-            UIPrimitiveFactory.AddImage(bg, UIColors.Default.PanelBg);
-
-            var cg = gameObject.GetComponent<CanvasGroup>();
-            if (cg == null) cg = gameObject.AddComponent<CanvasGroup>();
-            cg.interactable = true;
-            cg.blocksRaycasts = true;
-            cg.alpha = 1f;
-
-            var header = UIPrimitiveFactory.CreateUIObject("Header", _root);
-            UIPrimitiveFactory.SetAnchors(header, new Vector2(0, 1), new Vector2(1, 1), new Vector2(0.5f, 1));
-            header.anchoredPosition = new Vector2(0, -30);
-            header.sizeDelta = new Vector2(-40, 50);
-            var titleLabel = UIPrimitiveFactory.AddThemedText(header, "TECHNOLOGY TREE", 28, UIColors.Default.Text, TextAlignmentOptions.Center);
-            UIPrimitiveFactory.StretchFull(titleLabel.rectTransform);
-
-            _columnsContainer = UIPrimitiveFactory.CreateUIObject("Columns", _root);
-            UIPrimitiveFactory.SetAnchors(_columnsContainer, new Vector2(0, 0), new Vector2(1, 1), new Vector2(0.5f, 0.5f));
-            _columnsContainer.offsetMin = new Vector2(40, 30);
-            _columnsContainer.offsetMax = new Vector2(-420, -80);
-            var hlg = _columnsContainer.gameObject.AddComponent<HorizontalLayoutGroup>();
-            hlg.spacing = 10;
-            hlg.childAlignment = TextAnchor.UpperLeft;
-            hlg.childControlWidth = true;
-            hlg.childControlHeight = true;
-            hlg.childForceExpandWidth = true;
-            hlg.childForceExpandHeight = true;
-
-            _detailPanel = UIPrimitiveFactory.CreateUIObject("DetailPanel", _root);
-            UIPrimitiveFactory.SetAnchors(_detailPanel, new Vector2(1, 0), new Vector2(1, 1), new Vector2(1, 0.5f));
-            _detailPanel.offsetMin = new Vector2(-400, 30);
-            _detailPanel.offsetMax = new Vector2(-20, -80);
-            UIPrimitiveFactory.AddImage(_detailPanel, UIColors.PanelInner);
-            BuildDetailPanel();
-
-            _built = true;
+            UpdateDetailPanel();
         }
 
         private void BuildColumns()
@@ -186,6 +148,7 @@ namespace HollowGround.UI
                 foreach (var tech in techsInCat)
                     BuildCard(column, tech);
             }
+
         }
 
         private void BuildCard(RectTransform parent, TechNode tech)
@@ -235,64 +198,6 @@ namespace HollowGround.UI
             };
         }
 
-        private void BuildDetailPanel()
-        {
-            _detailName = UIPrimitiveFactory.AddThemedText(_detailPanel, "Select a technology", 22, UIColors.Default.Text, TextAlignmentOptions.TopLeft);
-            var nameRt = _detailName.rectTransform;
-            UIPrimitiveFactory.SetAnchors(nameRt, new Vector2(0, 1), new Vector2(1, 1), new Vector2(0.5f, 1));
-            nameRt.anchoredPosition = new Vector2(0, -15);
-            nameRt.sizeDelta = new Vector2(-24, 30);
-
-            _detailCategory = UIPrimitiveFactory.AddThemedText(_detailPanel, "", 14, UIColors.Default.Muted, TextAlignmentOptions.TopLeft);
-            var catRt = _detailCategory.rectTransform;
-            UIPrimitiveFactory.SetAnchors(catRt, new Vector2(0, 1), new Vector2(1, 1), new Vector2(0.5f, 1));
-            catRt.anchoredPosition = new Vector2(0, -48);
-            catRt.sizeDelta = new Vector2(-24, 20);
-
-            _detailDesc = UIPrimitiveFactory.AddThemedText(_detailPanel, "", 15, UIColors.Default.Text, TextAlignmentOptions.TopLeft);
-            var descRt = _detailDesc.rectTransform;
-            UIPrimitiveFactory.SetAnchors(descRt, new Vector2(0, 1), new Vector2(1, 1), new Vector2(0.5f, 1));
-            descRt.anchoredPosition = new Vector2(0, -78);
-            descRt.sizeDelta = new Vector2(-24, 60);
-
-            _detailCost = UIPrimitiveFactory.AddThemedText(_detailPanel, "", 15, UIColors.Default.Muted, TextAlignmentOptions.TopLeft);
-            var costRt = _detailCost.rectTransform;
-            UIPrimitiveFactory.SetAnchors(costRt, new Vector2(0, 1), new Vector2(1, 1), new Vector2(0.5f, 1));
-            costRt.anchoredPosition = new Vector2(0, -150);
-            costRt.sizeDelta = new Vector2(-24, 80);
-
-            _detailResearchBtn = UIPrimitiveFactory.CreateThemedButton(_detailPanel, "ResearchBtn", "START RESEARCH", StartResearchFromDetail, UIStyleType.ConfirmButton);
-            var btnRt = _detailResearchBtn.GetComponent<RectTransform>();
-            UIPrimitiveFactory.SetAnchors(btnRt, new Vector2(0, 1), new Vector2(1, 1), new Vector2(0.5f, 1));
-            btnRt.anchoredPosition = new Vector2(0, -250);
-            btnRt.sizeDelta = new Vector2(-24, 50);
-            _detailResearchBtnText = _detailResearchBtn.GetComponentInChildren<TextMeshProUGUI>();
-
-            _detailBonuses = UIPrimitiveFactory.AddThemedText(_detailPanel, "", 15, UIColors.Default.Text, TextAlignmentOptions.TopLeft);
-            var bonRt = _detailBonuses.rectTransform;
-            UIPrimitiveFactory.SetAnchors(bonRt, new Vector2(0, 1), new Vector2(1, 1), new Vector2(0.5f, 1));
-            bonRt.anchoredPosition = new Vector2(0, -310);
-            bonRt.sizeDelta = new Vector2(-24, 100);
-
-            _detailPrereqs = UIPrimitiveFactory.AddThemedText(_detailPanel, "", 14, UIColors.TextDim, TextAlignmentOptions.TopLeft);
-            var prereqRt = _detailPrereqs.rectTransform;
-            UIPrimitiveFactory.SetAnchors(prereqRt, new Vector2(0, 1), new Vector2(1, 1), new Vector2(0.5f, 1));
-            prereqRt.anchoredPosition = new Vector2(0, -420);
-            prereqRt.sizeDelta = new Vector2(-24, 60);
-        }
-
-        private void RefreshAll()
-        {
-            if (!_built) return;
-            if (_cards.Count == 0 || _cards.Count != _allTechs.Count)
-                BuildColumns();
-
-            foreach (var view in _cards.Values)
-                UpdateCardVisual(view);
-
-            UpdateDetailPanel();
-        }
-
         private void UpdateCardVisual(TechCardView view)
         {
             if (view == null || view.Data == null) return;
@@ -334,6 +239,8 @@ namespace HollowGround.UI
 
         private void UpdateDetailPanel()
         {
+            if (_detailName == null) return;
+
             if (_selectedTech == null)
             {
                 _detailName.text = "Select a technology";
@@ -342,7 +249,7 @@ namespace HollowGround.UI
                 _detailCost.text = "";
                 _detailBonuses.text = "";
                 _detailPrereqs.text = "";
-                _detailResearchBtn.gameObject.SetActive(false);
+                if (_detailResearchBtn != null) _detailResearchBtn.gameObject.SetActive(false);
                 return;
             }
 
@@ -396,19 +303,22 @@ namespace HollowGround.UI
             bool canStart = ResearchManager.Instance != null &&
                             ResearchManager.Instance.CanStartResearch(tech);
 
-            _detailResearchBtn.gameObject.SetActive(true);
-            _detailResearchBtn.interactable = canStart;
-            var btnImg = _detailResearchBtn.GetComponent<Image>();
-            if (btnImg != null)
-                btnImg.color = canStart ? UIColors.Default.Ok : new Color(0.3f, 0.3f, 0.32f, 1f);
-
-            if (_detailResearchBtnText != null)
+            if (_detailResearchBtn != null)
             {
-                if (isResearched) _detailResearchBtnText.text = "COMPLETED";
-                else if (isResearching) _detailResearchBtnText.text = "IN PROGRESS...";
-                else if (!tech.CanResearch()) _detailResearchBtnText.text = "PREREQS NOT MET";
-                else if (!canStart) _detailResearchBtnText.text = "INSUFFICIENT RESOURCES";
-                else _detailResearchBtnText.text = "START RESEARCH";
+                _detailResearchBtn.gameObject.SetActive(true);
+                _detailResearchBtn.interactable = canStart;
+                var btnImg = _detailResearchBtn.GetComponent<Image>();
+                if (btnImg != null)
+                    btnImg.color = canStart ? UIColors.Default.Ok : new Color(0.3f, 0.3f, 0.32f, 1f);
+
+                if (_detailResearchBtnText != null)
+                {
+                    if (isResearched) _detailResearchBtnText.text = "COMPLETED";
+                    else if (isResearching) _detailResearchBtnText.text = "IN PROGRESS...";
+                    else if (!tech.CanResearch()) _detailResearchBtnText.text = "PREREQS NOT MET";
+                    else if (!canStart) _detailResearchBtnText.text = "INSUFFICIENT RESOURCES";
+                    else _detailResearchBtnText.text = "START RESEARCH";
+                }
             }
         }
 

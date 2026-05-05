@@ -9,21 +9,22 @@ namespace HollowGround.UI
 {
     public class FactionTradeUI : MonoBehaviour
     {
-        private TMP_Text _headerText;
-        private TMP_Text _detailName;
-        private TMP_Text _detailRelation;
-        private TMP_Text _detailDesc;
-        private Transform _sellContainer;
-        private Transform _buyContainer;
-        private GameObject _detailPanel;
-        private Transform _factionList;
+        [Header("Left Panel")]
+        [SerializeField] private Transform _factionList;
+
+        [Header("Detail Panel")]
+        [SerializeField] private GameObject _detailPanel;
+        [SerializeField] private TMP_Text _detailName;
+        [SerializeField] private TMP_Text _detailRelation;
+        [SerializeField] private TMP_Text _detailDesc;
+        [SerializeField] private Transform _sellContainer;
+        [SerializeField] private Transform _buyContainer;
+
         private List<FactionData> _factions = new();
         private FactionData _selectedFaction;
-        private bool _built;
 
         private void OnEnable()
         {
-            if (!_built) BuildUI();
             RefreshFactions();
 
             if (TradeSystem.Instance != null)
@@ -44,95 +45,9 @@ namespace HollowGround.UI
             RefreshFactions();
         }
 
-        private void BuildUI()
-        {
-            var root = GetComponent<RectTransform>();
-            if (root == null) return;
-
-            UIPrimitiveFactory.SetupPanelBackground(gameObject, UIColors.Default);
-            UIPrimitiveFactory.StretchFull(root, new Vector2(0f, 60f), Vector2.zero);
-
-            foreach (Transform child in root)
-                Destroy(child.gameObject);
-
-            var mainHLG = gameObject.AddComponent<HorizontalLayoutGroup>();
-            mainHLG.padding = new RectOffset(15, 15, 15, 15);
-            mainHLG.spacing = 15;
-            mainHLG.childControlWidth = true;
-            mainHLG.childControlHeight = true;
-            mainHLG.childForceExpandWidth = true;
-            mainHLG.childForceExpandHeight = true;
-
-            var leftPanel = new GameObject("FactionList", typeof(RectTransform));
-            leftPanel.transform.SetParent(root, false);
-            var leftBg = leftPanel.AddComponent<Image>();
-            leftBg.color = UIColors.Default.RowBg;
-            var leftVLG = leftPanel.AddComponent<VerticalLayoutGroup>();
-            leftVLG.padding = new RectOffset(10, 10, 10, 10);
-            leftVLG.spacing = 6;
-            leftVLG.childControlWidth = true;
-            leftVLG.childControlHeight = false;
-            leftVLG.childForceExpandWidth = true;
-            leftVLG.childForceExpandHeight = false;
-
-            var leftHeader = UIPrimitiveFactory.AddThemedText(leftPanel.transform, "FACTIONS", 22, UIColors.Default.Gold, TextAlignmentOptions.Center, UIStyleType.HeaderText);
-            UIPrimitiveFactory.AddLayoutElement(leftHeader.gameObject, preferredHeight: 35);
-
-            var listObj = UIPrimitiveFactory.CreateUIObject("List", leftPanel.transform);
-            UIPrimitiveFactory.AddLayoutElement(listObj.gameObject, preferredHeight: 300);
-            var listVLG = listObj.gameObject.AddComponent<VerticalLayoutGroup>();
-            listVLG.spacing = 4;
-            listVLG.childControlWidth = true;
-            listVLG.childControlHeight = false;
-            listVLG.childForceExpandWidth = true;
-            listVLG.childForceExpandHeight = false;
-            _factionList = listObj.transform;
-
-            _detailPanel = UIPrimitiveFactory.CreateUIObject("DetailPanel", root).gameObject;
-            var detailBg = _detailPanel.AddComponent<Image>();
-            detailBg.color = UIColors.Default.RowBg;
-            var detailVLG = _detailPanel.AddComponent<VerticalLayoutGroup>();
-            detailVLG.padding = new RectOffset(15, 15, 10, 10);
-            detailVLG.spacing = 8;
-            detailVLG.childControlWidth = true;
-            detailVLG.childControlHeight = false;
-            detailVLG.childForceExpandWidth = true;
-            detailVLG.childForceExpandHeight = false;
-
-            _detailName = UIPrimitiveFactory.AddThemedText(_detailPanel.transform, "Select a faction", 22, UIColors.Default.Text);
-            _detailRelation = UIPrimitiveFactory.AddThemedText(_detailPanel.transform, "", 16, UIColors.Default.Muted);
-            _detailDesc = UIPrimitiveFactory.AddThemedText(_detailPanel.transform, "", 15, UIColors.Default.Muted);
-            UIPrimitiveFactory.AddLayoutElement(_detailDesc.gameObject, preferredHeight: 50);
-
-            UIPrimitiveFactory.AddThemedText(_detailPanel.transform, "-- BUY FROM FACTION --", 16, UIColors.Default.Ok).alignment = TextAlignmentOptions.Center;
-            var sellObj = UIPrimitiveFactory.CreateUIObject("SellList", _detailPanel.transform);
-            UIPrimitiveFactory.AddLayoutElement(sellObj.gameObject, preferredHeight: 120);
-            var sellVLG = sellObj.gameObject.AddComponent<VerticalLayoutGroup>();
-            sellVLG.spacing = 3;
-            sellVLG.childControlWidth = true;
-            sellVLG.childControlHeight = false;
-            sellVLG.childForceExpandWidth = true;
-            sellVLG.childForceExpandHeight = false;
-            _sellContainer = sellObj.transform;
-
-            UIPrimitiveFactory.AddThemedText(_detailPanel.transform, "-- SELL TO FACTION --", 16, UIColors.Default.Gold).alignment = TextAlignmentOptions.Center;
-            var buyObj = UIPrimitiveFactory.CreateUIObject("BuyList", _detailPanel.transform);
-            UIPrimitiveFactory.AddLayoutElement(buyObj.gameObject, preferredHeight: 120);
-            var buyVLG = buyObj.gameObject.AddComponent<VerticalLayoutGroup>();
-            buyVLG.spacing = 3;
-            buyVLG.childControlWidth = true;
-            buyVLG.childControlHeight = false;
-            buyVLG.childForceExpandWidth = true;
-            buyVLG.childForceExpandHeight = false;
-            _buyContainer = buyObj.transform;
-
-            _detailPanel.SetActive(false);
-            _built = true;
-        }
-
         private void RefreshFactions()
         {
-            if (!_built || _factionList == null) return;
+            if (_factionList == null) return;
 
             for (int i = _factionList.childCount - 1; i >= 0; i--)
                 Destroy(_factionList.GetChild(i).gameObject);

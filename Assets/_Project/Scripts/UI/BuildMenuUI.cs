@@ -26,7 +26,7 @@ namespace HollowGround.UI
             public BuildingData Data;
             public Button Button;
             public TMP_Text NameText;
-            public TMP_Text CostText;
+            public ResourceCostDisplay CostDisplay;
             public GameObject LockedOverlay;
 
             private ThemedButton _themedBtn;
@@ -121,21 +121,24 @@ namespace HollowGround.UI
                     card.NameText.color = enabled ? UIColors.Default.Text : UIColors.Default.Muted;
                 }
 
-                if (card.CostText != null)
+                if (card.CostDisplay != null)
                 {
                     var costs = card.Data.GetCostForLevel(1);
-                    var parts = new List<string>();
-                    foreach (var kvp in costs)
+                    if (costs.Count > 0)
                     {
-                        if (kvp.Value <= 0) continue;
-                        var resColor = UIColors.GetResourceColor(kvp.Key);
-                        int have = ResourceManager.Instance != null ? ResourceManager.Instance.Get(kvp.Key) : 0;
-                        bool enough = have >= kvp.Value;
-                        string hex = ColorUtility.ToHtmlStringRGBA(enough ? resColor : UIColors.Default.Danger);
-                        parts.Add($"<color=#{hex}>\u25CF {kvp.Value}</color>");
+                        Dictionary<ResourceType, int> have = null;
+                        if (ResourceManager.Instance != null)
+                        {
+                            have = new Dictionary<ResourceType, int>();
+                            foreach (var kvp in costs)
+                                have[kvp.Key] = ResourceManager.Instance.Get(kvp.Key);
+                        }
+                        card.CostDisplay.SetCosts(costs, have);
                     }
-                    card.CostText.text = parts.Count > 0 ? string.Join("  ", parts) : "<color=#C8C8C8>Free</color>";
-                    card.CostText.color = enabled ? UIColors.Default.Text : UIColors.Default.Muted;
+                    else
+                    {
+                        card.CostDisplay.Clear();
+                    }
                 }
 
                 if (card.LockedOverlay != null)

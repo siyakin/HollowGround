@@ -11,10 +11,12 @@ namespace HollowGround.UI
 {
     public class TrainingPanelUI : MonoBehaviour
     {
+        [Header("Layout")]
+        [SerializeField] private Transform _rowsContainer;
+        [SerializeField] private TMP_Text _armySummaryText;
+        [SerializeField] private TMP_Text _statusText;
+
         private readonly List<TroopRow> _rows = new();
-        private TMP_Text _statusText;
-        private TMP_Text _armySummaryText;
-        private bool _built;
 
         private class TroopRow
         {
@@ -27,7 +29,7 @@ namespace HollowGround.UI
 
         private void OnEnable()
         {
-            if (!_built) BuildUI();
+            BuildRows();
             RefreshAll();
 
             if (ArmyManager.Instance != null)
@@ -64,53 +66,18 @@ namespace HollowGround.UI
             }
         }
 
-        private void BuildUI()
+        private void BuildRows()
         {
-            var root = GetComponent<RectTransform>();
-            if (root == null) return;
+            if (_rowsContainer == null) return;
+            _rows.Clear();
 
-            root.anchorMin = new Vector2(0f, 0f);
-            root.anchorMax = new Vector2(1f, 1f);
-            root.offsetMin = new Vector2(0f, 60f);
-            root.offsetMax = new Vector2(0f, 0f);
-
-            foreach (Transform child in root)
+            foreach (Transform child in _rowsContainer)
                 Destroy(child.gameObject);
-
-            var oldVlg = GetComponent<VerticalLayoutGroup>();
-            if (oldVlg != null) DestroyImmediate(oldVlg);
-
-            var oldImages = GetComponents<UnityEngine.UI.Image>();
-            foreach (var img in oldImages)
-                DestroyImmediate(img);
-
-            var oldCg = GetComponent<CanvasGroup>();
-            if (oldCg != null) DestroyImmediate(oldCg);
-
-            UIPrimitiveFactory.SetupPanelBackground(gameObject, UIColors.Default);
-
-            var vlg = UIPrimitiveFactory.AddStandardVLG(gameObject);
-
-            var headerText = UIPrimitiveFactory.AddThemedText(transform, "ARMY TRAINING", 26, UIColors.Default.Gold);
-            headerText.alignment = TextAlignmentOptions.Center;
-            var headerLE = headerText.gameObject.AddComponent<LayoutElement>();
-            headerLE.preferredHeight = 40;
 
             var allTroops = UnityEngine.Resources.LoadAll<TroopData>("Troops").ToList();
 
             foreach (var troop in allTroops)
-                BuildRow(transform, troop);
-
-            _armySummaryText = UIPrimitiveFactory.AddThemedText(transform, "", 18, UIColors.Default.Ok);
-            _armySummaryText.alignment = TextAlignmentOptions.Center;
-            var summaryLE = _armySummaryText.gameObject.AddComponent<LayoutElement>();
-            summaryLE.preferredHeight = 30;
-
-            _statusText = UIPrimitiveFactory.AddThemedText(transform, "No active training", 16, UIColors.Default.Muted, TextAlignmentOptions.Center, UIStyleType.BodyText);
-            var statusLE = _statusText.gameObject.AddComponent<LayoutElement>();
-            statusLE.preferredHeight = 30;
-
-            _built = true;
+                BuildRow(_rowsContainer, troop);
         }
 
         private void BuildRow(Transform parent, TroopData troop)
@@ -207,7 +174,7 @@ namespace HollowGround.UI
 
         private void RefreshAll()
         {
-            if (!_built || ArmyManager.Instance == null) return;
+            if (ArmyManager.Instance == null) return;
 
             foreach (var row in _rows)
             {

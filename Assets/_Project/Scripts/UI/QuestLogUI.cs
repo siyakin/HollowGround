@@ -9,26 +9,40 @@ namespace HollowGround.UI
 {
     public class QuestLogUI : MonoBehaviour
     {
+        [Header("Header")]
+        [SerializeField] private TMP_Text _headerText;
+        [SerializeField] private Button _prevBtn;
+        [SerializeField] private Button _nextBtn;
+
+        [Header("List")]
+        [SerializeField] private Transform _listContainer;
+
+        [Header("Detail")]
+        [SerializeField] private GameObject _detailPanel;
+        [SerializeField] private TMP_Text _detailName;
+        [SerializeField] private TMP_Text _detailDesc;
+        [SerializeField] private TMP_Text _detailObjectives;
+        [SerializeField] private TMP_Text _detailRewards;
+        [SerializeField] private Button _acceptBtn;
+        [SerializeField] private Button _turnInBtn;
+
         private int _currentTab;
         private QuestInstance _selectedQuest;
-        private TMP_Text _headerText;
-        private TMP_Text _detailName;
-        private TMP_Text _detailDesc;
-        private TMP_Text _detailObjectives;
-        private TMP_Text _detailRewards;
-        private GameObject _detailPanel;
-        private Button _acceptBtn;
-        private Button _turnInBtn;
-        private Transform _listContainer;
-        private bool _built;
 
         private const int TabActive = 0;
         private const int TabAvailable = 1;
         private const int TabCompleted = 2;
 
+        private void Awake()
+        {
+            if (_prevBtn != null) _prevBtn.onClick.AddListener(PrevTab);
+            if (_nextBtn != null) _nextBtn.onClick.AddListener(NextTab);
+            if (_acceptBtn != null) _acceptBtn.onClick.AddListener(AcceptSelectedQuest);
+            if (_turnInBtn != null) _turnInBtn.onClick.AddListener(TurnInSelectedQuest);
+        }
+
         private void OnEnable()
         {
-            if (!_built) BuildUI();
             if (QuestManager.Instance != null)
             {
                 QuestManager.Instance.OnQuestAccepted += HandleQuestChanged;
@@ -50,101 +64,6 @@ namespace HollowGround.UI
                 QuestManager.Instance.OnQuestTurnedIn -= HandleQuestChanged;
                 QuestManager.Instance.OnQuestListChanged -= RefreshList;
             }
-        }
-
-        private void BuildUI()
-        {
-            var root = GetComponent<RectTransform>();
-            if (root == null) return;
-
-            root.anchorMin = new Vector2(0f, 0f);
-            root.anchorMax = new Vector2(1f, 1f);
-            root.offsetMin = new Vector2(0f, 60f);
-            root.offsetMax = new Vector2(0f, 0f);
-
-            foreach (Transform child in root)
-                Destroy(child.gameObject);
-
-            var oldVlg = GetComponent<VerticalLayoutGroup>();
-            if (oldVlg != null) DestroyImmediate(oldVlg);
-            var oldImages = GetComponents<Image>();
-            foreach (var img in oldImages) DestroyImmediate(img);
-
-            UIPrimitiveFactory.SetupPanelBackground(gameObject, UIColors.Default);
-
-            var vlg = UIPrimitiveFactory.AddStandardVLG(gameObject);
-
-            var headerRow = new GameObject("Header", typeof(RectTransform));
-            headerRow.transform.SetParent(root, false);
-            var headerLE = headerRow.AddComponent<LayoutElement>();
-            headerLE.preferredHeight = 40;
-            var headerHLG = headerRow.AddComponent<HorizontalLayoutGroup>();
-            headerHLG.spacing = 10;
-            headerHLG.childAlignment = TextAnchor.MiddleCenter;
-            headerHLG.childControlWidth = true;
-            headerHLG.childControlHeight = true;
-            headerHLG.childForceExpandWidth = true;
-            headerHLG.childForceExpandHeight = false;
-
-            var prevBtn = MakeTabButton(headerRow.transform, "< Prev", () => PrevTab());
-            _headerText = UIPrimitiveFactory.AddThemedText(headerRow.transform, "QUEST LOG", 22, UIColors.Default.Gold);
-            _headerText.alignment = TextAlignmentOptions.Center;
-            var headerTextLE = _headerText.gameObject.AddComponent<LayoutElement>();
-            headerTextLE.preferredWidth = 200;
-            var nextBtn = MakeTabButton(headerRow.transform, "Next >", () => NextTab());
-
-            var listObj = new GameObject("QuestList", typeof(RectTransform));
-            listObj.transform.SetParent(root, false);
-            var listLE = listObj.AddComponent<LayoutElement>();
-            listLE.preferredHeight = 200;
-            listLE.minHeight = 80;
-            var listVLG = listObj.AddComponent<VerticalLayoutGroup>();
-            listVLG.spacing = 4;
-            listVLG.childControlWidth = true;
-            listVLG.childControlHeight = false;
-            listVLG.childForceExpandWidth = true;
-            listVLG.childForceExpandHeight = false;
-            _listContainer = listObj.transform;
-
-            var detailObj = new GameObject("DetailPanel", typeof(RectTransform));
-            detailObj.transform.SetParent(root, false);
-            var detailLE = detailObj.AddComponent<LayoutElement>();
-            detailLE.preferredHeight = 200;
-            detailLE.minHeight = 100;
-            var detailBg = detailObj.AddComponent<Image>();
-            detailBg.color = UIColors.Default.RowBg;
-            var detailVLG = detailObj.AddComponent<VerticalLayoutGroup>();
-            detailVLG.padding = new RectOffset(15, 15, 10, 10);
-            detailVLG.spacing = 6;
-            detailVLG.childControlWidth = true;
-            detailVLG.childControlHeight = false;
-            detailVLG.childForceExpandWidth = true;
-            detailVLG.childForceExpandHeight = false;
-
-            _detailName = UIPrimitiveFactory.AddThemedText(detailObj.transform, "", 18, UIColors.Default.Text);
-            _detailDesc = UIPrimitiveFactory.AddThemedText(detailObj.transform, "", 14, UIColors.Default.Muted);
-            _detailObjectives = UIPrimitiveFactory.AddThemedText(detailObj.transform, "", 14, UIColors.Default.Text);
-            _detailRewards = UIPrimitiveFactory.AddThemedText(detailObj.transform, "", 14, UIColors.Default.Gold);
-
-            var btnRow = new GameObject("BtnRow", typeof(RectTransform));
-            btnRow.transform.SetParent(detailObj.transform, false);
-            var btnRowLE = btnRow.AddComponent<LayoutElement>();
-            btnRowLE.preferredHeight = 40;
-            var btnRowHLG = btnRow.AddComponent<HorizontalLayoutGroup>();
-            btnRowHLG.spacing = 10;
-            btnRowHLG.childAlignment = TextAnchor.MiddleCenter;
-            btnRowHLG.childControlWidth = true;
-            btnRowHLG.childControlHeight = true;
-            btnRowHLG.childForceExpandWidth = true;
-            btnRowHLG.childForceExpandHeight = false;
-
-            _acceptBtn = MakeActionButton(btnRow.transform, "ACCEPT QUEST", AcceptSelectedQuest, UIStyleType.ConfirmButton);
-            _turnInBtn = MakeActionButton(btnRow.transform, "TURN IN", TurnInSelectedQuest, UIStyleType.ConfirmButton);
-
-            _detailPanel = detailObj;
-            _detailPanel.SetActive(false);
-
-            _built = true;
         }
 
         public void ShowTab(int tabIndex)
@@ -177,7 +96,7 @@ namespace HollowGround.UI
 
         private void RefreshList()
         {
-            if (!_built || _listContainer == null || QuestManager.Instance == null) return;
+            if (_listContainer == null || QuestManager.Instance == null) return;
 
             for (int i = _listContainer.childCount - 1; i >= 0; i--)
                 Destroy(_listContainer.GetChild(i).gameObject);
@@ -246,7 +165,7 @@ namespace HollowGround.UI
                 {
                     var obj = quest.Data.Objectives[i];
                     int prog = quest.Progress[i];
-                    string check = prog >= obj.RequiredAmount ? "[X]" : "[ ]";
+                    string check = prog >= obj.RequiredAmount ? "[OK]" : "[ ]";
                     sb.AppendLine($"{check} {obj.Description} ({prog}/{obj.RequiredAmount})");
                 }
                 _detailObjectives.text = sb.ToString();
@@ -297,25 +216,5 @@ namespace HollowGround.UI
         }
 
         private void HandleQuestChanged(QuestInstance _) => RefreshList();
-
-        private Button MakeTabButton(Transform parent, string label, System.Action onClick)
-        {
-            var btn = UIPrimitiveFactory.CreateThemedButton(parent, "TabBtn", label, onClick, UIStyleType.ActionBarButton);
-            var btnLE = btn.gameObject.AddComponent<LayoutElement>();
-            btnLE.minWidth = 80;
-            btnLE.preferredWidth = 100;
-            btnLE.minHeight = 32;
-            return btn;
-        }
-
-        private Button MakeActionButton(Transform parent, string label, System.Action onClick, UIStyleType styleType)
-        {
-            var btn = UIPrimitiveFactory.CreateThemedButton(parent, "ActionBtn", label, onClick, styleType);
-            var btnLE = btn.gameObject.AddComponent<LayoutElement>();
-            btnLE.minWidth = 140;
-            btnLE.preferredWidth = 180;
-            btnLE.minHeight = 36;
-            return btn;
-        }
     }
 }

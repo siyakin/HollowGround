@@ -396,86 +396,10 @@ namespace HollowGround.Editor
 
         static int SetupBuildingInfoPanel(Canvas canvas)
         {
-            DestroyExisting(canvas, "BuildingInfoPanel");
-            GameObject panel = CreatePanel(canvas, "BuildingInfoPanel", false);
-            var infoUI = panel.GetComponent<BuildingInfoUI>() ?? panel.AddComponent<BuildingInfoUI>();
-
-            Image panelBg = panel.GetComponent<Image>();
-            if (panelBg != null) panelBg.color = DarkPanel;
-
-            RectTransform prt = panel.GetComponent<RectTransform>();
-            prt.anchorMin = new Vector2(0.5f, 0.5f);
-            prt.anchorMax = new Vector2(0.5f, 0.5f);
-            prt.sizeDelta = new Vector2(350, 500);
-            prt.anchoredPosition = new Vector2(300, 0);
-
-            MakeChild(panel.transform, "Header",
-                new Vector2(0, 1), new Vector2(1, 1), new Vector2(10, -50), new Vector2(-10, -10));
-            var nameText = MakeLabel(panel.transform, "NameText", "Building Name",
-                new Vector2(0, 1), new Vector2(1, 1), new Vector2(20, -45), new Vector2(-20, -15), Color.white, 22,
-                UIStyleType.HeaderText);
-
-            var levelText = MakeLabel(panel.transform, "LevelText", "Level 1",
-                new Vector2(0, 1), new Vector2(1, 1), new Vector2(20, -75), new Vector2(-20, -50), LabelTextColor, 16,
-                UIStyleType.LabelText);
-
-            var stateText = MakeLabel(panel.transform, "StateText", "Constructing",
-                new Vector2(0, 1), new Vector2(1, 1), new Vector2(20, -100), new Vector2(-20, -80), WarningColor, 14,
-                UIStyleType.WarningText);
-
-            var progressSlider = MakeSlider(panel.transform, "ProgressSlider",
-                new Vector2(0, 1), new Vector2(1, 1), new Vector2(20, -140), new Vector2(-20, -120));
-
-            var progressLabel = MakeLabel(panel.transform, "ProgressLabel", "0%",
-                new Vector2(0, 1), new Vector2(1, 1), new Vector2(20, -160), new Vector2(-20, -140), Color.white, 12);
-
-            GameObject productionGroup = MakeChild(panel.transform, "ProductionGroup",
-                new Vector2(0, 0.5f), new Vector2(1, 0.5f), new Vector2(10, -20), new Vector2(-10, 40));
-
-            var productionText = MakeLabel(productionGroup.transform, "ProductionText", "10 Food / 5dk",
-                new Vector2(0, 0.5f), new Vector2(1, 1), new Vector2(10, 5), new Vector2(-10, -5), BodyTextColor, 14,
-                UIStyleType.BodyText);
-
-            var productionSlider = MakeSlider(productionGroup.transform, "ProductionSlider",
-                new Vector2(0, 0), new Vector2(1, 0.4f), new Vector2(0, 0), new Vector2(0, 0));
-
-            var upgradeBtn = MakeButton(panel.transform, "UpgradeButton", "UPGRADE",
-                new Vector2(0, 0), new Vector2(1, 0), new Vector2(20, 60), new Vector2(-20, 95),
-                new Color(0.13f, 0.17f, 0.10f, 0.95f), UIStyleType.ConfirmButton);
-
-            var upgradeCostText = MakeLabel(panel.transform, "UpgradeCostText", "Cost: -",
-                new Vector2(0, 0), new Vector2(1, 0), new Vector2(20, 100), new Vector2(-20, 80), LabelTextColor, 12,
-                UIStyleType.CostText);
-
-            var demolishBtn = MakeButton(panel.transform, "DemolishButton", "DEMOLISH",
-                new Vector2(0, 0), new Vector2(1, 0), new Vector2(20, 15), new Vector2(-20, 50),
-                new Color(0.35f, 0.07f, 0.07f, 0.95f), UIStyleType.DangerButton);
-
-            var repairBtn = MakeButton(panel.transform, "RepairButton", "REPAIR",
-                new Vector2(0, 0), new Vector2(1, 0), new Vector2(20, 105), new Vector2(-20, 140),
-                new Color(0.13f, 0.25f, 0.10f, 0.95f), UIStyleType.ConfirmButton);
-
-            var repairCostText = MakeLabel(panel.transform, "RepairCostText", "Repair: -",
-                new Vector2(0, 0), new Vector2(1, 0), new Vector2(20, 145), new Vector2(-20, 125), LabelTextColor, 12,
-                UIStyleType.CostText);
-
-            SerializedObject so = new SerializedObject(infoUI);
-            SetSerializedField(so, "_nameText", nameText);
-            SetSerializedField(so, "_levelText", levelText);
-            SetSerializedField(so, "_stateText", stateText);
-            SetSerializedField(so, "_progressSlider", progressSlider);
-            SetSerializedField(so, "_progressLabel", progressLabel);
-            SetSerializedField(so, "_productionGroup", productionGroup);
-            SetSerializedField(so, "_productionText", productionText);
-            SetSerializedField(so, "_productionSlider", productionSlider);
-            SetSerializedField(so, "_upgradeButton", upgradeBtn);
-            SetSerializedField(so, "_upgradeCostText", upgradeCostText);
-            SetSerializedField(so, "_demolishButton", demolishBtn);
-            SetSerializedField(so, "_repairButton", repairBtn);
-            SetSerializedField(so, "_repairCostText", repairCostText);
-            so.ApplyModifiedProperties();
-
-            EditorUtility.SetDirty(infoUI);
+            var existing = canvas.transform.Find("BuildingInfoPanel");
+            if (existing != null)
+                return 0;
+            BuildingInfoPrefabBuilder.Build();
             return 1;
         }
 

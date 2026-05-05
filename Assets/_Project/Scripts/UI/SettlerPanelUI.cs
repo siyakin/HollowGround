@@ -13,6 +13,7 @@ namespace HollowGround.UI
     {
         private TMP_Text _headerText;
         private TMP_Text _summaryText;
+        private TMP_Text _warningsText;
         private Transform _buildingsContainer;
         private Transform _settlersContainer;
         private GameObject _leftPanel;
@@ -80,72 +81,135 @@ namespace HollowGround.UI
             _built = true;
         }
 
-        private GameObject CreateLeftPanel()
+        private (GameObject root, Transform content) CreateScrollView(string name, Transform parent)
         {
-            var panel = UIPrimitiveFactory.CreateUIObject("LeftPanel", transform).gameObject;
-            var bg = panel.AddComponent<Image>();
-            bg.color = UIColors.Default.RowBg;
-            bg.raycastTarget = false;
+            var scrollObj = UIPrimitiveFactory.CreateUIObject(name, parent);
+            var scrollRect = scrollObj.gameObject.AddComponent<ScrollRect>();
 
-            var vlg = panel.AddComponent<VerticalLayoutGroup>();
-            vlg.padding = new RectOffset(10, 10, 10, 10);
-            vlg.spacing = 6;
+            var viewport = UIPrimitiveFactory.CreateUIObject("Viewport", scrollObj);
+            UIPrimitiveFactory.StretchFull(viewport);
+            viewport.gameObject.AddComponent<Image>().color = new Color(0, 0, 0, 0.15f);
+            viewport.gameObject.AddComponent<Mask>().showMaskGraphic = false;
+
+            var content = UIPrimitiveFactory.CreateUIObject("Content", viewport);
+            content.anchorMin = new Vector2(0, 1);
+            content.anchorMax = new Vector2(1, 1);
+            content.pivot = new Vector2(0.5f, 1);
+            content.offsetMin = Vector2.zero;
+            content.offsetMax = Vector2.zero;
+
+            var vlg = content.gameObject.AddComponent<VerticalLayoutGroup>();
+            vlg.padding = new RectOffset(8, 8, 8, 8);
+            vlg.spacing = 8;
             vlg.childControlWidth = true;
             vlg.childControlHeight = false;
             vlg.childForceExpandWidth = true;
             vlg.childForceExpandHeight = false;
 
-            var header = UIPrimitiveFactory.AddThemedText(panel.transform, "BUILDING WORKERS", 22,
-                UIColors.Default.Gold, TextAlignmentOptions.Center, UIStyleType.HeaderText);
-            UIPrimitiveFactory.AddLayoutElement(header.gameObject, preferredHeight: 35);
+            var csf = content.gameObject.AddComponent<ContentSizeFitter>();
+            csf.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
 
-            _summaryText = UIPrimitiveFactory.AddThemedText(panel.transform, "", 14,
-                UIColors.Default.Text, TextAlignmentOptions.Center, UIStyleType.BodyText);
-            UIPrimitiveFactory.AddLayoutElement(_summaryText.gameObject, preferredHeight: 50);
+            scrollRect.content = content;
+            scrollRect.viewport = viewport;
+            scrollRect.horizontal = false;
+            scrollRect.vertical = true;
+            scrollRect.movementType = ScrollRect.MovementType.Elastic;
+            scrollRect.scrollSensitivity = 20f;
 
-            var listObj = UIPrimitiveFactory.CreateUIObject("BuildingsList", panel.transform);
-            UIPrimitiveFactory.AddLayoutElement(listObj.gameObject, preferredHeight: 300);
-            var listVLG = listObj.gameObject.AddComponent<VerticalLayoutGroup>();
-            listVLG.spacing = 4;
-            listVLG.childControlWidth = true;
-            listVLG.childControlHeight = false;
-            listVLG.childForceExpandWidth = true;
-            listVLG.childForceExpandHeight = false;
-            _buildingsContainer = listObj.transform;
+            return (scrollObj.gameObject, content);
+        }
 
-            return panel;
+        private void AddSeparator(Transform parent)
+        {
+            var sep = UIPrimitiveFactory.CreateUIObject("Separator", parent);
+            UIPrimitiveFactory.AddLayoutElement(sep.gameObject, preferredHeight: 1);
+            sep.gameObject.AddComponent<Image>().color = UIColors.Default.Muted * 0.4f;
+        }
+
+        private GameObject CreateLeftPanel()
+        {
+            var panelObj = UIPrimitiveFactory.CreateUIObject("LeftPanel", transform).gameObject;
+            var vlg = panelObj.AddComponent<VerticalLayoutGroup>();
+            vlg.spacing = 10;
+            vlg.childControlWidth = true;
+            vlg.childControlHeight = true;
+            vlg.childForceExpandWidth = true;
+            vlg.childForceExpandHeight = false;
+
+            // Header Area
+            var headerRow = UIPrimitiveFactory.CreateUIObject("HeaderRow", panelObj.transform);
+            UIPrimitiveFactory.AddLayoutElement(headerRow.gameObject, preferredHeight: 40);
+            UIPrimitiveFactory.AddRowHLG(headerRow.gameObject, new RectOffset(5, 5, 0, 0), 10);
+
+            UIPrimitiveFactory.AddThemedText(headerRow, "BUILDING WORKERS", 20,
+                UIColors.Default.Gold, TextAlignmentOptions.MidlineLeft, UIStyleType.HeaderText);
+
+            var autoBtn = UIPrimitiveFactory.CreateButton(headerRow, "AutoAssignToggle", "Auto-Assign: ON", null, UIColors.Default.Ok);
+            UIPrimitiveFactory.AddLayoutElement(autoBtn.gameObject, preferredWidth: 140);
+
+            AddSeparator(panelObj.transform);
+
+            // Summary Section
+            var summaryBox = UIPrimitiveFactory.CreateUIObject("SummaryBox", panelObj.transform);
+            UIPrimitiveFactory.AddLayoutElement(summaryBox.gameObject, preferredHeight: 80);
+            summaryBox.gameObject.AddComponent<Image>().color = UIColors.Default.RowBg * 0.8f;
+            var summaryVLG = summaryBox.gameObject.AddComponent<VerticalLayoutGroup>();
+            summaryVLG.padding = new RectOffset(10, 10, 10, 10);
+
+            _summaryText = UIPrimitiveFactory.AddThemedText(summaryBox, "", 14,
+                UIColors.Default.Text, TextAlignmentOptions.TopLeft, UIStyleType.BodyText);
+
+            _warningsText = UIPrimitiveFactory.AddThemedText(summaryBox, "<i>No alerts.</i>", 12,
+                UIColors.Default.Muted, TextAlignmentOptions.BottomLeft, UIStyleType.BodyText);
+
+            AddSeparator(panelObj.transform);
+
+            // Scroll Area
+            var scrollData = CreateScrollView("BuildingsScroll", panelObj.transform);
+            UIPrimitiveFactory.AddLayoutElement(scrollData.root, preferredHeight: 100).flexibleHeight = 1;
+            _buildingsContainer = scrollData.content;
+
+            return panelObj;
         }
 
         private GameObject CreateRightPanel()
         {
-            var panel = UIPrimitiveFactory.CreateUIObject("RightPanel", transform).gameObject;
-            var bg = panel.AddComponent<Image>();
-            bg.color = UIColors.Default.RowBg;
-            bg.raycastTarget = false;
-
-            var vlg = panel.AddComponent<VerticalLayoutGroup>();
-            vlg.padding = new RectOffset(10, 10, 10, 10);
-            vlg.spacing = 6;
+            var panelObj = UIPrimitiveFactory.CreateUIObject("RightPanel", transform).gameObject;
+            var vlg = panelObj.AddComponent<VerticalLayoutGroup>();
+            vlg.spacing = 10;
             vlg.childControlWidth = true;
-            vlg.childControlHeight = false;
+            vlg.childControlHeight = true;
             vlg.childForceExpandWidth = true;
             vlg.childForceExpandHeight = false;
 
-            _headerText = UIPrimitiveFactory.AddThemedText(panel.transform, "ACTIVE WORKERS", 22,
-                UIColors.Default.Gold, TextAlignmentOptions.Center, UIStyleType.HeaderText);
-            UIPrimitiveFactory.AddLayoutElement(_headerText.gameObject, preferredHeight: 35);
+            // Header Area
+            var headerRow = UIPrimitiveFactory.CreateUIObject("HeaderRow", panelObj.transform);
+            UIPrimitiveFactory.AddLayoutElement(headerRow.gameObject, preferredHeight: 40);
+            UIPrimitiveFactory.AddRowHLG(headerRow.gameObject, new RectOffset(5, 5, 0, 0), 10);
 
-            var listObj = UIPrimitiveFactory.CreateUIObject("SettlersList", panel.transform);
-            UIPrimitiveFactory.AddLayoutElement(listObj.gameObject, preferredHeight: 350);
-            var listVLG = listObj.gameObject.AddComponent<VerticalLayoutGroup>();
-            listVLG.spacing = 4;
-            listVLG.childControlWidth = true;
-            listVLG.childControlHeight = false;
-            listVLG.childForceExpandWidth = true;
-            listVLG.childForceExpandHeight = false;
-            _settlersContainer = listObj.transform;
+            _headerText = UIPrimitiveFactory.AddThemedText(headerRow, "ACTIVE SETTLERS", 20,
+                UIColors.Default.Gold, TextAlignmentOptions.MidlineLeft, UIStyleType.HeaderText);
 
-            return panel;
+            var sortGroup = UIPrimitiveFactory.CreateUIObject("SortGroup", headerRow);
+            UIPrimitiveFactory.AddRowHLG(sortGroup.gameObject, new RectOffset(0, 0, 0, 0), 4);
+            
+            var btnRole = UIPrimitiveFactory.CreateButton(sortGroup, "SortRole", "Role", null);
+            UIPrimitiveFactory.AddLayoutElement(btnRole.gameObject, preferredWidth: 50);
+            
+            var btnStat = UIPrimitiveFactory.CreateButton(sortGroup, "SortStatus", "Stat", null);
+            UIPrimitiveFactory.AddLayoutElement(btnStat.gameObject, preferredWidth: 50);
+            
+            var btnBld = UIPrimitiveFactory.CreateButton(sortGroup, "SortBld", "Bld", null);
+            UIPrimitiveFactory.AddLayoutElement(btnBld.gameObject, preferredWidth: 50);
+
+            AddSeparator(panelObj.transform);
+
+            // Scroll Area
+            var scrollData = CreateScrollView("SettlersScroll", panelObj.transform);
+            UIPrimitiveFactory.AddLayoutElement(scrollData.root, preferredHeight: 100).flexibleHeight = 1;
+            _settlersContainer = scrollData.content;
+
+            return panelObj;
         }
 
         private void Refresh()
@@ -168,13 +232,24 @@ namespace HollowGround.UI
             int working = jm != null ? jm.WorkingCount : 0;
             int population = sm.TotalPopulation;
 
+            string c_ok = ColorUtility.ToHtmlStringRGB(UIColors.Default.Ok);
+            string c_warn = ColorUtility.ToHtmlStringRGB(UIColors.Default.Warn);
+            string c_gold = ColorUtility.ToHtmlStringRGB(UIColors.Default.Gold);
+
             _summaryText.text =
-                $"Population: {population}  |  Settlers: {total}\n" +
-                $"Working: <color=#{ColorUtility.ToHtmlStringRGB(UIColors.Default.Ok)}>{working}</color>  |  " +
-                $"Idle: <color=#{ColorUtility.ToHtmlStringRGB(UIColors.Default.Warn)}>{idle}</color>";
+                $"Population: <color=#{c_gold}>{population}</color>  |  Settlers: <color=#{c_gold}>{total}</color>\n" +
+                $"Working: <color=#{c_ok}>{working}</color>  |  Idle: <color=#{c_warn}>{idle}</color>";
+
+            if (_warningsText != null)
+            {
+                if (idle > 0)
+                    _warningsText.text = $"<color=#{c_warn}>! {idle} settlers are currently idle.</color>";
+                else
+                    _warningsText.text = "<i>All settlers are assigned tasks.</i>";
+            }
 
             if (_headerText != null)
-                _headerText.text = $"ACTIVE WORKERS ({total})";
+                _headerText.text = $"ACTIVE SETTLERS ({total})";
         }
 
         private void RefreshBuildings()
@@ -199,29 +274,39 @@ namespace HollowGround.UI
                 float ratio = required > 0 ? (float)assigned / required : 1f;
 
                 var row = UIPrimitiveFactory.CreateUIObject($"Bld_{building.Data.DisplayName}", _buildingsContainer).gameObject;
-                row.AddComponent<LayoutElement>().preferredHeight = 36;
+                UIPrimitiveFactory.AddLayoutElement(row, preferredHeight: 44);
                 var rbg = row.AddComponent<Image>();
                 rbg.color = UIColors.Default.RowBg;
-                rbg.raycastTarget = false;
-                UIPrimitiveFactory.AddRowHLG(row, new RectOffset(8, 8, 4, 4), 8);
+                UIPrimitiveFactory.AddRowHLG(row, new RectOffset(8, 8, 4, 4), 10);
 
-                var nameT = UIPrimitiveFactory.AddThemedText(row.transform, building.Data.DisplayName, 14,
+                var nameCol = UIPrimitiveFactory.CreateUIObject("NameCol", row.transform);
+                var nameVLG = nameCol.gameObject.AddComponent<VerticalLayoutGroup>();
+                nameVLG.childControlHeight = true;
+                nameVLG.childForceExpandHeight = false;
+                nameCol.gameObject.AddComponent<LayoutElement>().preferredWidth = 140;
+
+                UIPrimitiveFactory.AddThemedText(nameCol, building.Data.DisplayName, 14,
                     UIColors.Default.Text, TextAlignmentOptions.MidlineLeft);
-                nameT.gameObject.AddComponent<LayoutElement>().preferredWidth = 140;
 
                 var roleNames = new List<string>();
                 foreach (var slot in building.Data.RequiredWorkers)
                     roleNames.Add($"{SettlerRoleInfo.GetDisplayName(slot.Role)} x{slot.Count}");
-                string roleStr = string.Join(", ", roleNames);
-
-                var roleT = UIPrimitiveFactory.AddThemedText(row.transform, roleStr, 13,
+                UIPrimitiveFactory.AddThemedText(nameCol, string.Join(", ", roleNames), 11,
                     UIColors.Default.Muted, TextAlignmentOptions.MidlineLeft);
-                roleT.gameObject.AddComponent<LayoutElement>().preferredWidth = 160;
 
-                var ratioColor = ratio >= 1f ? UIColors.Default.Ok :
-                    ratio > 0f ? UIColors.Default.Warn : UIColors.Default.Danger;
-                UIPrimitiveFactory.AddThemedText(row.transform, $"{assigned}/{required}", 14,
-                    ratioColor, TextAlignmentOptions.MidlineRight);
+                // Progress Bar
+                var barContainer = UIPrimitiveFactory.CreateUIObject("BarContainer", row.transform);
+                UIPrimitiveFactory.AddLayoutElement(barContainer.gameObject, preferredWidth: 100, preferredHeight: 12);
+                barContainer.gameObject.AddComponent<Image>().color = Color.black * 0.4f;
+
+                var fillObj = UIPrimitiveFactory.CreateUIObject("Fill", barContainer);
+                UIPrimitiveFactory.StretchFull(fillObj);
+                var fill = fillObj.gameObject.AddComponent<Image>();
+                fill.type = Image.Type.Filled;
+                fill.fillMethod = Image.FillMethod.Horizontal;
+                fill.fillAmount = ratio;
+                fill.color = ratio >= 1f ? UIColors.Default.Ok :
+                            ratio > 0.5f ? UIColors.Default.Warn : UIColors.Default.Danger;
             }
 
             if (!anyWorkers)
@@ -239,13 +324,7 @@ namespace HollowGround.UI
                 Destroy(child.gameObject);
 
             var jm = SettlerJobManager.Instance;
-            if (jm == null)
-            {
-                var empty = UIPrimitiveFactory.AddThemedText(_settlersContainer,
-                    "Job system not available.", 14, UIColors.Default.Muted);
-                empty.alignment = TextAlignmentOptions.Center;
-                return;
-            }
+            if (jm == null) return;
 
             var allSettlers = jm.GetAllSettlers();
             if (allSettlers.Count == 0)
@@ -260,12 +339,33 @@ namespace HollowGround.UI
             {
                 if (walker == null) continue;
 
-                string roleName = walker.Role != SettlerRole.None
-                    ? SettlerRoleInfo.GetDisplayName(walker.Role)
-                    : "Idle";
-                string buildingName = walker.AssignedBuilding != null
-                    ? walker.AssignedBuilding.Data.DisplayName
-                    : "-";
+                var row = UIPrimitiveFactory.CreateUIObject($"Settler_{walker.GetHashCode()}", _settlersContainer).gameObject;
+                UIPrimitiveFactory.AddLayoutElement(row, preferredHeight: 40);
+                var rbg = row.AddComponent<Image>();
+                rbg.color = UIColors.Default.RowBg;
+                UIPrimitiveFactory.AddRowHLG(row, new RectOffset(8, 8, 4, 4), 8);
+
+                // Click to highlight logic placeholder
+                var btn = row.AddComponent<Button>();
+                btn.targetGraphic = rbg;
+
+                // Role Dot
+                var dotObj = UIPrimitiveFactory.CreateUIObject("RoleDot", row.transform);
+                UIPrimitiveFactory.AddLayoutElement(dotObj.gameObject, preferredWidth: 8, preferredHeight: 8);
+                var dot = dotObj.gameObject.AddComponent<Image>();
+                dot.color = walker.Role != SettlerRole.None ? UIColors.Default.Ok : UIColors.Default.Warn;
+
+                // Role & Name
+                var nameCol = UIPrimitiveFactory.CreateUIObject("NameCol", row.transform);
+                nameCol.gameObject.AddComponent<LayoutElement>().preferredWidth = 110;
+                var roleName = walker.Role != SettlerRole.None ? SettlerRoleInfo.GetDisplayName(walker.Role) : "Idle";
+                UIPrimitiveFactory.AddThemedText(nameCol, roleName, 13, UIColors.Default.Text);
+
+                // Task Icon Placeholder
+                var taskIcon = UIPrimitiveFactory.CreateUIObject("TaskIcon", row.transform);
+                UIPrimitiveFactory.AddLayoutElement(taskIcon.gameObject, preferredWidth: 16, preferredHeight: 16);
+                taskIcon.gameObject.AddComponent<Image>().color = UIColors.Default.Muted * 0.5f;
+
                 string taskStr = walker.CurrentTask switch
                 {
                     WalkerState.WalkingToTarget => "> Working",
@@ -274,30 +374,34 @@ namespace HollowGround.UI
                     WalkerState.Resting => "~ Resting",
                     _ => ""
                 };
-
-                var roleColor = walker.Role != SettlerRole.None ? UIColors.Default.Ok : UIColors.Default.Warn;
-
-                var row = UIPrimitiveFactory.CreateUIObject($"Settler_{roleName}", _settlersContainer).gameObject;
-                row.AddComponent<LayoutElement>().preferredHeight = 30;
-                var rbg = row.AddComponent<Image>();
-                rbg.color = UIColors.Default.RowBg;
-                rbg.raycastTarget = false;
-                UIPrimitiveFactory.AddRowHLG(row, new RectOffset(8, 8, 2, 2), 8);
-
-                var roleT = UIPrimitiveFactory.AddThemedText(row.transform, roleName, 13,
-                    roleColor, TextAlignmentOptions.MidlineLeft);
-                roleT.gameObject.AddComponent<LayoutElement>().preferredWidth = 110;
-
-                var bldT = UIPrimitiveFactory.AddThemedText(row.transform, buildingName, 13,
-                    UIColors.Default.Text, TextAlignmentOptions.MidlineLeft);
-                bldT.gameObject.AddComponent<LayoutElement>().preferredWidth = 130;
-
                 if (!string.IsNullOrEmpty(taskStr))
                 {
-                    UIPrimitiveFactory.AddThemedText(row.transform, taskStr, 12,
+                    var taskText = UIPrimitiveFactory.AddThemedText(row.transform, taskStr, 12,
                         UIColors.Default.Muted, TextAlignmentOptions.MidlineRight);
+                    taskText.gameObject.AddComponent<LayoutElement>().preferredWidth = 70;
                 }
+
+                // Target
+                var bldT = UIPrimitiveFactory.AddThemedText(row.transform,
+                    walker.AssignedBuilding != null ? walker.AssignedBuilding.Data.DisplayName : "-",
+                    12, UIColors.Default.Text);
+                bldT.gameObject.AddComponent<LayoutElement>().preferredWidth = 90;
+
+                // Morale & Reassign
+                var rightCol = UIPrimitiveFactory.CreateUIObject("RightCol", row.transform);
+                UIPrimitiveFactory.AddRowHLG(rightCol.gameObject, new RectOffset(0, 0, 0, 0), 6);
+
+                var moraleBg = UIPrimitiveFactory.CreateUIObject("MoraleBar", rightCol);
+                UIPrimitiveFactory.AddLayoutElement(moraleBg.gameObject, preferredWidth: 40, preferredHeight: 4);
+                moraleBg.gameObject.AddComponent<Image>().color = Color.black * 0.3f;
+                var moraleFill = UIPrimitiveFactory.CreateUIObject("Fill", moraleBg);
+                UIPrimitiveFactory.StretchFull(moraleFill);
+                moraleFill.gameObject.AddComponent<Image>().color = UIColors.Default.Muted;
+
+                var reassignBtn = UIPrimitiveFactory.CreateButton(rightCol, "ReassignBtn", "R", null);
+                UIPrimitiveFactory.AddLayoutElement(reassignBtn.gameObject, preferredWidth: 24);
             }
         }
     }
 }
+

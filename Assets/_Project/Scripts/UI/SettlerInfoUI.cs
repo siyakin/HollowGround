@@ -10,12 +10,33 @@ namespace HollowGround.UI
 {
     public class SettlerInfoUI : MonoBehaviour
     {
-        private TMP_Text _nameText;
-        private TMP_Text _roleText;
-        private TMP_Text _buildingText;
-        private TMP_Text _taskText;
-        private TMP_Text _statusText;
-        private bool _built;
+        [Header("Header")]
+        [SerializeField] private Image _roleDot;
+        [SerializeField] private TMP_Text _roleTitleText;
+
+        [Header("Identity")]
+        [SerializeField] private TMP_Text _roleValueText;
+        [SerializeField] private TMP_Text _buildingText;
+        [SerializeField] private TMP_Text _taskText;
+        [SerializeField] private TMP_Text _workersText;
+
+        [Header("Morale")]
+        [SerializeField] private Image _moraleFill;
+        [SerializeField] private TMP_Text _moraleStatusText;
+
+        [Header("Health")]
+        [SerializeField] private Image _healthFill;
+        [SerializeField] private TMP_Text _healthStatusText;
+        [SerializeField] private TMP_Text _hospitalText;
+
+        [Header("Production")]
+        [SerializeField] private TMP_Text _efficiencyText;
+        [SerializeField] private TMP_Text _specialistText;
+
+        [Header("Actions")]
+        [SerializeField] private Button _reassignBtn;
+        [SerializeField] private Button _restBtn;
+        [SerializeField] private Button _dismissBtn;
 
         private SettlerWalker _current;
         private float _refreshTimer;
@@ -25,7 +46,6 @@ namespace HollowGround.UI
 
         public void ShowInfo(SettlerWalker walker)
         {
-            if (!_built) BuildUI();
             _current = walker;
             gameObject.SetActive(true);
             RefreshDisplay();
@@ -65,68 +85,30 @@ namespace HollowGround.UI
             }
         }
 
-        private void BuildUI()
-        {
-            var root = GetComponent<RectTransform>();
-            if (root == null) return;
-
-            foreach (Transform child in root)
-                Destroy(child.gameObject);
-
-            _nameText = UIPrimitiveFactory.AddThemedText(root, "Settler", 20,
-                UIColors.Default.Gold, TextAlignmentOptions.Center, UIStyleType.HeaderText);
-            _nameText.gameObject.AddComponent<LayoutElement>().preferredHeight = 30;
-
-            var divider = new GameObject("Divider", typeof(RectTransform));
-            divider.transform.SetParent(root, false);
-            divider.AddComponent<LayoutElement>().preferredHeight = 2;
-            var divImg = divider.AddComponent<Image>();
-            divImg.color = UIColors.Default.Muted;
-            divImg.raycastTarget = false;
-
-            _roleText = UIPrimitiveFactory.AddThemedText(root, "", 15,
-                UIColors.Default.Text, TextAlignmentOptions.MidlineLeft, UIStyleType.BodyText);
-            _roleText.gameObject.AddComponent<LayoutElement>().preferredHeight = 24;
-
-            _buildingText = UIPrimitiveFactory.AddThemedText(root, "", 15,
-                UIColors.Default.Text, TextAlignmentOptions.MidlineLeft, UIStyleType.BodyText);
-            _buildingText.gameObject.AddComponent<LayoutElement>().preferredHeight = 24;
-
-            _taskText = UIPrimitiveFactory.AddThemedText(root, "", 15,
-                UIColors.Default.Text, TextAlignmentOptions.MidlineLeft, UIStyleType.BodyText);
-            _taskText.gameObject.AddComponent<LayoutElement>().preferredHeight = 24;
-
-            _statusText = UIPrimitiveFactory.AddThemedText(root, "", 14,
-                UIColors.Default.Muted, TextAlignmentOptions.MidlineLeft, UIStyleType.BodyText);
-            _statusText.gameObject.AddComponent<LayoutElement>().preferredHeight = 24;
-
-            _built = true;
-        }
-
         private void RefreshDisplay()
         {
             if (_current == null) return;
 
             string roleName = _current.Role != SettlerRole.None
                 ? SettlerRoleInfo.GetDisplayName(_current.Role)
-                : "Unassigned";
+                : "Idle";
 
             var roleColor = _current.Role != SettlerRole.None ? UIColors.Default.Ok : UIColors.Default.Warn;
 
-            if (_nameText != null)
-                _nameText.text = roleName;
+            if (_roleTitleText != null) _roleTitleText.text = roleName.ToUpper();
+            if (_roleDot != null) _roleDot.color = roleColor;
 
-            if (_roleText != null)
+            if (_roleValueText != null)
             {
-                _roleText.text = $"Role: <color=#{ColorUtility.ToHtmlStringRGB(roleColor)}>{roleName}</color>";
+                _roleValueText.text = roleName;
+                _roleValueText.color = roleColor;
             }
 
             if (_buildingText != null)
             {
-                string bldName = _current.AssignedBuilding != null
+                _buildingText.text = _current.AssignedBuilding != null
                     ? _current.AssignedBuilding.Data.DisplayName
                     : "None";
-                _buildingText.text = $"Workplace: {bldName}";
             }
 
             if (_taskText != null)
@@ -142,22 +124,40 @@ namespace HollowGround.UI
                 var taskColor = _current.CurrentTask == WalkerState.WaitingAtTarget ? UIColors.Default.Ok :
                     _current.CurrentTask == WalkerState.Resting ? UIColors.Default.Muted :
                     UIColors.Default.Text;
-                _taskText.text = $"Status: <color=#{ColorUtility.ToHtmlStringRGB(taskColor)}>{taskDesc}</color>";
+                _taskText.text = taskDesc;
+                _taskText.color = taskColor;
             }
 
-            if (_statusText != null)
+            if (_workersText != null)
             {
-                string detail = "";
-                if (_current.AssignedBuilding != null)
+                if (_current.AssignedBuilding != null && SettlerJobManager.Instance != null)
                 {
-                    int assigned = 0;
-                    if (SettlerJobManager.Instance != null)
-                        assigned = SettlerJobManager.Instance.GetAssignedWorkerCount(_current.AssignedBuilding);
+                    int assigned = SettlerJobManager.Instance.GetAssignedWorkerCount(_current.AssignedBuilding);
                     int required = _current.AssignedBuilding.Data.GetTotalRequiredWorkers();
-                    detail = $"Workers at site: {assigned}/{required}";
+                    _workersText.text = $"{assigned}/{required}";
                 }
-                _statusText.text = detail;
+                else
+                {
+                    _workersText.text = "-";
+                }
             }
+
+            if (_moraleFill != null)
+            {
+                _moraleFill.fillAmount = 0.75f;
+                _moraleFill.color = Color.Lerp(UIColors.Default.Danger, UIColors.Default.Ok, 0.75f);
+            }
+            if (_moraleStatusText != null) _moraleStatusText.text = "Normal";
+
+            if (_healthFill != null)
+            {
+                _healthFill.fillAmount = 1.0f;
+                _healthFill.color = UIColors.Default.Ok;
+            }
+            if (_healthStatusText != null) _healthStatusText.text = "Healthy";
+
+            if (_efficiencyText != null) _efficiencyText.text = "100%";
+            if (_specialistText != null) _specialistText.text = "None";
         }
 
         private void SmartPosition()
@@ -176,6 +176,8 @@ namespace HollowGround.UI
             var canvasRt = canvas.GetComponent<RectTransform>();
             float canvasW = canvasRt.rect.width;
             float canvasH = canvasRt.rect.height;
+
+            LayoutRebuilder.ForceRebuildLayoutImmediate(rt);
             float panelW = rt.rect.width;
             float panelH = rt.rect.height;
             float halfPW = panelW * 0.5f;

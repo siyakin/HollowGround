@@ -8,14 +8,14 @@ namespace HollowGround.UI
 {
     public class HeroPanelUI : MonoBehaviour
     {
-        private TMP_Text _headerText;
-        private TMP_Text _summonCostText;
-        private Transform _listContainer;
-        private bool _built;
+        [Header("Layout")]
+        [SerializeField] private TMP_Text _headerText;
+        [SerializeField] private TMP_Text _summonCostText;
+        [SerializeField] private Transform _listContainer;
+        [SerializeField] private Button _summonBtn;
 
         private void OnEnable()
         {
-            if (!_built) BuildUI();
             RefreshList();
 
             if (HeroManager.Instance != null)
@@ -28,67 +28,15 @@ namespace HollowGround.UI
                 HeroManager.Instance.OnHeroesChanged -= RefreshList;
         }
 
-        private void BuildUI()
+        private void Awake()
         {
-            var root = GetComponent<RectTransform>();
-            if (root == null) return;
-
-            foreach (Transform child in root)
-                Destroy(child.gameObject);
-
-            var oldVlg = GetComponent<VerticalLayoutGroup>();
-            if (oldVlg != null) DestroyImmediate(oldVlg);
-
-            var oldImages = GetComponents<Image>();
-            foreach (var img in oldImages) DestroyImmediate(img);
-
-            UIPrimitiveFactory.SetupPanelBackground(gameObject, UIColors.Default);
-
-            var vlg = UIPrimitiveFactory.AddStandardVLG(gameObject);
-
-            _headerText = UIPrimitiveFactory.AddThemedText(transform, "HEROES", 20, UIColors.Default.Gold, TextAlignmentOptions.Center, UIStyleType.HeaderText);
-            var headerLE = _headerText.gameObject.AddComponent<LayoutElement>();
-            headerLE.preferredHeight = 35;
-
-            var listObj = new GameObject("HeroList", typeof(RectTransform));
-            listObj.transform.SetParent(root, false);
-            var listLE = listObj.AddComponent<LayoutElement>();
-            listLE.preferredHeight = 200;
-            listLE.minHeight = 100;
-            var listVLG = listObj.AddComponent<VerticalLayoutGroup>();
-            listVLG.spacing = 4;
-            listVLG.childControlWidth = true;
-            listVLG.childControlHeight = false;
-            listVLG.childForceExpandWidth = true;
-            listVLG.childForceExpandHeight = false;
-            _listContainer = listObj.transform;
-
-            var summonRow = new GameObject("SummonRow", typeof(RectTransform));
-            summonRow.transform.SetParent(root, false);
-            var summonLE = summonRow.AddComponent<LayoutElement>();
-            summonLE.preferredHeight = 45;
-            var summonBg = summonRow.AddComponent<Image>();
-            summonBg.color = UIColors.Default.RowBg;
-            var summonHLG = UIPrimitiveFactory.AddRowHLG(summonRow, new RectOffset(15, 15, 5, 5), 15);
-            summonHLG.childAlignment = TextAnchor.MiddleCenter;
-
-            _summonCostText = UIPrimitiveFactory.AddThemedText(summonRow.transform, "Summon: 100 TechPart", 15, UIColors.Default.Muted);
-            _summonCostText.alignment = TextAlignmentOptions.MidlineLeft;
-            var costLE = _summonCostText.gameObject.AddComponent<LayoutElement>();
-            costLE.preferredWidth = 180;
-
-            var btn = UIPrimitiveFactory.CreateThemedButton(summonRow.transform, "SummonBtn", "SUMMON", OnSummonClicked, UIStyleType.ConfirmButton);
-            var btnLE = btn.gameObject.AddComponent<LayoutElement>();
-            btnLE.minWidth = 120;
-            btnLE.preferredWidth = 140;
-            btnLE.minHeight = 35;
-
-            _built = true;
+            if (_summonBtn != null)
+                _summonBtn.onClick.AddListener(OnSummonClicked);
         }
 
         private void RefreshList()
         {
-            if (!_built || _listContainer == null || HeroManager.Instance == null) return;
+            if (_listContainer == null || HeroManager.Instance == null) return;
 
             foreach (Transform child in _listContainer)
                 Destroy(child.gameObject);
@@ -131,7 +79,8 @@ namespace HollowGround.UI
                 statT.alignment = TextAlignmentOptions.MidlineRight;
             }
 
-            _headerText.text = $"HEROES ({heroes.Count})";
+            if (_headerText != null)
+                _headerText.text = $"HEROES ({heroes.Count})";
         }
 
         private void OnSummonClicked()

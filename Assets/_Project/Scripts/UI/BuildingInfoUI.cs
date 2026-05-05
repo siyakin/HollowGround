@@ -1,6 +1,5 @@
 using HollowGround.Core;
 using System.Collections.Generic;
-using System.Linq;
 using HollowGround.Buildings;
 using HollowGround.Grid;
 using HollowGround.NPCs;
@@ -28,10 +27,10 @@ namespace HollowGround.UI
 
         [Header("Actions")]
         [SerializeField] private Button _upgradeButton;
-        [SerializeField] private TMP_Text _upgradeCostText;
+        [SerializeField] private ResourceCostDisplay _upgradeCostDisplay;
         [SerializeField] private Button _demolishButton;
         [SerializeField] private Button _repairButton;
-        [SerializeField] private TMP_Text _repairCostText;
+        [SerializeField] private ResourceCostDisplay _repairCostDisplay;
 
         [Header("Workers")]
         [SerializeField] private TMP_Text _workersText;
@@ -194,17 +193,23 @@ namespace HollowGround.UI
             bool canUpgrade = _current.CanUpgrade();
             _upgradeButton.interactable = canUpgrade;
 
-            if (_upgradeCostText != null && canUpgrade)
+            if (_upgradeCostDisplay == null) return;
+
+            if (canUpgrade)
             {
                 var costs = _current.Data.GetCostForLevel(_current.Level + 1);
-                var parts = new List<string>();
-                foreach (var kvp in costs)
-                    parts.Add($"{kvp.Key}: {kvp.Value}");
-                _upgradeCostText.text = string.Join("  ", parts);
+                Dictionary<ResourceType, int> have = null;
+                if (ResourceManager.Instance != null)
+                {
+                    have = new Dictionary<ResourceType, int>();
+                    foreach (var kvp in costs)
+                        have[kvp.Key] = ResourceManager.Instance.Get(kvp.Key);
+                }
+                _upgradeCostDisplay.SetCosts(costs, have);
             }
-            else if (_upgradeCostText != null)
+            else
             {
-                _upgradeCostText.text = "MAX";
+                _upgradeCostDisplay.Clear();
             }
         }
 
@@ -244,14 +249,22 @@ namespace HollowGround.UI
             bool isDamaged = _current.State == BuildingState.Damaged;
             _repairButton.gameObject.SetActive(isDamaged);
 
-            if (isDamaged && _repairCostText != null)
+            if (!isDamaged || _repairCostDisplay == null) return;
+
+            var costs = _current.Data.GetCostForLevel(_current.Level);
+            var scaled = new Dictionary<ResourceType, int>();
+            float ratio = GameConfig.Instance != null ? GameConfig.Instance.RepairCostRatio : 0.5f;
+            foreach (var kvp in costs)
+                scaled[kvp.Key] = Mathf.CeilToInt(kvp.Value * ratio);
+
+            Dictionary<ResourceType, int> have = null;
+            if (ResourceManager.Instance != null)
             {
-                var costs = _current.Data.GetCostForLevel(_current.Level);
-                var parts = new List<string>();
-                foreach (var kvp in costs)
-                    parts.Add($"{kvp.Key}: {Mathf.CeilToInt(kvp.Value * (GameConfig.Instance != null ? GameConfig.Instance.RepairCostRatio : 0.5f))}");
-                _repairCostText.text = string.Join("  ", parts);
+                have = new Dictionary<ResourceType, int>();
+                foreach (var kvp in scaled)
+                    have[kvp.Key] = ResourceManager.Instance.Get(kvp.Key);
             }
+            _repairCostDisplay.SetCosts(scaled, have);
         }
 
         private void UpdateWorkersInfo()

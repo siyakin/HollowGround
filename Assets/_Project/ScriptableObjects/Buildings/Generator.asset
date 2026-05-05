@@ -45,4 +45,4 @@ MonoBehaviour:
   - Role: 6
     Count: 1
   WorkerProductionBonus: 0.4
-  CommandCenterLevelRequired: 2
+  CommandCenterLevelRequired: 0
