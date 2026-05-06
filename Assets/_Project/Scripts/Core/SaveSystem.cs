@@ -23,6 +23,8 @@ namespace HollowGround.Core
         private const string FileExtension = ".json";
         private float _autoSaveTimer;
 
+        public static bool IsLoading { get; private set; }
+
         public event System.Action OnSaveCompleted;
         public event System.Action<SaveData> OnLoadCompleted;
         public event System.Action<string> OnSaveFailed;
@@ -106,7 +108,15 @@ namespace HollowGround.Core
 
             if (data != null)
             {
-                ApplySaveData(data);
+                IsLoading = true;
+                try
+                {
+                    ApplySaveData(data);
+                }
+                finally
+                {
+                    IsLoading = false;
+                }
                 OnLoadCompleted?.Invoke(data);
             }
 
