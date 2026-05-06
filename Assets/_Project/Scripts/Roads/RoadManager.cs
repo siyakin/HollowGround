@@ -24,7 +24,7 @@ namespace HollowGround.Roads
         private void NotifyRoadsChanged()
         {
             _preferredCellsCache = null;
-            NotifyRoadsChanged();
+            OnRoadsChanged?.Invoke();
         }
 
         private static readonly Vector2Int[] Directions = {
