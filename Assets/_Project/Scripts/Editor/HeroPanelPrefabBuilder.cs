@@ -21,12 +21,12 @@ namespace HollowGround.Editor
                 Object.DestroyImmediate(existing.gameObject);
             }
 
-            var root = PanelBuilderUtil.CreateRoot("HeroPanel", canvas.transform, 500);
+            var root = PanelBuilderUtil.CreateRoot("HeroPanel", canvas.transform, 560);
             PanelBuilderUtil.SetupFullPanel(root);
 
-            var header = PanelBuilderUtil.CreateHeader("Header", root.transform, "HEROES", 20);
+            var header = PanelBuilderUtil.CreateHeader("Header", root.transform, "HEROES", 24);
             header.alignment = TextAlignmentOptions.Center;
-            header.GetComponent<LayoutElement>().preferredHeight = 35;
+            header.GetComponent<LayoutElement>().preferredHeight = 40;
 
             PanelBuilderUtil.AddSeparator(root.transform);
 
@@ -46,14 +46,14 @@ namespace HollowGround.Editor
 
             var summonBtn = PanelBuilderUtil.CreateButton("SummonBtn", summonRow.transform, "SUMMON", PanelBuilderUtil.OkColor, 35);
 
-            var info = root.GetComponent<HeroPanelUI>() ?? root.AddComponent<HeroPanelUI>();
+            var info = root.AddComponent<HeroPanelUI>();
             root.SetActive(false);
 
             var so = new SerializedObject(info);
-            so.FindProperty("_headerText").objectReferenceValue = header;
-            so.FindProperty("_summonCostText").objectReferenceValue = summonCostText;
-            so.FindProperty("_listContainer").objectReferenceValue = listContainer.gameObject;
-            so.FindProperty("_summonBtn").objectReferenceValue = summonBtn;
+            PanelBuilderUtil.WireField(so, "_headerText", header);
+            PanelBuilderUtil.WireField(so, "_summonCostText", summonCostText);
+            PanelBuilderUtil.WireField(so, "_listContainer", listContainer.gameObject);
+            PanelBuilderUtil.WireField(so, "_summonBtn", summonBtn);
             so.ApplyModifiedProperties();
 
             Selection.activeGameObject = root;

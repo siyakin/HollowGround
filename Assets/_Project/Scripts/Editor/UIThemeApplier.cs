@@ -70,8 +70,8 @@ namespace HollowGround.Editor
                 case UIStyleType.BodyText:    ApplyText(tag, theme.bodyTextColor,    theme.bodyStyle,   theme.defaultFont); break;
                 case UIStyleType.LabelText:   ApplyText(tag, theme.labelTextColor,   theme.labelStyle,  theme.defaultFont); break;
                 case UIStyleType.CostText:    ApplyText(tag, theme.costTextColor,    theme.costStyle,   theme.defaultFont); break;
-                case UIStyleType.WarningText: ApplyText(tag, theme.warningTextColor, null,              theme.defaultFont); break;
-                case UIStyleType.DangerText:  ApplyText(tag, theme.dangerTextColor,  null,              theme.defaultFont); break;
+                case UIStyleType.WarningText: ApplyText(tag, theme.warningTextColor, theme.warningStyle, theme.defaultFont); break;
+                case UIStyleType.DangerText:  ApplyText(tag, theme.dangerTextColor,  theme.dangerStyle,  theme.defaultFont); break;
             }
         }
 

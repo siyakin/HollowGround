@@ -74,7 +74,7 @@ MonoBehaviour:
   bodyTextColor: {r: 0.85, g: 0.85, b: 0.85, a: 1}
   labelTextColor: {r: 0.78, g: 0.78, b: 0.74, a: 1}
   costTextColor: {r: 0.95, g: 0.8, b: 0.4, a: 1}
-  warningTextColor: {r: 0.95, g: 0.65, b: 0.1, a: 1}
+  warningTextColor: {r: 0.9490196, g: 0.8, b: 0.4, a: 1}
   dangerTextColor: {r: 0.9, g: 0.25, b: 0.2, a: 1}
   defaultFont: {fileID: 11400000, guid: 773d13c282d1ec1458a5e3da07f63db1, type: 2}
   headerStyle:
@@ -93,15 +93,29 @@ MonoBehaviour:
     lineSpacing: 0
   labelStyle:
     font: {fileID: 11400000, guid: 773d13c282d1ec1458a5e3da07f63db1, type: 2}
-    fontSize: 18
+    fontSize: 28
     fontStyle: 0
     characterSpacing: 0
     wordSpacing: 0
     lineSpacing: 0
   costStyle:
     font: {fileID: 11400000, guid: 773d13c282d1ec1458a5e3da07f63db1, type: 2}
-    fontSize: 16
+    fontSize: 26
     fontStyle: 0
+    characterSpacing: 0
+    wordSpacing: 0
+    lineSpacing: 0
+  warningStyle:
+    font: {fileID: 11400000, guid: 773d13c282d1ec1458a5e3da07f63db1, type: 2}
+    fontSize: 26
+    fontStyle: 1
+    characterSpacing: 0
+    wordSpacing: 0
+    lineSpacing: 0
+  dangerStyle:
+    font: {fileID: 0}
+    fontSize: 24
+    fontStyle: 1
     characterSpacing: 0
     wordSpacing: 0
     lineSpacing: 0

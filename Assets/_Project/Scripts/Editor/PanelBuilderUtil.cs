@@ -78,7 +78,9 @@ namespace HollowGround.Editor
             rt.offsetMax = new Vector2(0, -60);
 
             root.GetComponent<Image>().color = PanelBg;
-            var vlg = root.AddComponent<VerticalLayoutGroup>();
+            var vlg = root.GetComponent<VerticalLayoutGroup>();
+            if (vlg == null)
+                vlg = root.AddComponent<VerticalLayoutGroup>();
             vlg.padding = new RectOffset(10, 10, 10, 10);
             vlg.spacing = 4;
             vlg.childControlWidth = true;
@@ -99,6 +101,7 @@ namespace HollowGround.Editor
             hlg.childForceExpandWidth = false;
             hlg.childForceExpandHeight = false;
             hlg.childAlignment = TextAnchor.MiddleLeft;
+            row.AddComponent<LayoutElement>();
             return row;
         }
 
@@ -114,6 +117,7 @@ namespace HollowGround.Editor
             vlg.childControlHeight = false;
             vlg.childForceExpandWidth = true;
             vlg.childForceExpandHeight = false;
+            box.AddComponent<LayoutElement>();
             return box;
         }
 
@@ -270,6 +274,60 @@ namespace HollowGround.Editor
 
             content = contentObj.transform;
             return sr;
+        }
+
+        public static Slider CreateSlider(string name, Transform parent, Color fillColor, float height = 8)
+        {
+            var container = new GameObject(name, typeof(RectTransform));
+            container.transform.SetParent(parent, false);
+            var le = container.AddComponent<LayoutElement>();
+            le.minHeight = height;
+            le.preferredHeight = height;
+            le.flexibleWidth = 1;
+
+            var bgImg = container.AddComponent<Image>();
+            bgImg.color = BarBgColor;
+
+            var fillArea = new GameObject("Fill Area", typeof(RectTransform));
+            fillArea.transform.SetParent(container.transform, false);
+            var fart = fillArea.GetComponent<RectTransform>();
+            fart.anchorMin = Vector2.zero;
+            fart.anchorMax = Vector2.one;
+            fart.offsetMin = Vector2.zero;
+            fart.offsetMax = Vector2.zero;
+
+            var fill = new GameObject("Fill", typeof(RectTransform));
+            fill.transform.SetParent(fillArea.transform, false);
+            var frt = fill.GetComponent<RectTransform>();
+            frt.anchorMin = Vector2.zero;
+            frt.anchorMax = Vector2.one;
+            frt.offsetMin = Vector2.zero;
+            frt.offsetMax = Vector2.zero;
+            var fillImg = fill.AddComponent<Image>();
+            fillImg.color = fillColor;
+
+            var handleArea = new GameObject("Handle Slide Area", typeof(RectTransform));
+            handleArea.transform.SetParent(container.transform, false);
+            var hart = handleArea.GetComponent<RectTransform>();
+            hart.anchorMin = Vector2.zero;
+            hart.anchorMax = Vector2.one;
+            hart.offsetMin = Vector2.zero;
+            hart.offsetMax = Vector2.zero;
+
+            var handle = new GameObject("Handle", typeof(RectTransform));
+            handle.transform.SetParent(handleArea.transform, false);
+            var handleImg = handle.AddComponent<Image>();
+            handleImg.color = Color.clear;
+
+            var slider = container.AddComponent<Slider>();
+            slider.interactable = false;
+            slider.targetGraphic = bgImg;
+            slider.fillRect = frt;
+            slider.handleRect = handle.GetComponent<RectTransform>();
+            slider.direction = Slider.Direction.LeftToRight;
+            slider.value = 0f;
+
+            return slider;
         }
 
         public static void StretchFull(RectTransform rt)

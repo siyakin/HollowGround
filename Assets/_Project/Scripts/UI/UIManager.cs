@@ -59,23 +59,37 @@ namespace HollowGround.UI
         private void InitPanelManager()
         {
             _panels = new PanelManager();
-            _panels.Register("BuildMenu", _buildMenuPanel);
-            _panels.Register("Training", _trainingPanel);
-            _panels.Register("Army", _armyPanel);
-            _panels.Register("Hero", _heroPanel);
-            _panels.Register("WorldMap", _worldMapPanel);
-            _panels.Register("QuestLog", _questLogPanel);
-            _panels.Register("TechTree", _techTreePanel);
-            _panels.Register("FactionTrade", _factionTradePanel);
-            _panels.Register("Settler", _settlerPanel);
-            _panels.Register("BattleReport", _battleReportPanel);
-            _panels.Register("BuildingInfo", _buildingInfoPanel);
+            _panels.Register("BuildMenu", Resolve(ref _buildMenuPanel, "BuildMenu"));
+            _panels.Register("Training", Resolve(ref _trainingPanel, "TrainingPanel"));
+            _panels.Register("Army", Resolve(ref _armyPanel, "ArmyPanel"));
+            _panels.Register("Hero", Resolve(ref _heroPanel, "HeroPanel"));
+            _panels.Register("WorldMap", Resolve(ref _worldMapPanel, "WorldMapPanel"));
+            _panels.Register("QuestLog", Resolve(ref _questLogPanel, "QuestLogPanel"));
+            _panels.Register("TechTree", Resolve(ref _techTreePanel, "TechTreePanel"));
+            _panels.Register("FactionTrade", Resolve(ref _factionTradePanel, "FactionTradePanel"));
+            _panels.Register("Settler", Resolve(ref _settlerPanel, "SettlerPanel"));
+            _panels.Register("BattleReport", Resolve(ref _battleReportPanel, "BattleReportPanel"));
+            _panels.Register("BuildingInfo", Resolve(ref _buildingInfoPanel, "BuildingInfo"));
             _panels.Register("Toast", _toastPanel);
             _panels.Register("ResourceBar", _resourceBarPanel);
-            _panels.Register("SaveMenu", _saveMenuPanel);
+            _panels.Register("SaveMenu", Resolve(ref _saveMenuPanel, "SaveMenuPanel"));
 
             _panels.OnPanelOpened += _ => UpdateActionBarHighlights();
             _panels.OnPanelClosed += _ => UpdateActionBarHighlights();
+        }
+
+        private GameObject Resolve(ref GameObject field, string sceneName)
+        {
+            if (field != null) return field;
+            var t = transform.Find(sceneName) ?? GameCanvas()?.transform.Find(sceneName);
+            if (t != null) field = t.gameObject;
+            return field;
+        }
+
+        private static GameObject GameCanvas()
+        {
+            var gc = GameObject.Find("GameCanvas");
+            return gc != null ? gc : null;
         }
 
         private void CacheActionBarButtons()

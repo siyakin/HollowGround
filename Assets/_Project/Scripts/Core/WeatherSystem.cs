@@ -376,7 +376,9 @@ namespace HollowGround.Core
             var velocity = ps.velocityOverLifetime;
             velocity.enabled = true;
             velocity.space = ParticleSystemSimulationSpace.Local;
+            velocity.x = new ParticleSystem.MinMaxCurve(0f, 0f);
             velocity.y = new ParticleSystem.MinMaxCurve(1f, 3f);
+            velocity.z = new ParticleSystem.MinMaxCurve(0f, 0f);
 
             return ps;
         }

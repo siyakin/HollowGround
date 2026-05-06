@@ -35,8 +35,8 @@ namespace HollowGround.UI
                 UIStyleType.HeaderText => (theme.headerStyle, theme.headerTextColor),
                 UIStyleType.LabelText => (theme.labelStyle, theme.labelTextColor),
                 UIStyleType.CostText => (theme.costStyle, theme.costTextColor),
-                UIStyleType.WarningText => (theme.bodyStyle, theme.warningTextColor),
-                UIStyleType.DangerText => (theme.bodyStyle, theme.dangerTextColor),
+                UIStyleType.WarningText => (theme.warningStyle, theme.warningTextColor),
+                UIStyleType.DangerText => (theme.dangerStyle, theme.dangerTextColor),
                 _ => (theme.bodyStyle, theme.bodyTextColor)
             };
 

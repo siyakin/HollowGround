@@ -57,8 +57,9 @@ namespace HollowGround.Editor
             // Quest list
             Transform listContainer;
             PanelBuilderUtil.CreateScrollView("QuestList", root.transform, out listContainer);
-            listContainer.parent.GetComponent<LayoutElement>().preferredHeight = 200;
-            listContainer.parent.GetComponent<LayoutElement>().flexibleHeight = 1;
+            var scrollLayout = listContainer.parent.parent.GetComponent<LayoutElement>();
+            scrollLayout.preferredHeight = 200;
+            scrollLayout.flexibleHeight = 1;
 
             PanelBuilderUtil.AddSeparator(root.transform);
 

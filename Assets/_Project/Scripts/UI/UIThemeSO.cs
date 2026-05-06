@@ -72,6 +72,8 @@ namespace HollowGround.UI
         public TextStyle bodyStyle   = new TextStyle { fontSize = 22, fontStyle = FontStyles.Normal, characterSpacing = 0f };
         public TextStyle labelStyle  = new TextStyle { fontSize = 18, fontStyle = FontStyles.Normal, characterSpacing = 0f };
         public TextStyle costStyle   = new TextStyle { fontSize = 16, fontStyle = FontStyles.Normal, characterSpacing = 0f };
+        public TextStyle warningStyle = new TextStyle { fontSize = 18, fontStyle = FontStyles.Bold,   characterSpacing = 0f };
+        public TextStyle dangerStyle  = new TextStyle { fontSize = 18, fontStyle = FontStyles.Bold,   characterSpacing = 0f };
 
         void Reset()
         {

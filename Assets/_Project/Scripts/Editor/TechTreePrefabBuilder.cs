@@ -107,6 +107,7 @@ namespace HollowGround.Editor
             var detailPrereqs = CreateDetailText(detailPanel.transform, "DetailPrereqs", "", 14, UIColors.TextDim, -420, 60);
 
             var info = root.AddComponent<TechTreeUI>();
+            resBtn.onClick.AddListener(info.StartResearchFromDetail);
             root.SetActive(false);
 
             var so = new SerializedObject(info);

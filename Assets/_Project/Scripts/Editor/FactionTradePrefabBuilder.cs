@@ -71,17 +71,17 @@ namespace HollowGround.Editor
             buyHeader.alignment = TextAlignmentOptions.Center;
 
             Transform sellContainer;
-            PanelBuilderUtil.CreateScrollView("SellList", detailPanel.transform, out sellContainer);
-            sellContainer.parent.GetComponent<LayoutElement>().preferredHeight = 120;
-            sellContainer.parent.GetComponent<LayoutElement>().flexibleHeight = 0;
+            var sellScroll = PanelBuilderUtil.CreateScrollView("SellList", detailPanel.transform, out sellContainer);
+            sellScroll.GetComponent<LayoutElement>().preferredHeight = 120;
+            sellScroll.GetComponent<LayoutElement>().flexibleHeight = 0;
 
             var sellHeader = PanelBuilderUtil.CreateTMP("SellHeader", detailPanel.transform, "-- SELL TO FACTION --", 16, PanelBuilderUtil.GoldColor);
             sellHeader.alignment = TextAlignmentOptions.Center;
 
             Transform buyContainer;
-            PanelBuilderUtil.CreateScrollView("BuyList", detailPanel.transform, out buyContainer);
-            buyContainer.parent.GetComponent<LayoutElement>().preferredHeight = 120;
-            buyContainer.parent.GetComponent<LayoutElement>().flexibleHeight = 0;
+            var buyScroll = PanelBuilderUtil.CreateScrollView("BuyList", detailPanel.transform, out buyContainer);
+            buyScroll.GetComponent<LayoutElement>().preferredHeight = 120;
+            buyScroll.GetComponent<LayoutElement>().flexibleHeight = 0;
 
             detailPanel.SetActive(false);
 

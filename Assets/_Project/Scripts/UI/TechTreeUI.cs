@@ -65,6 +65,12 @@ namespace HollowGround.UI
                 ResearchManager.Instance.OnResearchCompleted += HandleResearchCompleted;
             }
 
+            if (_detailResearchBtn != null)
+                _detailResearchBtn.onClick.RemoveAllListeners();
+
+            if (_detailResearchBtn != null)
+                _detailResearchBtn.onClick.AddListener(StartResearchFromDetail);
+
             RefreshAll();
         }
 
