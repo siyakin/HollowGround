@@ -1,6 +1,6 @@
 # Hollow Ground — AGENTS.md
 
-## Mevcut Versiyon: 0.23.0
+## Mevcut Versiyon: 0.24.0
 
 ## Versiyon Kurallari
 
@@ -231,6 +231,7 @@ SettlerManager, SettlerJobManager, WalkerManager, MapRenderer
 | 16 | ✅ | Settler Job System: Roller, is atama, isci bazli uretim, SettlerPanelUI, SettlerInfoUI |
 | 17 | ✅ | Terrain System: MapTemplate, MapRenderer, 8 terrain type, water shader, lighting |
 | 17a | ✅ | Domain Layer: WalkerBase, WalkerManager, WalkerStateMachine, BattleCalc, PathfinderService |
+| 17b | ✅ | Toast UI Overhaul: Stacked multi-toast, slide animation, load toast suppression |
 
 ---
 

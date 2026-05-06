@@ -237,7 +237,8 @@ namespace HollowGround.Core
         {
             string origin = building.GridOrigin.ToString();
             Log($"BUILDING PLACED: {building.Data.DisplayName} at {origin} | Level {building.Level} | State: {building.State}");
-            ToastUI.Show($"{building.Data.DisplayName} placed!", UIColors.Default.Ok);
+            if (!SaveSystem.IsLoading)
+                ToastUI.Show($"{building.Data.DisplayName} placed!", UIColors.Default.Ok);
             building.OnConstructionComplete += OnBuildingConstructionComplete;
             building.OnUpgradeComplete += OnBuildingUpgradeComplete;
             building.OnProduced += OnBuildingProduced;

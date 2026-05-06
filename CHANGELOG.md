@@ -4,6 +4,19 @@ All notable changes to Hollow Ground are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Versioning follows [SemVer](https://semver.org/): MAJOR.MINOR.PATCH
 
+## [0.24.0] - 2026-05-06
+
+### Added
+- ToastUI: stacked multi-toast system — up to 4 simultaneous toasts visible on screen
+- ToastUI: new messages appear at top, existing toasts slide down with smoothstep animation
+- ToastUI: each toast has independent lifecycle (fade-in 0.4s, display 3s, fade-out 0.4s)
+- ToastUI: overflow handling — oldest toast gracefully fades out when limit reached
+- ToastUI: configurable via Inspector (maxVisibleToasts, displayDuration, fadeDuration, slideDuration, toastSpacing)
+- SaveSystem.IsLoading flag — suppresses event-driven side effects during save/load
+
+### Fixed
+- Load/QuickLoad no longer shows "X placed!" toast for every building in the save
+
 ## [0.23.0] - 2026-05-03
 
 ### Added
