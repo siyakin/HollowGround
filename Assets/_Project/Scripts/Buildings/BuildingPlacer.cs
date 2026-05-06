@@ -138,7 +138,7 @@ namespace HollowGround.Buildings
 
             _ghostObject.transform.rotation = Quaternion.Euler(0, _rotation * 90f, 0);
 
-            _isValidPlacement = GridSystem.Instance.IsAreaBuildable(_cachedCoords.x, _cachedCoords.y, sx, sz);
+            _isValidPlacement = IsPlacementValid(_cachedCoords.x, _cachedCoords.y, sx, sz);
 
             SetGhostMaterial(_isValidPlacement ? _validMaterial : _invalidMaterial);
 
@@ -147,9 +147,33 @@ namespace HollowGround.Buildings
                 var blockedCell = GridSystem.Instance.GetCell(_cachedCoords.x, _cachedCoords.y);
                 if (blockedCell != null && blockedCell.Terrain != TerrainType.Flat)
                     ToastUI.Show($"Cannot build on {blockedCell.Terrain}!");
+                else if (HasRoadInArea(_cachedCoords.x, _cachedCoords.y, sx, sz))
+                    ToastUI.Show("Cannot build on road!");
                 else if (blockedCell != null && blockedCell.State == CellState.Occupied)
                     ToastUI.Show("Area already occupied!");
             }
+        }
+
+        private bool IsPlacementValid(int x, int z, int sx, int sz)
+        {
+            if (!GridSystem.Instance.IsAreaBuildable(x, z, sx, sz)) return false;
+            if (HasRoadInArea(x, z, sx, sz)) return false;
+            return true;
+        }
+
+        private bool HasRoadInArea(int x, int z, int sx, int sz)
+        {
+            var rm = RoadManager.Instance;
+            if (rm == null) return false;
+            for (int dx = 0; dx < sx; dx++)
+            {
+                for (int dz = 0; dz < sz; dz++)
+                {
+                    if (rm.HasRoadAt(new Vector2Int(x + dx, z + dz)))
+                        return true;
+                }
+            }
+            return false;
         }
 
         private void HandlePlacementInput()
@@ -181,7 +205,7 @@ namespace HollowGround.Buildings
             var coords = GridSystem.Instance.GetGridCoordinates(groundPoint);
             (int sx, int sz) = GetRotatedSize();
 
-            if (!GridSystem.Instance.IsAreaBuildable(coords.x, coords.y, sx, sz)) return;
+            if (!IsPlacementValid(coords.x, coords.y, sx, sz)) return;
 
             var costs = _currentBuilding.GetCostForLevel(1);
 

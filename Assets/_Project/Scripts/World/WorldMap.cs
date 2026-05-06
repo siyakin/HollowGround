@@ -179,7 +179,7 @@ namespace HollowGround.World
             {
                 for (int y = 0; y < _mapHeight; y++)
                 {
-                    var node = ScriptableObject.CreateInstance<MapNodeData>();
+                    var node = new MapNodeData();
                     node.DisplayName = $"Sector {x},{y}";
                     node.GridPosition = new Vector2Int(x, y);
 

@@ -12,6 +12,7 @@ using UnityEngine;
 
 namespace HollowGround.Core
 {
+    [DefaultExecutionOrder(-50)]
     public class GameInitializer : MonoBehaviour
     {
         [Header("Camera")]
@@ -24,12 +25,39 @@ namespace HollowGround.Core
         [SerializeField] private MapTemplate _mapTemplate;
         [SerializeField] private bool _applyTerrainOnStart = true;
 
+        [Header("Starting Buildings")]
+        [SerializeField] private BuildingData _commandCenterData;
+        [SerializeField] private BuildingData _farmData;
+        [SerializeField] private BuildingData _woodFactoryData;
+        [SerializeField] private BuildingData _waterWellData;
+
+        [Header("Starting Positions")]
+        [SerializeField] private Vector2Int _ccPos = new(24, 24);
+        [SerializeField] private Vector2Int _farmPos = new(26, 24);
+        [SerializeField] private Vector2Int _woodPos = new(24, 26);
+        [SerializeField] private Vector2Int _waterPos = new(26, 26);
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
+        private static void EnsureExists()
+        {
+            if (FindAnyObjectByType<GameInitializer>() != null) return;
+
+            var go = GameObject.Find("GameInitializer");
+            if (go == null)
+            {
+                go = new GameObject("GameInitializer");
+                Debug.LogWarning("[GameInitializer] Created missing GameInitializer at runtime.");
+            }
+            go.AddComponent<GameInitializer>();
+        }
+
         private void Start()
         {
             ResetAllState();
             EnsureSessionLogger();
             EnsureBuildingPlacer();
             ApplyTerrain();
+            PlaceStartingBuildings();
             ResetSettlers();
             CenterCamera();
             InitializeWorldMap();
@@ -89,8 +117,6 @@ namespace HollowGround.Core
         private void EnsureBuildingPlacer()
         {
             if (BuildingPlacer.Instance != null) return;
-            // Component exists but Instance is null (e.g. after hot reload) — OnEnable in
-            // Singleton<T> will have already re-registered it, so just warn and bail out.
             if (FindAnyObjectByType<BuildingPlacer>() != null)
             {
                 Debug.LogWarning("[GameInitializer] BuildingPlacer component found but Instance is null — possible hot reload artifact.");
@@ -98,6 +124,36 @@ namespace HollowGround.Core
             }
             gameObject.AddComponent<BuildingPlacer>();
             Debug.Log("[GameInitializer] BuildingPlacer was missing, added to Managers.");
+        }
+
+        private void PlaceStartingBuildings()
+        {
+            PlaceBuilding(_commandCenterData, _ccPos);
+            PlaceBuilding(_farmData, _farmPos);
+            PlaceBuilding(_woodFactoryData, _woodPos);
+            PlaceBuilding(_waterWellData, _waterPos);
+        }
+
+        private void PlaceBuilding(BuildingData data, Vector2Int gridPos)
+        {
+            if (data == null) return;
+            if (GridSystem.Instance == null) return;
+            if (!GridSystem.Instance.IsAreaBuildable(gridPos.x, gridPos.y, data.SizeX, data.SizeZ)) return;
+
+            Vector3 worldPos = GridSystem.Instance.GetWorldPosition(gridPos.x, gridPos.y);
+            float offsetX = (data.SizeX - 1) * GridSystem.Instance.CellSize * 0.5f;
+            float offsetZ = (data.SizeZ - 1) * GridSystem.Instance.CellSize * 0.5f;
+
+            var go = new GameObject(data.DisplayName);
+            go.transform.position = new Vector3(worldPos.x + offsetX, worldPos.y, worldPos.z + offsetZ);
+
+            var building = go.AddComponent<Building>();
+            building.Initialize(data, gridPos);
+
+            GridSystem.Instance.OccupyCells(gridPos.x, gridPos.y, data.SizeX, data.SizeZ, go);
+
+            if (BuildingManager.Instance != null)
+                BuildingManager.Instance.RegisterBuilding(building);
         }
 
         private void CenterCamera()
