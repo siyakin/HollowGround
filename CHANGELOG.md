@@ -4,6 +4,25 @@ All notable changes to Hollow Ground are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Versioning follows [SemVer](https://semver.org/): MAJOR.MINOR.PATCH
 
+## [0.25.0] - 2026-05-06
+
+### Fixed
+- #20 RoadManager orphan cleanup timer now uses `WaitForSecondsRealtime` (was affected by Time.timeScale/pause)
+- #21 BuildingPlacer blocks placement on road cells — "Cannot build on road!" toast shown
+- #7 WorldMap.GenerateDefaultMap no longer creates runtime ScriptableObjects — MapNodeData converted to plain C# class
+- #8 GameInitializer auto-creates itself if missing from scene (`RuntimeInitializeOnLoadMethod` fallback)
+- #3 BaseStarter merged into GameInitializer — starting buildings placed automatically on game start
+- #31 RoadManager.FindPath caches preferred cells HashSet (was allocating every call)
+
+### Changed
+- MapNodeData: `ScriptableObject` → plain C# class (no `[CreateAssetMenu]`, no `GetRuntimeCopy()`)
+- GameInitializer now has starting building SerializeFields (CC, Farm, WoodFactory, WaterWell + positions)
+- RoadManager: `OnRoadsChanged?.Invoke()` replaced with `NotifyRoadsChanged()` (invalidates path cache)
+- BuildingPlacer: `IsPlacementValid()` + `HasRoadInArea()` methods for road-aware placement
+
+### Removed
+- BaseStarter.cs — functionality merged into GameInitializer
+
 ## [0.24.0] - 2026-05-06
 
 ### Added

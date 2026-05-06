@@ -1,6 +1,6 @@
 # Hollow Ground — AGENTS.md
 
-## Mevcut Versiyon: 0.24.0
+## Mevcut Versiyon: 0.25.0
 
 ## Versiyon Kurallari
 
@@ -86,7 +86,7 @@ Tek kisi PvE: Sehir kurma + ordu yonetimi + hero sistemi + dunya kesfi.
 Assets/_Project/
 ├── Scripts/
 │   ├── Core/        GameManager, TimeManager, Singleton, GameInitializer,
-│   │                SaveData, SaveSystem, AudioManager, BaseStarter,
+│   │                SaveData, SaveSystem, AudioManager,
 │   │                PostProcessingSetup, AtmosphereEffects, GameConfig, SessionLogger,
 │   │                WeatherSystem, CostEntryHelper
 │   ├── Camera/      StrategyCamera, ScreenShake
@@ -182,7 +182,7 @@ GameManager, TimeManager, ResourceManager, GridSystem, GridVisualizer,
 BuildingPlacer, BuildingSelector, BuildingManager, ArmyManager,
 BattleManager, HeroManager, WorldMap, ExpeditionSystem,
 QuestManager, MutantAttackManager, ResearchManager, TradeSystem,
-SaveSystem, BaseStarter, GameInitializer, WeatherSystem, RoadManager,
+SaveSystem, GameInitializer, WeatherSystem, RoadManager,
 SettlerManager, SettlerJobManager, WalkerManager, MapRenderer
 
 ### GameCanvas Alt Yapisi
@@ -222,7 +222,7 @@ SettlerManager, SettlerJobManager, WalkerManager, MapRenderer
 | 7 | ✅ | Dunya Haritasi: 10x10 grid, A*, fog of war, sefer |
 | 8 | ✅ | Ileri: Tech tree, Faction/Ticaret, Quest, Mutant saldiri |
 | 9 | ✅ | Save/Load + Audio: JSON save, auto-save, SFX pool |
-| 10 | ✅ | Content: BaseStarter, 3 faction, 10 tech, 15 quest, BALANCE.md |
+| 10 | ✅ | Content: Starting buildings (GameInitializer), 3 faction, 10 tech, 15 quest, BALANCE.md |
 | 11 | ✅ | Playtest & Bugfix: 13/13 test gecti, GameConfig, SessionLogger |
 | 12 | ✅ | Bina Model Sistemi: 105 FBX, state-based model swap, hasar/tamir |
 | 13 | ✅ | Refactoring: Singleton<T>, UIPrimitiveFactory, UIColors, dead code silindi |
@@ -512,8 +512,8 @@ Tum sistemler playtest edildi, 13/13 test gecti:
 - [ ] Sahne dekorasyonu ve atmosfer
 
 ### Potansiyel Bug'lar
-- `GameInitializer.Start()` ile `GameManager.StartGame()` cagrilir ama sahnede `GameInitializer` yoksa oyun Playing state'e gecmez
-- `BaseStarter.SetupBase()` manuel tetiklenmeli (ContextMenu) veya GameInitializer'a entegre edilmeli
+- `GameInitializer.Start()` ile `GameManager.StartGame()` cagrilir — sahnede yoksa `RuntimeInitializeOnLoadMethod` ile otomatik olusturulur
+- `BaseStarter` kaldirildi — baslangic binalari GameInitializer uzerinden yerlestirilir (SerializeField + PlaceStartingBuildings)
 - WorldMap.GenerateDefaultMap() runtime'da SO olusturur (ScriptableObject.CreateInstance) — save/load ile uyumlu degil
 - RoadManager.RemoveOrphanedRoads() bina yikildiktan 30s sonra calismiyor — BFS connectivity check debug edilmeli
 - RoadManager.HandleManualRoadRemoval() aktif/bagli yollari da silebiliyor — sadece orphan yollar silinmeli
@@ -656,6 +656,7 @@ Bu kurallar tekrarlanan hataları ve gereksiz kod tekrarını önlemek için Faz
 - Runtime verileri için plain C# class/struct kullanılır
 - SO'lar sadece editörde tasarım verisi için kullanılır
 - Örnek: `MutantWaveData` (plain class) vs `MutantWave` (SO, editör only)
+- `MapNodeData` SO'dan plain class'a cevrildi — runtime SO uretimi kaldirildi
 
 ### Ölü Kod (Dead Code)
 - Kullanılmayan script dosyaları projede tutulmaz

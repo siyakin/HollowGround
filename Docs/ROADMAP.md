@@ -279,9 +279,9 @@ BALANCE.md    — Dengeleme referans tablosu
 - [x] Orphan road cleanup — bina yıkılınca 30s sonra bağlantısız yollar fade-out
 - [x] Manual road removal — sağ-tık ile yol silme
 - [x] Save/load entegrasyonu — yol verisi + bina rotasyonu kaydetme/yükleme
-- [ ] Orphan cleanup bug fix — BFS connectivity check çalışmıyor
+- [x] Orphan cleanup — WaitForSecondsRealtime ile timeScale-bağımsız
+- [x] Yol hücrelerine bina yerleştirme engeli — BuildingPlacer road cell kontrolü
 - [ ] Sağ-tık sadece orphan yolları silmeli — aktif yollar korunmali
-- [ ] Yol hücrelerine bina yerleştirme engeli — BuildingPlacer road cell kontrolü
 
 *Son güncelleme: AGENTS.md dokümantasyon guncellemesi — tum tamamlanan isler yansitildi*
 

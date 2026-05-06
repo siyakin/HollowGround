@@ -14,11 +14,18 @@ namespace HollowGround.Roads
     public class RoadManager : Singleton<RoadManager>, IGridDataProvider
     {
         private readonly HashSet<Vector2Int> _roadCells = new();
+        private HashSet<GridPos> _preferredCellsCache;
         private RoadVisualizer _visualizer;
         private Coroutine _cleanupCoroutine;
         private int _groundMask;
 
         public event Action OnRoadsChanged;
+
+        private void NotifyRoadsChanged()
+        {
+            _preferredCellsCache = null;
+            NotifyRoadsChanged();
+        }
 
         private static readonly Vector2Int[] Directions = {
             new(0, 1),
@@ -84,7 +91,7 @@ namespace HollowGround.Roads
 
             _roadCells.Remove(coords);
             _visualizer.FadeOutAndRemove(new HashSet<Vector2Int> { coords });
-            OnRoadsChanged?.Invoke();
+            NotifyRoadsChanged();
         }
 
         private void OnBuildingAdded(Building building)
@@ -111,7 +118,7 @@ namespace HollowGround.Roads
 
         private IEnumerator DelayedOrphanCleanup()
         {
-            yield return new WaitForSeconds(OrphanCleanupDelay);
+            yield return new WaitForSecondsRealtime(OrphanCleanupDelay);
             RemoveOrphanedRoads();
             _cleanupCoroutine = null;
         }
@@ -169,7 +176,7 @@ namespace HollowGround.Roads
                 _roadCells.Remove(cell);
 
             _visualizer.FadeOutAndRemove(orphaned);
-            OnRoadsChanged?.Invoke();
+            NotifyRoadsChanged();
         }
 
         private void RemoveRoadCellsUnderBuilding(Building building)
@@ -249,7 +256,7 @@ namespace HollowGround.Roads
             if (changed)
             {
                 _visualizer.RebuildVisuals(_roadCells);
-                OnRoadsChanged?.Invoke();
+                NotifyRoadsChanged();
             }
         }
 
@@ -332,17 +339,25 @@ namespace HollowGround.Roads
 
         private List<Vector2Int> FindPath(Vector2Int start, Vector2Int end)
         {
-            var preferred = new HashSet<GridPos>();
-            foreach (var cell in _roadCells)
-                preferred.Add(new GridPos(cell.x, cell.y));
+            var preferred = GetPreferredCellsCache();
 
             var result = PathfinderService.BFS(this, preferred, new GridPos(start.x, start.y), new GridPos(end.x, end.y), MaxBfsIterations);
             if (result == null) return null;
 
-            var path = new List<Vector2Int>();
+            var path = new List<Vector2Int>(result.Count);
             foreach (var p in result)
                 path.Add(new Vector2Int(p.X, p.Z));
             return path;
+        }
+
+        private HashSet<GridPos> GetPreferredCellsCache()
+        {
+            if (_preferredCellsCache != null) return _preferredCellsCache;
+
+            _preferredCellsCache = new HashSet<GridPos>(_roadCells.Count);
+            foreach (var cell in _roadCells)
+                _preferredCellsCache.Add(new GridPos(cell.x, cell.y));
+            return _preferredCellsCache;
         }
 
         public bool IsValid(int x, int z)
@@ -362,7 +377,7 @@ namespace HollowGround.Roads
             _roadCells.Clear();
             if (_visualizer != null)
                 _visualizer.RebuildVisuals(_roadCells);
-            OnRoadsChanged?.Invoke();
+            NotifyRoadsChanged();
         }
 
         public List<Vector2Int> GetRoadCellsForSave()
@@ -380,7 +395,7 @@ namespace HollowGround.Roads
             }
             if (_visualizer != null)
                 _visualizer.RebuildVisuals(_roadCells);
-            OnRoadsChanged?.Invoke();
+            NotifyRoadsChanged();
         }
 
         public bool HasRoadAt(Vector2Int cell) => _roadCells.Contains(cell);
