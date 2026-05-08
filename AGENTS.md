@@ -558,6 +558,10 @@ Tum sistemler playtest edildi, 13/13 test gecti:
 - **#34** Training queue not restored on load — ApplyArmy troop count restore ediyor ama training queue kaybolur
 - **#35** Building ProductionTimer save/load eksik — BuildingSave'de field var ama capture/restore edilmiyor
 - **#36** World Map & Expedition system rework — tasarim ve implementasyon ayri faz olarak planlanmali
+- **#37** RoadManager orphan road cleanup 30s sonra calismiyor — BFS connectivity check
+- **#38** Manual road removal aktif/bagli yollari da silebiliyor — sadece orphan yollar silinmeli
+- **#39** Yol olan hucrelere bina yerlestirilebiliyor — BuildingPlacer road cell check eksik
+- **#40** WorldMap.GenerateDefaultMap runtime SO — save/load ile uyumsuz
 
 ---
 
