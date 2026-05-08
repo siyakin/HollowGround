@@ -1,7 +1,10 @@
 using System.Collections.Generic;
 using System.Linq;
+using HollowGround.Army;
+using HollowGround.Buildings;
 using HollowGround.Core;
 using HollowGround.Resources;
+using HollowGround.World;
 using UnityEngine;
 
 namespace HollowGround.Quests
@@ -47,10 +50,20 @@ namespace HollowGround.Quests
         public bool AcceptQuest(QuestData data)
         {
             var instance = _quests.FirstOrDefault(q => q.Data == data);
-            if (instance == null) return false;
-            if (instance.Status != QuestStatus.Available) return false;
+            if (instance == null)
+            {
+                Debug.LogWarning($"[QuestManager] AcceptQuest: quest not found for {data?.name ?? "null"}");
+                return false;
+            }
+            if (instance.Status != QuestStatus.Available)
+            {
+                Debug.LogWarning($"[QuestManager] AcceptQuest: {data.name} status={instance.Status}, expected Available");
+                return false;
+            }
 
             instance.Status = QuestStatus.Active;
+            Debug.Log($"[QuestManager] Quest accepted: {data.name} -> Active");
+            CheckExistingProgress(instance);
             OnQuestAccepted?.Invoke(instance);
             OnQuestListChanged?.Invoke();
             return true;
@@ -145,6 +158,103 @@ namespace HollowGround.Quests
                     OnQuestListChanged?.Invoke();
                 }
             }
+        }
+
+        private void CheckExistingProgress(QuestInstance quest)
+        {
+            for (int i = 0; i < quest.Data.Objectives.Count; i++)
+            {
+                var obj = quest.Data.Objectives[i];
+                int existing = QueryExistingCount(obj);
+                if (existing > 0)
+                {
+                    quest.AddProgress(i, existing);
+                    OnQuestObjectiveUpdated?.Invoke(quest);
+                }
+            }
+
+            if (quest.IsComplete())
+            {
+                quest.Status = QuestStatus.Completed;
+                OnQuestCompleted?.Invoke(quest);
+                OnQuestListChanged?.Invoke();
+            }
+        }
+
+        private int QueryExistingCount(QuestData.QuestObjective obj)
+        {
+            switch (obj.Type)
+            {
+                case ObjectiveType.BuildBuilding:
+                    return CountBuildings(obj.TargetId);
+
+                case ObjectiveType.GatherResource:
+                    return GetResourceAmount(obj.TargetId);
+
+                case ObjectiveType.TrainTroops:
+                    return GetTroopCount(obj.TargetId);
+
+                case ObjectiveType.ResearchTech:
+                    return CountResearchedTech(obj.TargetId);
+
+                case ObjectiveType.TradeWithFaction:
+                    return 0;
+
+                case ObjectiveType.ExploreNodes:
+                    return CountExploredNodes();
+
+                default:
+                    return 0;
+            }
+        }
+
+        private int CountBuildings(string targetId)
+        {
+            if (BuildingManager.Instance == null) return 0;
+            int count = 0;
+            foreach (var b in BuildingManager.Instance.AllBuildings)
+            {
+                if (b.Data == null) continue;
+                if (b.Data.DisplayName == targetId || b.Data.name == targetId)
+                    count++;
+            }
+            return count;
+        }
+
+        private int GetResourceAmount(string targetId)
+        {
+            if (ResourceManager.Instance == null) return 0;
+            if (!System.Enum.TryParse<ResourceType>(targetId, out var type)) return 0;
+            return ResourceManager.Instance.Get(type);
+        }
+
+        private int GetTroopCount(string targetId)
+        {
+            if (ArmyManager.Instance == null) return 0;
+            if (!System.Enum.TryParse<TroopType>(targetId, out var type)) return 0;
+            return ArmyManager.Instance.GetTroopCount(type);
+        }
+
+        private int CountResearchedTech(string targetId)
+        {
+            if (Tech.ResearchManager.Instance == null) return 0;
+            foreach (var tech in Tech.ResearchManager.Instance.GetResearchedTechs())
+            {
+                if (tech.name == targetId || tech.DisplayName == targetId)
+                    return 1;
+            }
+            return 0;
+        }
+
+        private int CountExploredNodes()
+        {
+            if (WorldMap.Instance == null) return 0;
+            int count = 0;
+            foreach (var node in WorldMap.Instance.AllNodes)
+            {
+                if (node.IsExplored) count++;
+            }
+            return count;
         }
     }
 }

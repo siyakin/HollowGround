@@ -1,6 +1,6 @@
 # Hollow Ground — AGENTS.md
 
-## Mevcut Versiyon: 0.26.0
+## Mevcut Versiyon: 0.27.0
 
 ## Versiyon Kurallari
 
@@ -89,7 +89,7 @@ Assets/_Project/
 │   │                SaveData, SaveSystem, AudioManager,
 │   │                PostProcessingSetup, AtmosphereEffects, GameConfig, SessionLogger,
 │   │                WeatherSystem, CostEntryHelper
-│   ├── Camera/      StrategyCamera, ScreenShake
+│   ├── Camera/      StrategyCamera, ScreenShake, MinimapCamera
 │   ├── Grid/        GridSystem, GridCell, GridVisualizer, GridOverlayRenderer,
 │   │                MapRenderer, MapTemplate, TerrainTile, TerrainType, WaterSurface
 │   ├── Buildings/   BuildingType, BuildingData, Building, BuildingManager,
@@ -113,7 +113,7 @@ Assets/_Project/
 │   │                ToastUI, TrainingPanelUI, ArmyPanelUI, BattleReportUI,
 │   │                HeroPanelUI, WorldMapUI, TechTreeUI, FactionTradeUI,
 │   │                QuestLogUI, SaveMenuUI, DebugHUD,
-│   │                UIThemeSO, UIThemeTag
+│   │                UIThemeSO, UIThemeTag, MinimapUI
 │   └── Editor/      GridSystemEditor, BuildingDataFactory, TroopDataFactory,
 │                     HeroDataFactory, QuestDataFactory, FactionDataFactory,
 │                     TechNodeFactory, GhostMaterialCreator,
@@ -235,6 +235,7 @@ GardenManager
 | 17a | ✅ | Domain Layer: WalkerBase, WalkerManager, WalkerStateMachine, BattleCalc, PathfinderService |
 | 17b | ✅ | Toast UI Overhaul: Stacked multi-toast, slide animation, load toast suppression |
 | 18  | ✅ | Garden & Merge: 4-garden merge, NeedsRoads flag, FBX updates (Barracks/WaterWell/WoodFactory) |
+| 19  | ✅ | DebugHUD 3-tab + quest system triggers + TrainingPanel fix + playtest (v0.27.0) |
 
 ---
 
@@ -274,6 +275,33 @@ Tum sistemler playtest edildi, 13/13 test gecti:
 - SaveSystem dosya adi uyumsuzlugu duzeltildi
 - ResearchManager sahnede eksikti — eklendi
 - 3 FactionData SO olusturuldu (Scavenger Guild, Iron Legion, Green Haven)
+
+### Playtest Faz 19 (Tamamlandi) ✅
+
+| # | Test | Durum |
+|---|------|-------|
+| 1 | Oyun Baslangic | ✅ CC, Farm, Mine, Barracks, Shelter yerlestirme |
+| 2 | QuickSave/QuickLoad | ✅ F5/F9, bina/troop/hero/save duzgun yuklendi |
+| 3 | Kaynak Uretim | ✅ Farm (Food), Mine (Metal), GardenLarge (25 Food) |
+| 4 | Askeri Egitim | ✅ Infantry x3, Scout x1, Sniper x1, queue max 3 |
+| 5 | Hero Summon | ✅ Commander (Rare), TechPart harcandi |
+| 6 | Research | ✅ 4 arastirma (Basic Agriculture, Construction, Weapons, Medicine) |
+| 7 | Bina Upgrade | ✅ Shelter → Lv.2 |
+| 8 | Faction Ticaret | ✅ Green Haven ile 3 trade, iliski 21→23 |
+| 9 | Quest Accept | ✅ Build Your First Farm accepted |
+| 10 | Quest Complete | ✅ Farm insaat → quest aninda completed |
+| 11 | Quest Turn In | ✅ +50 Wood +30 Metal odul alindi |
+| 12 | Garden Merge | ✅ 4 Garden → GardenLarge, toast + log |
+| 13 | Settler Spawn | ✅ 44 settler, nufus bazli |
+| 14 | DebugHUD | ✅ 3 tab (Basic/Buildings/Events), F12 toggle |
+| 15 | Events Log | ✅ Toast eventleri DebugHUD'da goruldu |
+
+**Faz 19'da duzeltilen buglar:**
+- TrainingPanel TRAIN butonu barracks olmadan basilabiliyordu → HasBarracksFor() eklendi
+- Quest objective trigger'lari hic calismiyordu → SessionLogger'a event bridge eklendi
+- Quest accept sirada mevcut ilerleme sayilmiyordu → CheckExistingProgress() eklendi
+- QuestLogUI toast her zaman success gosteriyordu → return value kontrolu eklendi
+- Garden merge toast eksik → SessionLogger'a eklendi
 
 ### SO'lar Olusturulmadi (Editor'de yapilmali)
 - `ScriptableObjects/Quests/` — 10 ek quest SO (QuestDataFactory ile) (5 mevcut, 10 daha eklenmeli)
@@ -526,6 +554,15 @@ Tum sistemler playtest edildi, 13/13 test gecti:
 - RoadManager.HandleManualRoadRemoval() aktif/bagli yollari da silebiliyor — sadece orphan yollar silinmeli
 - Yol olan hucrelere bina yerlestirilebiliyor — BuildingPlacer'da road cell kontrolu eklenmeli
 
+### Acik Issue'lar
+- **#34** Training queue not restored on load — ApplyArmy troop count restore ediyor ama training queue kaybolur
+- **#35** Building ProductionTimer save/load eksik — BuildingSave'de field var ama capture/restore edilmiyor
+- **#36** World Map & Expedition system rework — tasarim ve implementasyon ayri faz olarak planlanmali
+- **#37** RoadManager orphan road cleanup 30s sonra calismiyor — BFS connectivity check
+- **#38** Manual road removal aktif/bagli yollari da silebiliyor — sadece orphan yollar silinmeli
+- **#39** Yol olan hucrelere bina yerlestirilebiliyor — BuildingPlacer road cell check eksik
+- **#40** WorldMap.GenerateDefaultMap runtime SO — save/load ile uyumsuz
+
 ---
 
 ## Kesfedilen Tuzaklar (Discoveries)
@@ -576,6 +613,10 @@ Tum sistemler playtest edildi, 13/13 test gecti:
 44. `OnConstructionComplete` callback içinde `DestroyImmediate` çağrılırsa, callback'ten dönüş sonrası `UpdateModel()` MissingReferenceException verir. Çözüm: merge'i 1 frame geciktir (coroutine) veya `if (!this) return;` null check
 45. 2x2 bina merkezi: `GetWorldPosition(bottomLeft)` hucre merkezi verir. 2x2 icin `cellSize * 0.5f` offset gerekir, `cellSize * 1.0f` degil (baska binaya binme sorunu)
 46. Domain katmaninda `ToastUI.Show()` cagirmak yerine event firlatmali — UI katmani (SessionLogger) event'i dinleyip toast gosterir. GardenManager ornegi: OnGardenMerged event → SessionLogger subscribes
+47. `QuestLogUI.AcceptSelectedQuest()` toast'u her zaman gosteriyor, `AcceptQuest` basarisiz olsa bile — return value kontrol edilmeli
+48. Quest kabul edilip `CheckExistingProgress` ile aninda Completed olursa, QuestLogUI Available tab'da gorev kaybolur — kullanici "kabul edilmedi" sanir. Toast ile "Quest complete!" bildirilmeli
+49. `TrainingPanelUI.RefreshAll()` butonlarin `interactable` degerini sadece `CanAffordTraining` ile belirler — barracks/seviye kontrolu de eklenmeli (`HasBarracksFor`)
+50. `Resources.LoadAll<TroopData>("Troops")` bazen cache'den az donduruyor — debug log ile yuklenen troop sayisi dogrulanmali
 
 ---
 
@@ -833,3 +874,24 @@ Bu kurallar tekrarlanan hataları ve gereksiz kod tekrarını önlemek için Faz
 - 6 BuildingData SO wrong m_Name (Barracks, Generator, Shelter, Storage, WaterWell, WoodFactory)
 - Hospital SO Type: 0 (CommandCenter) → Type: 11 (Hospital)
 - 9 legacy/yedek BuildingData SO silindi + 1 duplicate BuildingData.asset root'tan silindi
+
+### Minimap System
+- **MinimapCamera.cs** — Orthographic kamera, CameraRig altinda, StrategyCamera pozisyonunu takip eder
+  - Yukseklik: 120 birim ( SerializeField _height)
+  - Orthographic size: grid buyuklugu + padding
+  - LateUpdate ile StrategyCamera pozisyonunu XZ'de takip eder
+  - RenderTexture'ye render eder (512x512, ARGB32, no MSAA)
+  - Depth=-2, UI layer haric tum layerlari gorur
+- **MinimapUI.cs** — RawImage minimap panel (sag ust kose), viewport cercevesi, tiklama navigasyonu
+  - UIPrimitiveFactory ile runtime UI olusturur (frame + border + RawImage + marker layer + viewport frame)
+  - Viewport frame: ana kameranin gorus alanini beyaz cerceve olarak gosterir (frustum corner hesabi)
+  - Tiklama: IPointerClickHandler + IDragHandler → StrategyCamera.FocusOn() ile kamerayi yonlendirir
+  - Bina marker'lari: Texture2D pixel cizimi (256x256), BuildingManager event'leri ile guncellenir
+  - Bina renkleri: BuildingType bazli (CC=gold, Farm=yesil, Barracks=kirmizi, vb.)
+  - Overlay panel (PanelManager'da "Minimap" olarak kayitli, her zaman acik)
+- **Editor Setup**: `HollowGround > Setup Minimap` menusu
+  - MinimapRenderTexture.asset olusturur (Settings klasoru)
+  - CameraRig altinda MinimapCamera olusturur
+  - GameCanvas altinda MinimapPanel olusturur
+  - UIManager'a SerializeField baglama
+- **Entegrasyon**: UIManager _minimapPanel SerializeField, PanelManager overlay panel, SceneSetupEditor wiring

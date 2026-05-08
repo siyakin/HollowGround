@@ -7,6 +7,8 @@ namespace HollowGround.UI
 {
     public class ToastUI : MonoBehaviour
     {
+        public static event System.Action<string, Color> OnToastShown;
+
         [SerializeField] private float _displayDuration = 3f;
         [SerializeField] private float _fadeDuration = 0.4f;
         [SerializeField] private float _slideDuration = 0.3f;
@@ -68,6 +70,7 @@ namespace HollowGround.UI
 
             var msg = new ToastMessage { Text = text, Color = color ?? Color.white };
             _instance.CreateToast(msg);
+            OnToastShown?.Invoke(text, msg.Color);
         }
 
         private void EnsureContainer()

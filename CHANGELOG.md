@@ -4,6 +4,34 @@ All notable changes to Hollow Ground are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Versioning follows [SemVer](https://semver.org/): MAJOR.MINOR.PATCH
 
+## [0.27.0] - 2026-05-08
+
+### Added
+- DebugHUD: 3-tab system (Basic/Buildings/Events) with F12 toggle
+- DebugHUD: Basic tab — game state, resources, army, heroes, settlers, grid info
+- DebugHUD: Buildings tab — per-building details (state, level, production, workers, [NR] tag), state/type summary, roads, garden count
+- DebugHUD: Events tab — toast event log (last 50 events with timestamps)
+- ToastUI: OnToastShown static event for external listeners
+- QuestManager: CheckExistingProgress() — accepts quest and checks current game state for already-met objectives
+- QuestManager: QueryExistingCount() — 6 objective types: BuildBuilding, GatherResource, TrainTroops, ResearchTech, TradeWithFaction, ExploreNodes
+- SessionLogger: event-driven quest objective triggers (BuildBuilding, TrainTroops, ResearchTech, TradeWithFaction)
+- SessionLogger: quest completed/turned-in toast notifications with reward details
+- SessionLogger: garden merge toast notification
+- QuestLogUI: TurnedIn quests visible in Completed tab with [DONE] gold tag
+- TrainingPanelUI: HasBarracksFor() — buttons disabled when no active barracks with required level
+- Debug scene setup: tab buttons (Basic/Buildings/Events) with SetTab() binding, panel resize (600x486)
+
+### Fixed
+- TrainingPanel TRAIN button not responding — barracks check was only in TrainTroop(), not in RefreshAll() button state
+- Quest system had no objective triggers — BuildBuilding, TrainTroops, ResearchTech, TradeWithFaction were never fired
+- QuestLogUI AcceptSelectedQuest toast always showed success even when AcceptQuest failed
+- SessionLogger toast duplication removed (building placed/built/destroyed/damaged/repaired toasts moved to domain events)
+
+### Known Issues
+- #34 Training queue not restored on load
+- #35 Building ProductionTimer not captured/restored on save
+- #36 World Map & Expedition system needs comprehensive rework
+
 ## [0.26.0] - 2026-05-08
 
 ### Added
