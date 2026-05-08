@@ -16,7 +16,7 @@ namespace HollowGround.UI
 
         private static readonly HashSet<string> OverlayPanels = new()
         {
-            "BuildingInfo", "BattleReport", "Toast", "ResourceBar"
+            "BuildingInfo", "BattleReport", "Toast", "ResourceBar", "Minimap"
         };
 
         public void Register(string id, GameObject panel)

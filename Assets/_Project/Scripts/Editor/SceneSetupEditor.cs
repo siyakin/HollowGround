@@ -4,6 +4,7 @@ using UnityEditor;
 using UnityEditor.SceneManagement;
 using TMPro;
 using HollowGround.UI;
+using HollowGround.Camera;
 using HollowGround.Tech;
 using HollowGround.NPCs;
 
@@ -60,6 +61,7 @@ namespace HollowGround.Editor
             WirePanel(so, canvas, "_heroPanel", "HeroPanel");
             WirePanel(so, canvas, "_worldMapPanel", "WorldMapPanel");
             WirePanel(so, canvas, "_saveMenuPanel", "SaveMenuPanel");
+            WirePanel(so, canvas, "_minimapPanel", "MinimapPanel");
 
             so.ApplyModifiedProperties();
             EditorUtility.SetDirty(uiManager);
@@ -1059,6 +1061,88 @@ namespace HollowGround.Editor
             lblTmp.fontSize = 16;
             lblTmp.alignment = TextAlignmentOptions.Center;
             lblTmp.color = Color.white;
+        }
+
+        #endregion
+
+        #region Minimap Setup
+
+        [MenuItem("HollowGround/Setup Minimap")]
+        public static void SetupMinimap()
+        {
+            string rtPath = "Assets/_Project/Settings/MinimapRenderTexture.renderTexture";
+            var renderTexture = AssetDatabase.LoadAssetAtPath<RenderTexture>(rtPath);
+            if (renderTexture == null)
+            {
+                renderTexture = new RenderTexture(512, 512, 16, RenderTextureFormat.ARGB32);
+                renderTexture.antiAliasing = 1;
+                renderTexture.filterMode = FilterMode.Point;
+                renderTexture.Create();
+
+                System.IO.Directory.CreateDirectory("Assets/_Project/Settings");
+                AssetDatabase.CreateAsset(renderTexture, rtPath);
+                AssetDatabase.SaveAssets();
+                Debug.Log("[Minimap] Created RenderTexture at " + rtPath);
+            }
+
+            Transform cameraRigT = null;
+            var cameraRigGO = GameObject.Find("CameraRig");
+            if (cameraRigGO != null)
+                cameraRigT = cameraRigGO.transform;
+
+            if (cameraRigT == null)
+            {
+                Debug.LogError("[Minimap] CameraRig not found! Run Setup Ground & Camera first.");
+                return;
+            }
+
+            Transform existingMinimapCam = cameraRigT.Find("MinimapCamera");
+            if (existingMinimapCam != null)
+                Object.DestroyImmediate(existingMinimapCam.gameObject);
+
+            GameObject minimapCamGO = new("MinimapCamera");
+            minimapCamGO.transform.SetParent(cameraRigT, false);
+            minimapCamGO.transform.localPosition = new Vector3(0f, 120f, 0f);
+            minimapCamGO.transform.localRotation = Quaternion.Euler(90f, 0f, 0f);
+
+            var cam = minimapCamGO.AddComponent<UnityEngine.Camera>();
+            cam.orthographic = true;
+            cam.orthographicSize = 120f;
+            cam.clearFlags = CameraClearFlags.SolidColor;
+            cam.backgroundColor = new Color(0.06f, 0.07f, 0.08f, 1f);
+            cam.targetTexture = renderTexture;
+            cam.depth = -2;
+            cam.allowHDR = false;
+            cam.allowMSAA = false;
+            cam.cullingMask = ~0 & ~(1 << 5);
+
+            var minimapCam = minimapCamGO.AddComponent<MinimapCamera>();
+
+            Canvas canvas = Object.FindAnyObjectByType<Canvas>();
+            if (canvas == null)
+            {
+                Debug.LogError("[Minimap] No Canvas found in scene!");
+                return;
+            }
+
+            Transform existingMinimap = canvas.transform.Find("MinimapPanel");
+            if (existingMinimap != null)
+                Object.DestroyImmediate(existingMinimap.gameObject);
+
+            GameObject minimapPanel = new("MinimapPanel");
+            minimapPanel.transform.SetParent(canvas.transform, false);
+            minimapPanel.SetActive(true);
+
+            var minimapUI = minimapPanel.AddComponent<MinimapUI>();
+
+            SerializedObject so = new SerializedObject(minimapUI);
+            var rtProp = so.FindProperty("_renderTexture");
+            if (rtProp != null) rtProp.objectReferenceValue = renderTexture;
+            so.ApplyModifiedProperties();
+
+            EditorUtility.SetDirty(minimapUI);
+            EditorSceneManager.MarkAllScenesDirty();
+            Debug.Log("[Minimap] Setup complete! MinimapCamera + MinimapPanel created.");
         }
 
         #endregion

@@ -26,6 +26,7 @@ namespace HollowGround.UI
         [SerializeField] private GameObject _aboutPanel;
         [SerializeField] private GameObject _settlerPanel;
         [SerializeField] private GameObject _debugPanel;
+        [SerializeField] private GameObject _minimapPanel;
 
         private PanelManager _panels;
         private Dictionary<string, Button> _actionBarButtons;
@@ -73,6 +74,7 @@ namespace HollowGround.UI
             _panels.Register("Toast", _toastPanel);
             _panels.Register("ResourceBar", _resourceBarPanel);
             _panels.Register("SaveMenu", Resolve(ref _saveMenuPanel, "SaveMenuPanel"));
+            _panels.Register("Minimap", Resolve(ref _minimapPanel, "MinimapPanel"));
 
             _panels.OnPanelOpened += _ => UpdateActionBarHighlights();
             _panels.OnPanelClosed += _ => UpdateActionBarHighlights();

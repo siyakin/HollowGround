@@ -89,7 +89,7 @@ Assets/_Project/
 │   │                SaveData, SaveSystem, AudioManager,
 │   │                PostProcessingSetup, AtmosphereEffects, GameConfig, SessionLogger,
 │   │                WeatherSystem, CostEntryHelper
-│   ├── Camera/      StrategyCamera, ScreenShake
+│   ├── Camera/      StrategyCamera, ScreenShake, MinimapCamera
 │   ├── Grid/        GridSystem, GridCell, GridVisualizer, GridOverlayRenderer,
 │   │                MapRenderer, MapTemplate, TerrainTile, TerrainType, WaterSurface
 │   ├── Buildings/   BuildingType, BuildingData, Building, BuildingManager,
@@ -113,7 +113,7 @@ Assets/_Project/
 │   │                ToastUI, TrainingPanelUI, ArmyPanelUI, BattleReportUI,
 │   │                HeroPanelUI, WorldMapUI, TechTreeUI, FactionTradeUI,
 │   │                QuestLogUI, SaveMenuUI, DebugHUD,
-│   │                UIThemeSO, UIThemeTag
+│   │                UIThemeSO, UIThemeTag, MinimapUI
 │   └── Editor/      GridSystemEditor, BuildingDataFactory, TroopDataFactory,
 │                     HeroDataFactory, QuestDataFactory, FactionDataFactory,
 │                     TechNodeFactory, GhostMaterialCreator,
@@ -874,3 +874,24 @@ Bu kurallar tekrarlanan hataları ve gereksiz kod tekrarını önlemek için Faz
 - 6 BuildingData SO wrong m_Name (Barracks, Generator, Shelter, Storage, WaterWell, WoodFactory)
 - Hospital SO Type: 0 (CommandCenter) → Type: 11 (Hospital)
 - 9 legacy/yedek BuildingData SO silindi + 1 duplicate BuildingData.asset root'tan silindi
+
+### Minimap System
+- **MinimapCamera.cs** — Orthographic kamera, CameraRig altinda, StrategyCamera pozisyonunu takip eder
+  - Yukseklik: 120 birim ( SerializeField _height)
+  - Orthographic size: grid buyuklugu + padding
+  - LateUpdate ile StrategyCamera pozisyonunu XZ'de takip eder
+  - RenderTexture'ye render eder (512x512, ARGB32, no MSAA)
+  - Depth=-2, UI layer haric tum layerlari gorur
+- **MinimapUI.cs** — RawImage minimap panel (sag ust kose), viewport cercevesi, tiklama navigasyonu
+  - UIPrimitiveFactory ile runtime UI olusturur (frame + border + RawImage + marker layer + viewport frame)
+  - Viewport frame: ana kameranin gorus alanini beyaz cerceve olarak gosterir (frustum corner hesabi)
+  - Tiklama: IPointerClickHandler + IDragHandler → StrategyCamera.FocusOn() ile kamerayi yonlendirir
+  - Bina marker'lari: Texture2D pixel cizimi (256x256), BuildingManager event'leri ile guncellenir
+  - Bina renkleri: BuildingType bazli (CC=gold, Farm=yesil, Barracks=kirmizi, vb.)
+  - Overlay panel (PanelManager'da "Minimap" olarak kayitli, her zaman acik)
+- **Editor Setup**: `HollowGround > Setup Minimap` menusu
+  - MinimapRenderTexture.asset olusturur (Settings klasoru)
+  - CameraRig altinda MinimapCamera olusturur
+  - GameCanvas altinda MinimapPanel olusturur
+  - UIManager'a SerializeField baglama
+- **Entegrasyon**: UIManager _minimapPanel SerializeField, PanelManager overlay panel, SceneSetupEditor wiring
