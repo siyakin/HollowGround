@@ -68,6 +68,16 @@ namespace HollowGround.Editor
             CostEntryHelper.Costs(ResourceType.Metal, 120, ResourceType.Food, 30),
             commandCenterLevelRequired: 3);
 
+        [MenuItem("Assets/Create/HollowGround/BuildingData/Garden (Small)")]
+        public static void CreateGarden() => CreateBuildingData("Garden", BuildingType.Garden, BuildingCategory.Resource,
+            1, 1, true, ResourceType.Food, 5, 300f,
+            CostEntryHelper.Costs(ResourceType.Wood, 20));
+
+        [MenuItem("Assets/Create/HollowGround/BuildingData/Garden Large (Merged)")]
+        public static void CreateGardenLarge() => CreateBuildingData("GardenLarge", BuildingType.GardenLarge, BuildingCategory.Resource,
+            2, 2, true, ResourceType.Food, 25, 240f,
+            CostEntryHelper.Costs(ResourceType.Wood, 80, ResourceType.Metal, 20));
+
         private static void CreateBuildingData(
             string name,
             BuildingType type,

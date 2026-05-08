@@ -1,0 +1,45 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6c7055fb7298b4c44877c972cfbd95b5, type: 3}
+  m_Name: Garden
+  m_EditorClassIdentifier: Assembly-CSharp::HollowGround.Buildings.BuildingData
+  DisplayName: Garden
+  Description: 
+  Type: 15
+  Category: 0
+  MaxLevel: 11
+  Models:
+    ConstructModel: {fileID: 919132149155446097, guid: 484386e6c5c0da945b5f85b00dc9ddd2, type: 3}
+    Level01Model: {fileID: 919132149155446097, guid: 484386e6c5c0da945b5f85b00dc9ddd2, type: 3}
+    Level03Model: {fileID: 0}
+    Level05Model: {fileID: 0}
+    Level10Model: {fileID: 0}
+    DamagedModel: {fileID: 0}
+    DestroyedModel: {fileID: 0}
+  SizeX: 1
+  SizeZ: 1
+  BaseCost:
+  - Type: 0
+    Amount: 20
+  CostMultiplier: 1.5
+  BaseBuildTime: 10
+  HasProduction: 1
+  ProducedResource: 2
+  BaseProductionAmount: 5
+  ProductionInterval: 300
+  ProductionMultiplierPerLevel: 1.2
+  PopulationCapacity: 0
+  StorageCapacity: 0
+  RequiredWorkers: []
+  WorkerProductionBonus: 0.5
+  CommandCenterLevelRequired: 1
+  NeedsRoads: 0

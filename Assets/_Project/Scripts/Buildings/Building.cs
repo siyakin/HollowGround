@@ -66,6 +66,28 @@ namespace HollowGround.Buildings
             UpdateModel();
         }
 
+        public void InitializeActive(BuildingData data, Vector2Int gridOrigin, int rotation = 0)
+        {
+            _data = data;
+            GridOrigin = gridOrigin;
+            Rotation = rotation;
+            Level = 1;
+            State = BuildingState.Active;
+            ConstructionProgress = 1f;
+
+            var (sx, sz) = GetRotatedFootprint();
+            var col = gameObject.AddComponent<BoxCollider>();
+            col.size = new Vector3(sx * GridSystem.Instance.CellSize, 5f, sz * GridSystem.Instance.CellSize);
+            col.center = new Vector3(0f, 2.5f, 0f);
+
+            gameObject.layer = LayerMask.NameToLayer("Building");
+
+            gameObject.AddComponent<BuildingHighlight>();
+            gameObject.AddComponent<DamageEffects>();
+
+            UpdateModel();
+        }
+
         private void Update()
         {
             switch (State)
@@ -97,6 +119,7 @@ namespace HollowGround.Buildings
                 ConstructionProgress = 1f;
                 State = BuildingState.Active;
                 OnConstructionComplete?.Invoke(this);
+                if (!this) return;
                 UpdateModel();
             }
         }
@@ -221,7 +244,7 @@ namespace HollowGround.Buildings
             DestroyImmediate(gameObject);
         }
 
-        private void FreeGridCells()
+        public void FreeGridCells()
         {
             var gridSystem = GridSystem.Instance;
             if (gridSystem != null)

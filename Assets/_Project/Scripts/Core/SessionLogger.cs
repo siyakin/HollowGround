@@ -167,6 +167,14 @@ namespace HollowGround.Core
                 settlers.OnSettlerSpawned += OnSettlerSpawned;
                 settlers.OnSettlerRemoved += OnSettlerRemoved;
             }
+
+            var roads = HollowGround.Roads.RoadManager.Instance;
+            if (roads != null)
+                roads.OnRoadsGenerated += OnRoadsGenerated;
+
+            var garden = GardenManager.Instance;
+            if (garden != null)
+                garden.OnGardenMerged += OnGardenMerged;
         }
 
         private void UnsubscribeEvents()
@@ -222,6 +230,14 @@ namespace HollowGround.Core
                 settlers.OnSettlerSpawned -= OnSettlerSpawned;
                 settlers.OnSettlerRemoved -= OnSettlerRemoved;
             }
+
+            var roads = HollowGround.Roads.RoadManager.Instance;
+            if (roads != null)
+                roads.OnRoadsGenerated -= OnRoadsGenerated;
+
+            var garden = GardenManager.Instance;
+            if (garden != null)
+                garden.OnGardenMerged -= OnGardenMerged;
         }
 
         #endregion
@@ -365,6 +381,17 @@ namespace HollowGround.Core
         private void OnSettlerRemoved(SettlerWalker walker)
         {
             Log($"SETTLER REMOVED | Total: {SettlerManager.Instance?.SettlerCount ?? 0}");
+        }
+
+        private void OnRoadsGenerated(HollowGround.Buildings.Building source, System.Collections.Generic.List<UnityEngine.Vector2Int> newRoads)
+        {
+            Log($"ROAD GENERATED: {newRoads.Count} tiles for {source.Data.DisplayName} at {source.GridOrigin}");
+        }
+
+        private void OnGardenMerged(HollowGround.Buildings.Building largeGarden)
+        {
+            Log($"GARDEN MERGED: 4 small gardens → {largeGarden.Data.DisplayName} at {largeGarden.GridOrigin}");
+            ToastUI.Show("4 Gardens merged into Community Garden!", UIColors.Default.Ok);
         }
 
         #endregion

@@ -92,6 +92,10 @@ namespace HollowGround.Buildings
         [Header("Requirements")]
         public int CommandCenterLevelRequired = 1;
 
+        [Header("Roads")]
+        [Tooltip("If false, no roads will be generated to/from this building")]
+        public bool NeedsRoads = true;
+
         public int GetTotalRequiredWorkers()
         {
             if (RequiredWorkers == null || RequiredWorkers.Count == 0) return 0;

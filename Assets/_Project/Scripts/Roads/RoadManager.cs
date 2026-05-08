@@ -20,6 +20,7 @@ namespace HollowGround.Roads
         private int _groundMask;
 
         public event Action OnRoadsChanged;
+        public event Action<Building, List<Vector2Int>> OnRoadsGenerated;
 
         private void NotifyRoadsChanged()
         {
@@ -97,6 +98,10 @@ namespace HollowGround.Roads
         private void OnBuildingAdded(Building building)
         {
             RemoveRoadCellsUnderBuilding(building);
+
+            if (!building.Data.NeedsRoads)
+                return;
+
             building.OnConstructionComplete += OnBuildingCompleted;
 
             if (building.State == BuildingState.Active)
@@ -209,11 +214,17 @@ namespace HollowGround.Roads
             if (!IsReachableCell(sourceDoor))
             {
                 Vector2Int? alt = FindNearestReachableCell(sourceDoor);
-                if (alt == null) return;
+                if (alt == null)
+                {
+                    Debug.LogWarning($"[RoadManager] No reachable cell near door {sourceDoor} for {source.Data.DisplayName}");
+                    return;
+                }
+                Debug.Log($"[RoadManager] Door {sourceDoor} unreachable for {source.Data.DisplayName}, using alt {alt.Value}");
                 sourceDoor = alt.Value;
             }
 
             bool changed = false;
+            var newRoads = new List<Vector2Int>();
 
             var nearestRoad = FindNearestRoadCell(sourceDoor);
             if (nearestRoad.HasValue)
@@ -224,8 +235,15 @@ namespace HollowGround.Roads
                     foreach (var cell in path)
                     {
                         if (CanPlaceRoad(cell) && _roadCells.Add(cell))
+                        {
                             changed = true;
+                            newRoads.Add(cell);
+                        }
                     }
+                }
+                else
+                {
+                    Debug.LogWarning($"[RoadManager] No path from {sourceDoor} to nearest road {nearestRoad.Value} for {source.Data.DisplayName}");
                 }
             }
 
@@ -248,15 +266,36 @@ namespace HollowGround.Roads
                     foreach (var cell in path)
                     {
                         if (CanPlaceRoad(cell) && _roadCells.Add(cell))
+                        {
                             changed = true;
+                            newRoads.Add(cell);
+                        }
                     }
                 }
+                else
+                {
+                    var targetCell = GridSystem.Instance.GetCell(targetDoor.x, targetDoor.y);
+                    Debug.Log($"[RoadManager] BFS failed: {source.Data.DisplayName} door={sourceDoor} -> {target.Data.DisplayName} door={targetDoor} | target passable={targetCell?.IsPassable} state={targetCell?.State}");
+                }
+            }
+
+            if (!changed && CanPlaceRoad(sourceDoor) && _roadCells.Add(sourceDoor))
+            {
+                changed = true;
+                newRoads.Add(sourceDoor);
+                Debug.Log($"[RoadManager] Seed road at door {sourceDoor} for {source.Data.DisplayName}");
             }
 
             if (changed)
             {
+                Debug.Log($"[RoadManager] Generated {newRoads.Count} road tiles for {source.Data.DisplayName} at {source.GridOrigin}");
                 _visualizer.RebuildVisuals(_roadCells);
                 NotifyRoadsChanged();
+                OnRoadsGenerated?.Invoke(source, newRoads);
+            }
+            else
+            {
+                Debug.LogWarning($"[RoadManager] No roads generated for {source.Data.DisplayName} at {source.GridOrigin} | Nearby buildings: {nearbyBuildings.Count} | Existing roads: {_roadCells.Count}");
             }
         }
 
@@ -287,6 +326,7 @@ namespace HollowGround.Roads
             {
                 if (b == source) continue;
                 if (b.State != BuildingState.Active) continue;
+                if (!b.Data.NeedsRoads) continue;
 
                 int dx = Mathf.Abs(b.GridOrigin.x - source.GridOrigin.x);
                 int dz = Mathf.Abs(b.GridOrigin.y - source.GridOrigin.y);

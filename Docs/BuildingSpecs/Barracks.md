@@ -4,52 +4,63 @@ Post-apokaliptik askeri kışla. Çadır, silah, eğitim alanı.
 === LEVEL EVRİMİ ===
 
 L01 (3.0m yükseklik):
-- GroundPlot: box 3.9x0.02x3.9m
-- 1 large military tent: half-cylinder 0.9m radius x 1.8m long, front face open, 4 internal posts 0.04x1.8(Z)x0.04m
-- Flag pole: cylinder 0.02m radius x 2.5m + small flag plane 0.3x0.2m
-- 3 crate stack: box 0.4x0.3x0.4m, 2 bottom 1 top
-- 1 ammo box: box 0.3x0.15x0.2m (olive green, open lid)
-- 1 camp chair: simple frame (thin cylinders) + seat plane
-- Campfire ring: 5 small spheres 0.06m in circle + dark center plane
+- GroundPlatform: flat rough brown earth/dirt base 3.9x3.9m
+- 1 large military A-frame (pyramid) tent: khaki olive-green canvas #4A5D3A, large triangular entrance in front (dark interior), guy ropes + stakes on sides, wrinkled/folded fabric geometry. Dominant object
+- FlagPole: thin grey-metallic cylinder 0.02m radius x 2.5m + red triangular pennant flag #8B0000, slightly waving. Left of tent, ground-anchored
+- Campfire: circular ring of irregular grey stones #8B8B7A in front of tent entrance + 2-3 crossed log pieces #3A2A1A inside (no fire)
+- CrateStack: 8-9 brown wood crates #5C4023 with metal corner reinforcements + cross plank strips, pyramid formation, right of tent, mix of sizes
+- GreenMetalChest: single olive-green #4A5D3A military supply chest next to crate stack, 2 grey metal locks #3A3A38, carrying handles, metal-reinforced corners
+- Mesh parts (SEPARATE): FlagPole, Flag, BarracksTent, CampfireStones, CampfireLogs, CrateStack, GreenMetalChest, GroundPlatform
 - Tri: 400-600
 
 L03 (3.4m yükseklik, L01 +):
-- 2nd tent (smaller, 0.6m radius x 1.2m), side by side at back
-- Weapon locker: metal box 0.6x1.0x0.3m, lid open, 2 rifles inside (thin cylinder + box stock)
-- 3 ammo boxes (mix of open/closed)
-- Target board: plane 0.4x0.6m + post, back area, circle target painted on
-- Sandbag wall: 6 cylinders in 2 rows, tent entrance front
+- MainTent: larger beige/light khaki tent complex, A-frame roof, large grey metal front door OPEN, interior visible with weapon rack (several assault rifles stored vertically), round ventilation pipe on left side, modular extension connecting to right side
+- GreyMilitaryCrates: 6-7 grey metal crates stacked in front of tent door (right side), different sizes, military box design with metal corner reinforcements + lid details, industrial look
+- SmallGreyChest: small grey chest with 2 metal locks + carrying handles, positioned left of campfire
+- Campfire: circular grey stone ring in center, crossed logs inside (no fire), slightly larger than L01
+- ShootingTarget: round classic target on thin metal stand, white base + black circles + red/black bullseye center, right of campfire
+- SandbagWall: grey sandbags in 2 rows, right side near flag, irregular but solid stack, military barricade
+- FlagPole + Flag: thin grey metal pole on far right, rectangular red flag with slight wave effect
+- GroundPlatform: flat light brown/beige rough base 3.9x3.9m
+- Mesh parts (SEPARATE): MainTent, TentDoor, WeaponRack, VentilationPipe, GreyMilitaryCrates, SmallGreyChest, CampfireStones, CampfireLogs, ShootingTarget, TargetStand, SandbagWall, FlagPole, Flag, GroundPlatform
 - Tri: 600-800
 
 L05 (3.8m yükseklik, L03 +):
-- Wooden building replaces tents: box 2.5x2.0x2.5m, sloped wood roof, door 0.8x1.8m, 2 windows 0.3x0.3m
-- Firing range: 3 target boards in line, sand barrier behind
-- Training platform: raised plane 1.5x0.1x1.5m + 3-step stairs
-- Weapon locker larger, 4 rifles
-- 1 barricade: wood plank + 2 sandbags
-- 1 metal barrel
+- WoodenBuilding: single-story wooden barracks, plank-clad walls + pitched roof (light brown natural wood), normal wooden door on left + 2 small windows with glass, large grey metal armory door OPEN (interior weapon racks visible, assault rifles stored vertically), wooden deck/platform with stairs on right side
+- GreyMilitaryCrates: 6-7 grey metal crates stacked next to open armory door, different sizes, labels on crates
+- SmallGreyChest: small grey chest with 2 metal locks, left of campfire
+- Campfire: circular grey stone ring in center, crossed logs inside (no fire)
+- ShootingTargets: 2 classic round targets on thin metal stands, white base + black circles + bullseye center
+- MetalBarrel: single grey/brown military barrel with rusty details, left of targets
+- SandbagWall: grey sandbags in 2 rows, right side near flag, military barricade
+- FlagPole + Flag: thin grey metal pole on far right, rectangular red flag with slight wave
+- GroundPlatform: flat light brown/beige rough base 3.9x3.9m
+- Mesh parts (SEPARATE): WoodenBuilding, Roof, WoodenDoor, ArmoryDoor, Windows, WeaponRack, WoodenDeck, Stairs, GreyMilitaryCrates, SmallGreyChest, CampfireStones, CampfireLogs, ShootingTarget1, ShootingTarget2, MetalBarrel, SandbagWall, FlagPole, Flag, GroundPlatform
 - Tri: 800-1200
 
 L10 (4.8m yükseklik, tamamen yeni):
-- Concrete building: box 3.5x3.5x3.5m, 2 floors, flat roof
-- Ground floor: garage door 1.5x2.2m + 3 windows 0.3x0.4m
-- 2nd floor: 4 windows, balcony (0.6m extension + metal railing)
-- Weapon depot: side annex 1.5x1.5x1.5m, double door
-- Training area: 2 barricades, 5 targets, obstacle course (3 low barriers)
-- Guard booth: box 0.6x0.8x0.6m at entrance
-- Observation platform: roof, 4 legs + railing
-- Large flag pole: 0.025m radius x 3m + big flag
-- Jeep: simple box body + 4 cylinder wheels
+- ConcreteCommandBuilding: 2-storey grey reinforced concrete rectangular structure, wide balcony/walkway with metal railing on upper floor, rooftop platform enclosed with wire fence, antennas + satellite dish + ventilation stacks, open grey metal armory door on left (interior weapon racks + assault rifles visible), large roll-up garage door in center, wooden stairs + deck platform to upper floor on right, multiple windows + small ventilation grilles
+- MilitaryJeep: olive drab green classic military jeep (Willys MB style), 4 wheels, open cabin, detailed headlights + grille + tire treads, parked in front of building
+- GuardBooth: small wooden guard hut right of jeep, has window, simple observation point
+- JerseyBarriers: several white-grey concrete jersey barriers, front-left of building and in front of jeep
+- TireStack: 6-7 military vehicle tires stacked against building, far left side
+- Campfire: circular grey stone ring center-right, crossed logs inside (no fire)
+- ShootingTargets: 2 classic round targets on metal stands, right side
+- SandbagWalls: grey sandbags in 2-3 rows, right side near flag + next to targets
+- FlagPole + Flag: tall grey metal pole with large rectangular red flag on far right + small red flag mounted on building front center
+- MetalBarrel: single grey barrel next to sandbags
+- GroundPlatform: flat large light brown/beige base 3.9x3.9m, concrete + dirt mixed texture
+- Mesh parts (SEPARATE): BuildingWalls, Balcony, RooftopFence, Antennas, SatelliteDish, ArmoryDoor, GarageDoor, Windows, WoodenStairs, WoodenDeck, WeaponRack, MilitaryJeep, GuardBooth, JerseyBarriers, TireStack, CampfireStones, CampfireLogs, ShootingTarget1, ShootingTarget2, SandbagWall, FlagPole, Flag, SmallFlag, MetalBarrel, GroundPlatform
 - Tri: 1500-2000
 
 === CONSTRUCT ===
-- 6 wooden posts 0.05x1.0x0.05m around tent area
-- Tension wires
-- Half-built tent frame (poles no canvas)
-- 1 crate (half full)
-- 1 sack
-- Campfire ring: 5 stones (no fire)
-- GroundPlot
+- FlagPole + Flag: thin grey metal pole on left, red triangular pennant flag with slight wave, same style as L01
+- WoodenBuildingFrame: fully open A-frame (pyramid) wooden skeleton, visible roof trusses, vertical posts + horizontal beams + diagonal braces, no walls/roof/door, clean light brown freshly-cut wood texture
+- RopeFence: simple short round wooden posts + thick rope barrier surrounding structure, entrance gap left open
+- StonePile: small group of grey stones in front of structure, campfire preparation
+- ConstructionCrates: several stacked wooden crates (military/ammo style), open toolbox with lid up (tools visible inside — hammer, screwdriver, saw), large brown burlap sack next to it, a few closed crates
+- GroundPlatform: flat dark brown/beige diorama base 3.9x3.9m, earth texture
+- Mesh parts (SEPARATE): FlagPole, Flag, WoodenPosts, WoodenBeams, WoodenTruss, RopeFence, StonePile, ConstructionCrates, Toolbox, BurlapSack, GroundPlatform
 - Tri: 150-250
 
 === DAMAGED ===

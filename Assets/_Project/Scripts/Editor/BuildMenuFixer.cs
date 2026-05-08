@@ -21,7 +21,8 @@ namespace HollowGround.Editor
             BuildingType.Generator,
             BuildingType.Barracks,
             BuildingType.Storage,
-            BuildingType.Shelter
+            BuildingType.Shelter,
+            BuildingType.Garden
         };
 
         private static readonly string[] ButtonNames =
@@ -34,7 +35,8 @@ namespace HollowGround.Editor
             "btnGenerator",
             "btnBarracks",
             "btnStorage",
-            "btnShelter"
+            "btnShelter",
+            "btnGarden"
         };
 
         [MenuItem("HollowGround/UI/Fix Build Menu")]

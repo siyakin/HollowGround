@@ -4,13 +4,13 @@ Post-apokaliptik kereste atölyesi. Ahşap, testere, talaş.
 === LEVEL EVRİMİ ===
 
 L01 (3.0m yükseklik):
-- Ağaç kütüğü: silindir 0.3m radius x 0.8(Z)m, yan yatık, üstünde balt izleri (çentikler)
-- El testeresi: ince kutu 0.02x0.15x0.4m + dişli kenar, kütüğe yaslı
-- Tahta istifi: 5 düz kutu 0.6x0.03x0.15m üst üste, 0.5m yükseklik
-- Basit kesme tezgahı: 2 ayak (0.04x0.5(Z)x0.04m) + düzlem üst (0.8x0.04x0.4m)
-- Talaş yığını: rough sphere cluster 0.2m çap, tezgah altında
-- 1 çivi kutusu: kutu 0.1x0.08x0.1m
-- GroundPlot: 3.9x0.02x3.9m
+- PlankStack: 6-7 wooden planks stacked neatly on left side, different thicknesses, light-dark brown natural wood #5C4023, edges cleanly cut, slightly stepped shape
+- LogWithSaw: dark brown tree log #3A2A1A lying on ground in center, handsaw stuck into log #3A3A38, small cut wood chip #7A6A4A next to it
+- Workbench: simple sturdy wooden workbench on right side, thick tabletop + 4 legs + lower shelf, brown wood #5C4023, classic carpenter bench
+- SawdustPile: yellowish-light wood shavings #B8A87A on ground in front of workbench, scattered shape
+- NailBox: small wooden box #5C4023 next to sawdust, filled with metal nails #3A3A38, some sticking out
+- GroundPlatform: flat rough brown/beige base 3.9x3.9m, dark dirt #6B5A3A
+- Mesh parts (SEPARATE): PlankStack, Log, Handsaw, WoodChip, Workbench, SawdustPile, NailBox, GroundPlatform
 - Tri: 300-500
 
 L03 (3.4m yükseklik):

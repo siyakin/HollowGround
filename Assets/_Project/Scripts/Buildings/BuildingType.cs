@@ -16,7 +16,9 @@ namespace HollowGround.Buildings
         Hospital,
         Generator,
         Shelter,
-        Storage
+        Storage,
+        Garden,
+        GardenLarge
     }
 
     public enum BuildingCategory

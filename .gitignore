@@ -38,5 +38,10 @@ __pycache__/
 *.fbx
 
 Assets/_Recovery/
+Assets/AI Toolkit/
+Assets/Models/
+Assets/Sprites/
+Assets/Materials/
+GeneratedAssets/
 
 .kilo/

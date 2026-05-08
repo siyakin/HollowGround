@@ -18,13 +18,13 @@ MonoBehaviour:
   Category: 1
   MaxLevel: 10
   Models:
-    ConstructModel: {fileID: 919132149155446097, guid: 8adc986dc9f767447b95747a2d0b4cae, type: 3}
-    Level01Model: {fileID: 919132149155446097, guid: c362c1755a70ad44dadfe42469e02d31, type: 3}
+    ConstructModel: {fileID: 919132149155446097, guid: b8b01b1288804f34995897b66b6bb413, type: 3}
+    Level01Model: {fileID: 919132149155446097, guid: 5335413d93c0c704c8595350ee51f9dc, type: 3}
     Level03Model: {fileID: 919132149155446097, guid: 00dd17d813e640141976dbf9b068825f, type: 3}
-    Level05Model: {fileID: 919132149155446097, guid: d42ad4c5afcede146afa82cf1f393769, type: 3}
-    Level10Model: {fileID: 919132149155446097, guid: 831b3e7e55ad7ce4595989cbd6a9b104, type: 3}
-    DamagedModel: {fileID: 919132149155446097, guid: f9ee262ca9af168488c6b0ac6bc83d01, type: 3}
-    DestroyedModel: {fileID: 919132149155446097, guid: 5ec289aab7ec1834390780e23f5dbb68, type: 3}
+    Level05Model: {fileID: 919132149155446097, guid: 859fcec67101c6d41b873af46310e517, type: 3}
+    Level10Model: {fileID: 919132149155446097, guid: f43b18b9d0fd1034ab184e6808040a2e, type: 3}
+    DamagedModel: {fileID: 919132149155446097, guid: 63fe72342a61dc14299ce55cc92c8720, type: 3}
+    DestroyedModel: {fileID: 919132149155446097, guid: da669e0fc4b0b0542a7f7404e91c1a47, type: 3}
   SizeX: 2
   SizeZ: 2
   BaseCost:

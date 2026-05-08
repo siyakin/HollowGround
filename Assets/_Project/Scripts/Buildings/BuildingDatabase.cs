@@ -26,6 +26,8 @@ namespace HollowGround.Buildings
                 BuildingType.Generator => "Generator",
                 BuildingType.Shelter => "Shelter",
                 BuildingType.Storage => "Storage",
+                BuildingType.Garden => "Garden",
+                BuildingType.GardenLarge => "GardenLarge",
                 _ => type.ToString()
             };
 
