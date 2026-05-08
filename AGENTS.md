@@ -1,6 +1,6 @@
 # Hollow Ground — AGENTS.md
 
-## Mevcut Versiyon: 0.26.0
+## Mevcut Versiyon: 0.27.0
 
 ## Versiyon Kurallari
 
@@ -235,6 +235,7 @@ GardenManager
 | 17a | ✅ | Domain Layer: WalkerBase, WalkerManager, WalkerStateMachine, BattleCalc, PathfinderService |
 | 17b | ✅ | Toast UI Overhaul: Stacked multi-toast, slide animation, load toast suppression |
 | 18  | ✅ | Garden & Merge: 4-garden merge, NeedsRoads flag, FBX updates (Barracks/WaterWell/WoodFactory) |
+| 19  | ✅ | DebugHUD 3-tab + quest system triggers + TrainingPanel fix + playtest (v0.27.0) |
 
 ---
 
@@ -274,6 +275,33 @@ Tum sistemler playtest edildi, 13/13 test gecti:
 - SaveSystem dosya adi uyumsuzlugu duzeltildi
 - ResearchManager sahnede eksikti — eklendi
 - 3 FactionData SO olusturuldu (Scavenger Guild, Iron Legion, Green Haven)
+
+### Playtest Faz 19 (Tamamlandi) ✅
+
+| # | Test | Durum |
+|---|------|-------|
+| 1 | Oyun Baslangic | ✅ CC, Farm, Mine, Barracks, Shelter yerlestirme |
+| 2 | QuickSave/QuickLoad | ✅ F5/F9, bina/troop/hero/save duzgun yuklendi |
+| 3 | Kaynak Uretim | ✅ Farm (Food), Mine (Metal), GardenLarge (25 Food) |
+| 4 | Askeri Egitim | ✅ Infantry x3, Scout x1, Sniper x1, queue max 3 |
+| 5 | Hero Summon | ✅ Commander (Rare), TechPart harcandi |
+| 6 | Research | ✅ 4 arastirma (Basic Agriculture, Construction, Weapons, Medicine) |
+| 7 | Bina Upgrade | ✅ Shelter → Lv.2 |
+| 8 | Faction Ticaret | ✅ Green Haven ile 3 trade, iliski 21→23 |
+| 9 | Quest Accept | ✅ Build Your First Farm accepted |
+| 10 | Quest Complete | ✅ Farm insaat → quest aninda completed |
+| 11 | Quest Turn In | ✅ +50 Wood +30 Metal odul alindi |
+| 12 | Garden Merge | ✅ 4 Garden → GardenLarge, toast + log |
+| 13 | Settler Spawn | ✅ 44 settler, nufus bazli |
+| 14 | DebugHUD | ✅ 3 tab (Basic/Buildings/Events), F12 toggle |
+| 15 | Events Log | ✅ Toast eventleri DebugHUD'da goruldu |
+
+**Faz 19'da duzeltilen buglar:**
+- TrainingPanel TRAIN butonu barracks olmadan basilabiliyordu → HasBarracksFor() eklendi
+- Quest objective trigger'lari hic calismiyordu → SessionLogger'a event bridge eklendi
+- Quest accept sirada mevcut ilerleme sayilmiyordu → CheckExistingProgress() eklendi
+- QuestLogUI toast her zaman success gosteriyordu → return value kontrolu eklendi
+- Garden merge toast eksik → SessionLogger'a eklendi
 
 ### SO'lar Olusturulmadi (Editor'de yapilmali)
 - `ScriptableObjects/Quests/` — 10 ek quest SO (QuestDataFactory ile) (5 mevcut, 10 daha eklenmeli)
@@ -526,6 +554,11 @@ Tum sistemler playtest edildi, 13/13 test gecti:
 - RoadManager.HandleManualRoadRemoval() aktif/bagli yollari da silebiliyor — sadece orphan yollar silinmeli
 - Yol olan hucrelere bina yerlestirilebiliyor — BuildingPlacer'da road cell kontrolu eklenmeli
 
+### Acik Issue'lar
+- **#34** Training queue not restored on load — ApplyArmy troop count restore ediyor ama training queue kaybolur
+- **#35** Building ProductionTimer save/load eksik — BuildingSave'de field var ama capture/restore edilmiyor
+- **#36** World Map & Expedition system rework — tasarim ve implementasyon ayri faz olarak planlanmali
+
 ---
 
 ## Kesfedilen Tuzaklar (Discoveries)
@@ -576,6 +609,10 @@ Tum sistemler playtest edildi, 13/13 test gecti:
 44. `OnConstructionComplete` callback içinde `DestroyImmediate` çağrılırsa, callback'ten dönüş sonrası `UpdateModel()` MissingReferenceException verir. Çözüm: merge'i 1 frame geciktir (coroutine) veya `if (!this) return;` null check
 45. 2x2 bina merkezi: `GetWorldPosition(bottomLeft)` hucre merkezi verir. 2x2 icin `cellSize * 0.5f` offset gerekir, `cellSize * 1.0f` degil (baska binaya binme sorunu)
 46. Domain katmaninda `ToastUI.Show()` cagirmak yerine event firlatmali — UI katmani (SessionLogger) event'i dinleyip toast gosterir. GardenManager ornegi: OnGardenMerged event → SessionLogger subscribes
+47. `QuestLogUI.AcceptSelectedQuest()` toast'u her zaman gosteriyor, `AcceptQuest` basarisiz olsa bile — return value kontrol edilmeli
+48. Quest kabul edilip `CheckExistingProgress` ile aninda Completed olursa, QuestLogUI Available tab'da gorev kaybolur — kullanici "kabul edilmedi" sanir. Toast ile "Quest complete!" bildirilmeli
+49. `TrainingPanelUI.RefreshAll()` butonlarin `interactable` degerini sadece `CanAffordTraining` ile belirler — barracks/seviye kontrolu de eklenmeli (`HasBarracksFor`)
+50. `Resources.LoadAll<TroopData>("Troops")` bazen cache'den az donduruyor — debug log ile yuklenen troop sayisi dogrulanmali
 
 ---
 

@@ -352,3 +352,26 @@ BALANCE.md    — Dengeleme referans tablosu
 - [ ] Garden: SettlerJobManager worker role (Farmer for Garden)
 
 *Son güncelleme: Faz 18 — Garden merge + FBX updates (v0.26.0)*
+
+---
+
+## Faz 19 — DebugHUD Test & Quest System Fix ✅
+
+- [x] DebugHUD: 3-tab system (Basic/Buildings/Events) with F12 toggle
+- [x] DebugHUD: Basic tab — game state, resources, army, heroes, settlers, grid
+- [x] DebugHUD: Buildings tab — per-building details, state/type summary, roads, garden count
+- [x] DebugHUD: Events tab — toast event log (last 50 events)
+- [x] ToastUI: OnToastShown static event
+- [x] QuestManager: CheckExistingProgress on accept (BuildBuilding, GatherResource, TrainTroops, ResearchTech, TradeWithFaction, ExploreNodes)
+- [x] SessionLogger: event-driven quest objective triggers
+- [x] SessionLogger: quest completed/turned-in toast + garden merge toast
+- [x] QuestLogUI: TurnedIn quests in Completed tab with [DONE] tag
+- [x] TrainingPanel: HasBarracksFor check (buttons disabled without active barracks)
+- [x] Full playtest: save/load, buildings, roads, resources, army, hero, research, trade, settlers, quest, garden merge
+
+### Known Issues
+- [ ] #34 Training queue not restored on load
+- [ ] #35 Building ProductionTimer not saved/loaded
+- [ ] #36 World Map & Expedition system rework (separate faz)
+
+*Son güncelleme: Faz 19 — DebugHUD test + quest triggers + training fix (v0.27.0)*
