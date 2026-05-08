@@ -74,7 +74,10 @@ namespace HollowGround.UI
             foreach (Transform child in _rowsContainer)
                 Destroy(child.gameObject);
 
-            var allTroops = UnityEngine.Resources.LoadAll<TroopData>("Troops").ToList();
+            var allTroops = UnityEngine.Resources.LoadAll<TroopData>("Troops");
+            Debug.Log($"[TrainingPanel] Loaded {allTroops.Length} troops from Resources/Troops");
+            foreach (var t in allTroops)
+                Debug.Log($"[TrainingPanel] Troop: {t.DisplayName} Type={t.Type}");
 
             foreach (var troop in allTroops)
                 BuildRow(_rowsContainer, troop);
@@ -172,6 +175,19 @@ namespace HollowGround.UI
             ArmyManager.Instance.StartTraining(troop, 1);
         }
 
+        private bool HasBarracksFor(TroopData troop)
+        {
+            if (BuildingManager.Instance == null) return false;
+            var barracks = BuildingManager.Instance.GetBuildingsOfType(BuildingType.Barracks);
+            if (barracks == null || barracks.Count == 0) return false;
+            foreach (var b in barracks)
+            {
+                if (b.State == BuildingState.Active && b.Level >= troop.BarracksLevelRequired)
+                    return true;
+            }
+            return false;
+        }
+
         private void RefreshAll()
         {
             if (ArmyManager.Instance == null) return;
@@ -182,7 +198,7 @@ namespace HollowGround.UI
                 int count = ArmyManager.Instance.GetTroopCount(row.Data.Type);
                 if (row.Label != null) row.Label.text = $"x{count}";
                 if (row.Button != null)
-                    row.Button.interactable = ArmyManager.Instance.CanAffordTraining(row.Data, 1);
+                    row.Button.interactable = HasBarracksFor(row.Data) && ArmyManager.Instance.CanAffordTraining(row.Data, 1);
             }
 
             if (_armySummaryText != null)
