@@ -380,8 +380,9 @@ namespace HollowGround.Roads
         private List<Vector2Int> FindPath(Vector2Int start, Vector2Int end)
         {
             var preferred = GetPreferredCellsCache();
+            var ctx = PathfinderContext.Create();
 
-            var result = PathfinderService.BFS(this, preferred, new GridPos(start.x, start.y), new GridPos(end.x, end.y), MaxBfsIterations);
+            var result = PathfinderService.BFS(ref ctx, this, preferred, new GridPos(start.x, start.y), new GridPos(end.x, end.y), MaxBfsIterations);
             if (result == null) return null;
 
             var path = new List<Vector2Int>(result.Count);

@@ -113,6 +113,22 @@ namespace HollowGround.Army
             return true;
         }
 
+        public void EnqueueTraining(TroopData data, int amount, float remainingTime, float totalTime)
+        {
+            if (data == null || amount <= 0) return;
+
+            var entry = new TrainingQueueEntry
+            {
+                Data = data,
+                Amount = amount,
+                RemainingTime = remainingTime,
+                TotalTime = totalTime
+            };
+
+            _trainingQueue.Add(entry);
+            OnTrainingStarted?.Invoke(entry);
+        }
+
         public List<TrainingQueueEntry> GetTrainingQueue()
         {
             return new List<TrainingQueueEntry>(_trainingQueue);

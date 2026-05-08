@@ -191,14 +191,17 @@ namespace HollowGround.Buildings
             return Mathf.Clamp01(bonus);
         }
 
-        public void RestoreFromSave(int level, BuildingState state, float constructionProgress, float upgradeProgress)
-        {
-            Level = level;
-            State = state;
-            ConstructionProgress = constructionProgress;
-            UpgradeProgress = upgradeProgress;
-            UpdateModel();
-        }
+    public float ProductionTimer => _productionTimer;
+
+    public void RestoreFromSave(int level, BuildingState state, float constructionProgress, float upgradeProgress, float productionTimer = 0f)
+    {
+        Level = level;
+        State = state;
+        ConstructionProgress = constructionProgress;
+        UpgradeProgress = upgradeProgress;
+        _productionTimer = productionTimer;
+        UpdateModel();
+    }
 
         public bool CanUpgrade()
         {

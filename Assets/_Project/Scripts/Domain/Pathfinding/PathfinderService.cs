@@ -23,79 +23,94 @@ namespace HollowGround.Domain.Pathfinding
         public static bool operator !=(GridPos a, GridPos b) => a.X != b.X || a.Z != b.Z;
     }
 
+    public struct PathfinderContext
+    {
+        public LinkedList<GridPos> Deque;
+        public HashSet<GridPos> Visited;
+        public Dictionary<GridPos, GridPos> Parent;
+        public List<GridPos> PathBuffer;
+
+        public static PathfinderContext Create()
+        {
+            return new PathfinderContext
+            {
+                Deque = new LinkedList<GridPos>(),
+                Visited = new HashSet<GridPos>(),
+                Parent = new Dictionary<GridPos, GridPos>(),
+                PathBuffer = new List<GridPos>()
+            };
+        }
+    }
+
     public static class PathfinderService
     {
         private static readonly int[] DirX = { 0, 1, 0, -1 };
         private static readonly int[] DirZ = { 1, 0, -1, 0 };
 
-        private static readonly LinkedList<GridPos> _deque = new();
-        private static readonly HashSet<GridPos> _visited = new();
-        private static readonly Dictionary<GridPos, GridPos> _parent = new();
-        private static readonly List<GridPos> _pathBuffer = new();
-
         public static List<GridPos> BFS(
+            ref PathfinderContext ctx,
             IGridDataProvider grid,
             HashSet<GridPos> preferredCells,
             GridPos start,
             GridPos end,
             int maxIterations = 500)
         {
-            _deque.Clear();
-            _visited.Clear();
-            _parent.Clear();
+            ctx.Deque.Clear();
+            ctx.Visited.Clear();
+            ctx.Parent.Clear();
 
-            _deque.AddLast(start);
-            _visited.Add(start);
+            ctx.Deque.AddLast(start);
+            ctx.Visited.Add(start);
 
             int iterations = 0;
-            while (_deque.Count > 0 && iterations < maxIterations)
+            while (ctx.Deque.Count > 0 && iterations < maxIterations)
             {
                 iterations++;
-                var current = _deque.First.Value;
-                _deque.RemoveFirst();
+                var current = ctx.Deque.First.Value;
+                ctx.Deque.RemoveFirst();
 
                 if (current.X == end.X && current.Z == end.Z)
-                    return ReconstructPath(start, end, maxIterations);
+                    return ReconstructPath(ref ctx, start, end, maxIterations);
 
                 for (int d = 0; d < 4; d++)
                 {
                     var next = new GridPos(current.X + DirX[d], current.Z + DirZ[d]);
 
-                    if (_visited.Contains(next)) continue;
+                    if (ctx.Visited.Contains(next)) continue;
                     if (!grid.IsValid(next.X, next.Z)) continue;
                     if (!grid.IsPassable(next.X, next.Z)) continue;
 
-                    _visited.Add(next);
-                    _parent[next] = current;
+                    ctx.Visited.Add(next);
+                    ctx.Parent[next] = current;
 
                     if (preferredCells != null && preferredCells.Contains(next))
-                        _deque.AddFirst(next);
+                        ctx.Deque.AddFirst(next);
                     else
-                        _deque.AddLast(next);
+                        ctx.Deque.AddLast(next);
                 }
             }
 
             return null;
         }
 
-        private static List<GridPos> ReconstructPath(GridPos start, GridPos end, int maxIterations)
+        private static List<GridPos> ReconstructPath(ref PathfinderContext ctx, GridPos start, GridPos end, int maxIterations)
         {
-            _pathBuffer.Clear();
+            ctx.PathBuffer.Clear();
             var current = end;
             int safety = 0;
 
             while (!(current.X == start.X && current.Z == start.Z) && safety < maxIterations)
             {
-                _pathBuffer.Add(current);
-                if (!_parent.ContainsKey(current)) return null;
-                current = _parent[current];
+                ctx.PathBuffer.Add(current);
+                if (!ctx.Parent.ContainsKey(current)) return null;
+                current = ctx.Parent[current];
                 safety++;
             }
 
-            _pathBuffer.Add(start);
-            _pathBuffer.Reverse();
+            ctx.PathBuffer.Add(start);
+            ctx.PathBuffer.Reverse();
 
-            return new List<GridPos>(_pathBuffer);
+            return new List<GridPos>(ctx.PathBuffer);
         }
     }
 }

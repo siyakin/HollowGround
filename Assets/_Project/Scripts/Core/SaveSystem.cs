@@ -219,6 +219,7 @@ namespace HollowGround.Core
                     State = building.State.ToString(),
                     ConstructionProgress = building.ConstructionProgress,
                     UpgradeProgress = building.UpgradeProgress,
+                    ProductionTimer = building.ProductionTimer,
                     Rotation = building.Rotation
                 });
             }
@@ -427,7 +428,7 @@ namespace HollowGround.Core
                 building.Initialize(buildingData, new Vector2Int(bs.GridX, bs.GridZ), rotation);
 
                 if (System.Enum.TryParse<BuildingState>(bs.State, out var state))
-                    building.RestoreFromSave(bs.Level, state, bs.ConstructionProgress, bs.UpgradeProgress);
+                    building.RestoreFromSave(bs.Level, state, bs.ConstructionProgress, bs.UpgradeProgress, bs.ProductionTimer);
 
                 if (GridSystem.Instance != null)
                     GridSystem.Instance.OccupyCells(bs.GridX, bs.GridZ, sx, sz, go);
@@ -436,32 +437,9 @@ namespace HollowGround.Core
             }
         }
 
-        private static readonly Dictionary<string, string> BuildingNameAliases = new()
-        {
-            { "Su Kuyusu", "WaterWell" },
-            { "Depo", "Storage" },
-            { "Ciftlik", "Farm" },
-            { "Maden", "Mine" },
-            { "Odun Fabrikasi", "WoodFactory" },
-            { "Jenerator", "Generator" },
-            { "Kisla", "Barracks" },
-            { "Barinak", "Shelter" },
-            { "Hastane", "Hospital" },
-            { "Siginak", "Shelter" },
-            { "Building Red", "Storage" },
-            { "Building Green", "Farm" },
-            { "Town House", "Shelter" },
-        };
-
         private static BuildingData LoadBuildingDataByName(string name)
         {
-            var result = FindBuildingData(name);
-            if (result != null) return result;
-
-            if (BuildingNameAliases.TryGetValue(name, out string alias))
-                result = FindBuildingData(alias);
-
-            return result;
+            return FindBuildingData(name);
         }
 
         private static BuildingData FindBuildingData(string name)
@@ -490,6 +468,14 @@ namespace HollowGround.Core
             {
                 if (Enum.TryParse<TroopType>(entry.Key, out var type))
                     ArmyManager.Instance.AddTroops(type, entry.Value);
+            }
+
+            var allTroopData = UnityEngine.Resources.LoadAll<TroopData>("Troops");
+            foreach (var ts in data.Army.TrainingQueue)
+            {
+                var troopData = allTroopData.FirstOrDefault(t => t.name == ts.TroopDataName);
+                if (troopData == null) continue;
+                ArmyManager.Instance.EnqueueTraining(troopData, ts.Amount, ts.RemainingTime, ts.TotalTime);
             }
         }
 

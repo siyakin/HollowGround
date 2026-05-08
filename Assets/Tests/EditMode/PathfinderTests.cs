@@ -29,7 +29,8 @@ namespace HollowGround.Tests
         public void StraightPath_NoPreferred()
         {
             var grid = new TestGrid(10, 10);
-            var result = PathfinderService.BFS(grid, null, new GridPos(0, 0), new GridPos(0, 3));
+            var ctx = PathfinderContext.Create();
+            var result = PathfinderService.BFS(ref ctx, grid, null, new GridPos(0, 0), new GridPos(0, 3));
 
             Assert.IsNotNull(result);
             Assert.AreEqual(4, result.Count);
@@ -43,7 +44,8 @@ namespace HollowGround.Tests
             var grid = new TestGrid(10, 3);
             for (int x = 0; x < 10; x++) grid.Block(x, 1);
 
-            var result = PathfinderService.BFS(grid, null, new GridPos(0, 0), new GridPos(5, 2));
+            var ctx = PathfinderContext.Create();
+            var result = PathfinderService.BFS(ref ctx, grid, null, new GridPos(0, 0), new GridPos(5, 2));
             Assert.IsNull(result);
         }
 
@@ -51,7 +53,8 @@ namespace HollowGround.Tests
         public void SameStartEnd()
         {
             var grid = new TestGrid(5, 5);
-            var result = PathfinderService.BFS(grid, null, new GridPos(2, 2), new GridPos(2, 2));
+            var ctx = PathfinderContext.Create();
+            var result = PathfinderService.BFS(ref ctx, grid, null, new GridPos(2, 2), new GridPos(2, 2));
 
             Assert.IsNotNull(result);
             Assert.AreEqual(1, result.Count);
@@ -64,7 +67,8 @@ namespace HollowGround.Tests
             var grid = new TestGrid(5, 5);
             var preferred = new HashSet<GridPos> { new(1, 0), new(2, 0), new(3, 0) };
 
-            var result = PathfinderService.BFS(grid, preferred, new GridPos(0, 0), new GridPos(4, 0));
+            var ctx = PathfinderContext.Create();
+            var result = PathfinderService.BFS(ref ctx, grid, preferred, new GridPos(0, 0), new GridPos(4, 0));
 
             Assert.IsNotNull(result);
             Assert.AreEqual(new GridPos(0, 0), result[0]);
@@ -87,7 +91,8 @@ namespace HollowGround.Tests
             grid.Block(2, 2);
             grid.Block(2, 3);
 
-            var result = PathfinderService.BFS(grid, null, new GridPos(1, 2), new GridPos(3, 2));
+            var ctx = PathfinderContext.Create();
+            var result = PathfinderService.BFS(ref ctx, grid, null, new GridPos(1, 2), new GridPos(3, 2));
 
             Assert.IsNotNull(result);
             Assert.AreEqual(new GridPos(1, 2), result[0]);
@@ -98,7 +103,8 @@ namespace HollowGround.Tests
         public void MaxIterationsStopsSearch()
         {
             var grid = new TestGrid(100, 100);
-            var result = PathfinderService.BFS(grid, null, new GridPos(0, 0), new GridPos(99, 99), maxIterations: 5);
+            var ctx = PathfinderContext.Create();
+            var result = PathfinderService.BFS(ref ctx, grid, null, new GridPos(0, 0), new GridPos(99, 99), maxIterations: 5);
             Assert.IsNull(result);
         }
 
@@ -106,7 +112,8 @@ namespace HollowGround.Tests
         public void LShapedPath()
         {
             var grid = new TestGrid(5, 5);
-            var result = PathfinderService.BFS(grid, null, new GridPos(0, 0), new GridPos(3, 2));
+            var ctx = PathfinderContext.Create();
+            var result = PathfinderService.BFS(ref ctx, grid, null, new GridPos(0, 0), new GridPos(3, 2));
 
             Assert.IsNotNull(result);
             Assert.AreEqual(new GridPos(0, 0), result[0]);

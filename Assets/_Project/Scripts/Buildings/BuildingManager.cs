@@ -104,12 +104,11 @@ namespace HollowGround.Buildings
         {
             if (ResourceManager.Instance == null) return;
 
+            int totalStorage = TotalStorageCapacity;
+            if (totalStorage <= 0) return;
+
             foreach (ResourceType resType in System.Enum.GetValues(typeof(ResourceType)))
-            {
-                int totalStorage = TotalStorageCapacity;
-                if (totalStorage > 0)
-                    ResourceManager.Instance.SetCapacity(resType, totalStorage);
-            }
+                ResourceManager.Instance.SetCapacity(resType, totalStorage);
         }
     }
 }

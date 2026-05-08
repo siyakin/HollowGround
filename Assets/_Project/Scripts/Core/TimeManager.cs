@@ -28,7 +28,12 @@ namespace HollowGround.Core
 
         public void SetSpeed(int speed)
         {
+            int prevSpeed = GameSpeed;
             GameSpeed = Mathf.Clamp(speed, 0, 3);
+            if (GameSpeed == 0 && prevSpeed > 0)
+                UnityEngine.Time.timeScale = 0f;
+            else if (GameSpeed > 0 && prevSpeed == 0)
+                UnityEngine.Time.timeScale = 1f;
             OnSpeedChanged?.Invoke(GameSpeed);
         }
 

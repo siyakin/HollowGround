@@ -170,7 +170,8 @@ namespace HollowGround.UI
                 if (_aboutPanel != null && _aboutPanel.activeSelf)
                 {
                     _aboutPanel.SetActive(false);
-                    Time.timeScale = 1f;
+                    if (!_isPaused && HollowGround.Core.TimeManager.Instance != null)
+                        HollowGround.Core.TimeManager.Instance.SetSpeed(1);
                     return;
                 }
 
@@ -236,14 +237,16 @@ namespace HollowGround.UI
             if (_aboutPanel.activeSelf)
             {
                 _aboutPanel.SetActive(false);
-                Time.timeScale = 1f;
+                if (!_isPaused && HollowGround.Core.TimeManager.Instance != null)
+                    HollowGround.Core.TimeManager.Instance.SetSpeed(1);
             }
             else
             {
                 var about = _aboutPanel.GetComponent<AboutPanelUI>();
                 if (about != null) about.Show();
                 else _aboutPanel.SetActive(true);
-                Time.timeScale = 0f;
+                if (HollowGround.Core.TimeManager.Instance != null)
+                    HollowGround.Core.TimeManager.Instance.SetSpeed(0);
             }
         }
 
