@@ -4,6 +4,41 @@ All notable changes to Hollow Ground are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Versioning follows [SemVer](https://semver.org/): MAJOR.MINOR.PATCH
 
+## [0.26.0] - 2026-05-08
+
+### Added
+- Garden building: 1x1 small garden (Food +5/300s), 4 in 2x2 merge into GardenLarge (Food +25/240s)
+- GardenManager singleton — merge detection, deferred coroutine execution, OnGardenMerged event
+- BuildingData.NeedsRoads flag — Gardens skip road generation entirely
+- Building.InitializeActive() — direct Active state init (for merge result)
+- BuildingData: Garden (Type 15), GardenLarge (Type 16) enum + BuildingDatabase mapping
+- GardenManager.cs, Garden.asset, GardenLarge.asset, Garden_Small.fbx, Garden_Large.fbx + 14 materials
+- BuildMenuFixer: btnGarden button entry
+- BuildingDataFactory: Garden/GardenLarge SO factory menu items
+- SessionLogger: OnGardenMerged event subscription (log + toast)
+- RoadManager: OnRoadsGenerated event, debug logging, seed road fallback
+- RoadManager: NeedsRoads=false buildings excluded from road targets in GetNearbyActiveBuildings
+- .gitignore: AI Toolkit, Models, Sprites, Materials, GeneratedAssets entries
+- Building materials: Bark, Concrete, DarkMetal, DirtGround, RottenWood, RustyMetal, Sawdust
+- com.unity.formats.fbx package added
+
+### Changed
+- Barracks: remodeled Construct + L01 FBX, updated all meta + SO model bindings
+- WaterWell: re-imported all 7 FBX (meta regenerated from fresh import)
+- WoodFactory: remodeled Construct + L01 FBX, updated all meta + SO model bindings
+- Barracks/WoodFactory BuildingSpecs updated
+- Building.cs FreeGridCells() private → public (GardenManager merge access)
+- Building.TickConstruction: null check after OnConstructionComplete callback (safety)
+
+### Fixed
+- GardenManager ToastUI domain violation → moved to SessionLogger event subscription
+- Garden merge MissingReferenceException → deferred coroutine (1 frame delay)
+- Garden merge position offset → cellSize * 0.5f (was cellSize, caused overlap)
+- Garden merge now goes through construction phase (not instant Active)
+
+### Removed
+- Stray root folders: Assets/Models/, Assets/Sprites/, Assets/AI Toolkit/ + meta files
+
 ## [0.25.0] - 2026-05-06
 
 ### Fixed

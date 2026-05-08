@@ -268,22 +268,21 @@ BALANCE.md    — Dengeleme referans tablosu
 
 ---
 
-## Faz 15 — Organic Road System ✅
+## Faz 16 — Settler Job System ✅
 
-- [x] Building rotation persistence — save/load ile bina yönü korunuyor
-- [x] Building.GetDoorCell() — kapı yönü hesaplama (rotation 0=-Z, 1=-X, 2=+Z, 3=+X)
-- [x] Building.GetRotatedFootprint() — rotation'a göre footprint döndürme
-- [x] RoadManager singleton — BFS pathfinding (0-1 deque), bina inşaatı bitince yol oluşturma
-- [x] RoadVisualizer — connected tile sistemi, Bezier köşeler, ellipsoid caps, procedural texture
-- [x] Auto-rotation — bina yerleştirirken yola doğru otomatik dönme
-- [x] Orphan road cleanup — bina yıkılınca 30s sonra bağlantısız yollar fade-out
-- [x] Manual road removal — sağ-tık ile yol silme
-- [x] Save/load entegrasyonu — yol verisi + bina rotasyonu kaydetme/yükleme
-- [x] Orphan cleanup — WaitForSecondsRealtime ile timeScale-bağımsız
-- [x] Yol hücrelerine bina yerleştirme engeli — BuildingPlacer road cell kontrolü
-- [ ] Sağ-tık sadece orphan yolları silmeli — aktif yollar korunmali
-
-*Son güncelleme: AGENTS.md dokümantasyon guncellemesi — tum tamamlanan isler yansitildi*
+- [x] SettlerRole: 12-role enum + display names
+- [x] SettlerJobManager: auto-assignment by priority, worker release on destroy, building→workers mapping
+- [x] SettlerWalker: work cycle (Idle→Walk→Work→Walk→Rest), Role/AssignedBuilding
+- [x] BuildingData: WorkerSlot, RequiredWorkers, WorkerProductionBonus, GetTotalRequiredWorkers()
+- [x] Building: AssignedWorkerCount, GetWorkerProductionModifier() formula
+- [x] SettlerPanelUI: two-column panel (building workers + active workers)
+- [x] SettlerInfoUI: overlay panel on settler click
+- [x] BuildingSelector: combined building+settler raycast selection
+- [x] SettlerJobDataFactory: editor tools (Apply Default Worker Requirements, Show Report)
+- [x] GameConfig: SettlerWorkDuration=8f, SettlerRestDuration=5f
+- [x] DebugHUD: F12 toggle, settler count display
+- [x] 6 BuildingData SO wrong m_Name fixed, Hospital SO Type fixed
+- [x] 9 legacy/yedek BuildingData SO silindi
 
 ---
 
@@ -330,3 +329,26 @@ BALANCE.md    — Dengeleme referans tablosu
 - [ ] Settler tikla tooltip: rol, atama suresi, moral
 
 *Son güncelleme: Faz 17a tamamen tamamlandi — WalkerBase + pool + occupancy + WalkerStateMachine + rebalancing + GameConfig*
+
+---
+
+## Faz 18 — Garden & FBX Updates ✅
+
+- [x] Garden building: 1x1 small garden (Food +5/300s)
+- [x] GardenLarge: 2x2 merged garden (Food +25/240s)
+- [x] 4-garden merge mechanic — 2x2 karede 4 kucuk Garden → 1 buyuk Community Garden
+- [x] GardenManager singleton — merge detection, deferred coroutine, OnGardenMerged event
+- [x] BuildingData.NeedsRoads flag — Gardens skip road generation
+- [x] RoadManager: NeedsRoads=false buildings excluded from road targets
+- [x] Merge goes through construction phase (not instant)
+- [x] SessionLogger: OnGardenMerged + OnRoadsGenerated event logging
+- [x] Barracks: remodeled Construct + L01 FBX
+- [x] WoodFactory: remodeled Construct + L01 FBX
+- [x] WaterWell: all FBX re-imported (meta regenerated)
+- [x] Building materials (Bark, Concrete, DarkMetal, DirtGround, RottenWood, RustyMetal, Sawdust)
+- [x] .gitignore cleanup (AI Toolkit, GeneratedAssets, stray folders)
+- [ ] Garden: L03/L05/L10/Damaged/Destroyed FBX modelleri (time-permitting)
+- [ ] Garden: Save/Load merge state
+- [ ] Garden: SettlerJobManager worker role (Farmer for Garden)
+
+*Son güncelleme: Faz 18 — Garden merge + FBX updates (v0.26.0)*

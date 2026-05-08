@@ -1,6 +1,6 @@
 # Hollow Ground — AGENTS.md
 
-## Mevcut Versiyon: 0.25.0
+## Mevcut Versiyon: 0.26.0
 
 ## Versiyon Kurallari
 
@@ -94,7 +94,8 @@ Assets/_Project/
 │   │                MapRenderer, MapTemplate, TerrainTile, TerrainType, WaterSurface
 │   ├── Buildings/   BuildingType, BuildingData, Building, BuildingManager,
 │   │                BuildingPlacer, BuildingSelector, BuildingDatabase,
-│   │                BuildingConstructionAnimation, BuildingHighlight, DamageEffects
+│   │                BuildingConstructionAnimation, BuildingHighlight, DamageEffects,
+│   │                GardenManager
 │   ├── Roads/       RoadManager, RoadVisualizer
 │   ├── Resources/   ResourceType, ResourceManager
 │   ├── Army/        TroopType, TroopData, ArmyManager
@@ -119,7 +120,7 @@ Assets/_Project/
 │                     UIThemeApplier, SceneSetupEditor, GameConfigCreator,
 │                     PostProcessingProfileFactory, GroundSetupEditor
 ├── ScriptableObjects/
-│   ├── Buildings/   15 aktif bina SO
+│   ├── Buildings/   17 aktif bina SO (15 + Garden + GardenLarge)
 │   ├── Targets/     5 BattleTarget SO
 │   ├── Troops/      5 birlik SO
 │   ├── Heroes/      5 hero SO
@@ -183,12 +184,13 @@ BuildingPlacer, BuildingSelector, BuildingManager, ArmyManager,
 BattleManager, HeroManager, WorldMap, ExpeditionSystem,
 QuestManager, MutantAttackManager, ResearchManager, TradeSystem,
 SaveSystem, GameInitializer, WeatherSystem, RoadManager,
-SettlerManager, SettlerJobManager, WalkerManager, MapRenderer
+SettlerManager, SettlerJobManager, WalkerManager, MapRenderer,
+GardenManager
 
 ### GameCanvas Alt Yapisi
 - ResourceBar
 - ActionBar (Yapi, Arastir, Ordu, Hero, Gorev, Harita, Ticaret, Settler butonlari — hepsi bagli)
-- BuildMenu (3 buton: CommandCenter, Farm, Mine — kaynak kontrolu calisiyor)
+- BuildMenu (buton: CommandCenter, Farm, Mine, WoodFactory, WaterWell, Barracks, Generator, Storage, Shelter, Garden)
 - TrainingPanel
 - BattleReportPanel
 - HeroPanel
@@ -232,6 +234,7 @@ SettlerManager, SettlerJobManager, WalkerManager, MapRenderer
 | 17 | ✅ | Terrain System: MapTemplate, MapRenderer, 8 terrain type, water shader, lighting |
 | 17a | ✅ | Domain Layer: WalkerBase, WalkerManager, WalkerStateMachine, BattleCalc, PathfinderService |
 | 17b | ✅ | Toast UI Overhaul: Stacked multi-toast, slide animation, load toast suppression |
+| 18  | ✅ | Garden & Merge: 4-garden merge, NeedsRoads flag, FBX updates (Barracks/WaterWell/WoodFactory) |
 
 ---
 
@@ -378,7 +381,11 @@ Tum sistemler playtest edildi, 13/13 test gecti:
 - GameInitializer: `ResetSettlers()` ile yeni oyunda temizler
 - Load sirasinda: settler pozisyon ve state geri yuklenir, visual yeniden olusturulur
 
-**Yapilacaklar (Faz 17b+):**
+**Yapilacaklar (Faz 18+):**
+- [ ] Garden: L03/L05/L10/Damaged/Destroyed FBX modelleri
+- [ ] Garden: Save/Load merge state
+- [ ] Garden: SettlerJobManager worker role (Farmer for Garden)
+- [ ] Garden: BuildingSpecs dokumani (Docs/BuildingSpecs/Garden.md)
 - [ ] Settler sayisi DebugPanel'de gosterim
 - [ ] Fazladan karakter modellerini SettlerModels dizisine ekleme (Worker harici 4 karakter daha var)
 - [ ] NPC Visual Feedback (Faz 17b): toz particle, ayak sesi SFX, hasat animasyonu
@@ -566,6 +573,9 @@ Tum sistemler playtest edildi, 13/13 test gecti:
 41. `HasEnoughResources()` ve `CanAffordBuilding()` ResourceManager.Instance null oldugunda `false` donerse butonlar hic enable olmaz. Timing issue: BuildMenuUI OnEnable ResourceManager'dan once calisabilir. Cozum: null ise `true` don (optimistik) — 1 sn polling ile tekrar kontrol edilir
 42. `BuildMenuFixer.cs` buton isimleri case-sensitive — sahnedeki buton adi `BtnCommandCenter` (buyuk B) ama aranan `btnCommandCenter` (kucuk b). Case-insensitive lookup kullanilmali
 43. `git checkout HEAD -- scene.unity` sahneyi commit'teki haline dondurur — local (kaydedilmemis) sahne degisiklikleri kaybolur. GameManager GO ve SerializeField baglantilari kalici olarak kaybolabilir
+44. `OnConstructionComplete` callback içinde `DestroyImmediate` çağrılırsa, callback'ten dönüş sonrası `UpdateModel()` MissingReferenceException verir. Çözüm: merge'i 1 frame geciktir (coroutine) veya `if (!this) return;` null check
+45. 2x2 bina merkezi: `GetWorldPosition(bottomLeft)` hucre merkezi verir. 2x2 icin `cellSize * 0.5f` offset gerekir, `cellSize * 1.0f` degil (baska binaya binme sorunu)
+46. Domain katmaninda `ToastUI.Show()` cagirmak yerine event firlatmali — UI katmani (SessionLogger) event'i dinleyip toast gosterir. GardenManager ornegi: OnGardenMerged event → SessionLogger subscribes
 
 ---
 
@@ -760,9 +770,20 @@ Bu kurallar tekrarlanan hataları ve gereksiz kod tekrarını önlemek için Faz
 - Arama yaricapi: 15 hucre (Manhattan distance), max 500 BFS iterasyon
 - Yol tile'lari: 0.92 scale, 1.5s scale-in animasyon, URP Lit material, renderQueue=2001
 - Bina inşaatı bitince yol oluşur (OnConstructionComplete event)
+- **NeedsRoads=false** binalar icin yol olusturulmaz, yol hedefi olarak da kullanilmaz (ornegin Garden)
 - Load sirasinda: RoadManager.ClearAllRoads() → binalar yüklenir → ApplyRoads ile save'den geri yuklenir
 - `Building.GetRotatedFootprint()` rotation'a göre (SizeX,SizeZ) veya (SizeZ,SizeX) dondurur
 - `Building.GetDoorCell()` ön yüzeyin 1 hucre otesindeki grid koordinatini dondurur
+
+### Garden Merge System
+- GardenManager singleton, GameManager GO uzerinde olmali
+- 4 kucuk Garden (1x1) 2x2 kare olusturunca → 1 buyuk GardenLarge (2x2) merge olur
+- Merge gecikmeli calisir (1 frame coroutine) — MissingReferenceException onler
+- Merge sonrasi buyuk garden inşaat sürecinden gecer (instant Active degil)
+- Garden/GardenLarge NeedsRoads=false — yol olusturulmaz
+- GardenManager.BuildingManager.OnBuildingAdded → OnConstructionComplete → CheckAndMerge akışı
+- OnGardenMerged event → SessionLogger log + toast
+- Eksik: L03/L05/L10/Damaged/Destroyed FBX modelleri (simdilik L01 fallback), Save/Load merge state
 
 ### Settler Walker System
 - SettlerManager singleton, GameManager GO uzerinde olmali
