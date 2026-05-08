@@ -5,6 +5,7 @@ using HollowGround.Army;
 using HollowGround.Buildings;
 using HollowGround.Combat;
 using HollowGround.NPCs;
+using HollowGround.Quests;
 using HollowGround.Resources;
 using HollowGround.Tech;
 using HollowGround.UI;
@@ -108,6 +109,8 @@ namespace HollowGround.Core
 
         private void SubscribeEvents()
         {
+            ToastUI.OnToastShown += OnToastShown;
+
             var bm = BuildingManager.Instance;
             if (bm != null)
             {
@@ -121,6 +124,8 @@ namespace HollowGround.Core
                 building.OnUpgradeComplete += OnBuildingUpgradeComplete;
                 building.OnProduced += OnBuildingProduced;
                 building.OnDestroyed += OnBuildingDestroyed;
+                building.OnDamaged += OnBuildingDamaged;
+                building.OnRepaired += OnBuildingRepaired;
             }
 
             var rm = ResourceManager.Instance;
@@ -168,17 +173,30 @@ namespace HollowGround.Core
                 settlers.OnSettlerRemoved += OnSettlerRemoved;
             }
 
-            var roads = HollowGround.Roads.RoadManager.Instance;
+            var roads = Roads.RoadManager.Instance;
             if (roads != null)
                 roads.OnRoadsGenerated += OnRoadsGenerated;
 
             var garden = GardenManager.Instance;
             if (garden != null)
                 garden.OnGardenMerged += OnGardenMerged;
+
+            var trade = TradeSystem.Instance;
+            if (trade != null)
+                trade.OnTradeCompleted += OnTradeCompleted;
+
+            var qm = QuestManager.Instance;
+            if (qm != null)
+            {
+                qm.OnQuestCompleted += OnQuestCompleted;
+                qm.OnQuestTurnedIn += OnQuestTurnedIn;
+            }
         }
 
         private void UnsubscribeEvents()
         {
+            ToastUI.OnToastShown -= OnToastShown;
+
             var bm = BuildingManager.Instance;
             if (bm != null)
             {
@@ -231,30 +249,43 @@ namespace HollowGround.Core
                 settlers.OnSettlerRemoved -= OnSettlerRemoved;
             }
 
-            var roads = HollowGround.Roads.RoadManager.Instance;
+            var roads = Roads.RoadManager.Instance;
             if (roads != null)
                 roads.OnRoadsGenerated -= OnRoadsGenerated;
 
             var garden = GardenManager.Instance;
             if (garden != null)
                 garden.OnGardenMerged -= OnGardenMerged;
+
+            var trade = TradeSystem.Instance;
+            if (trade != null)
+                trade.OnTradeCompleted -= OnTradeCompleted;
+
+            var qm = QuestManager.Instance;
+            if (qm != null)
+            {
+                qm.OnQuestCompleted -= OnQuestCompleted;
+                qm.OnQuestTurnedIn -= OnQuestTurnedIn;
+            }
         }
 
         #endregion
 
         #region Event Handlers
 
+        private void OnToastShown(string text, Color color)
+        {
+            Log($"[TOAST] {text}");
+        }
+
         private void OnGameStateChanged(GameState newState)
         {
-            Log($"Game state changed to: {newState}");
+            Log($"GAME STATE: {newState}");
         }
 
         private void OnBuildingAdded(Building building)
         {
-            string origin = building.GridOrigin.ToString();
-            Log($"BUILDING PLACED: {building.Data.DisplayName} at {origin} | Level {building.Level} | State: {building.State}");
-            if (!SaveSystem.IsLoading)
-                ToastUI.Show($"{building.Data.DisplayName} placed!", UIColors.Default.Ok);
+            Log($"BUILDING PLACED: {building.Data.DisplayName} at {building.GridOrigin} | Level {building.Level} | State: {building.State}");
             building.OnConstructionComplete += OnBuildingConstructionComplete;
             building.OnUpgradeComplete += OnBuildingUpgradeComplete;
             building.OnProduced += OnBuildingProduced;
@@ -277,13 +308,16 @@ namespace HollowGround.Core
         private void OnBuildingConstructionComplete(Building building)
         {
             Log($"CONSTRUCTION COMPLETE: {building.Data.DisplayName} Level {building.Level}");
-            ToastUI.Show($"{building.Data.DisplayName} built!", UIColors.Default.Ok);
+            if (QuestManager.Instance != null)
+            {
+                QuestManager.Instance.ProgressObjective(ObjectiveType.BuildBuilding, building.Data.DisplayName, 1);
+                Log($"[QUEST] ProgressObjective BuildBuilding {building.Data.DisplayName}");
+            }
         }
 
         private void OnBuildingUpgradeComplete(Building building)
         {
-            Log($"UPGRADE COMPLETE: {building.Data.DisplayName} → Level {building.Level}");
-            ToastUI.Show($"{building.Data.DisplayName} upgraded to Lv.{building.Level}!", UIColors.Default.Gold);
+            Log($"UPGRADE COMPLETE: {building.Data.DisplayName} -> Level {building.Level}");
         }
 
         private void OnBuildingProduced(Building building, ResourceType type, int amount)
@@ -294,19 +328,16 @@ namespace HollowGround.Core
         private void OnBuildingDestroyed(Building building)
         {
             Log($"BUILDING DESTROYED: {building.Data.DisplayName} at {building.GridOrigin}");
-            ToastUI.Show($"{building.Data.DisplayName} destroyed!", UIColors.Default.Danger);
         }
 
         private void OnBuildingDamaged(Building building)
         {
             Log($"BUILDING DAMAGED: {building.Data.DisplayName} at {building.GridOrigin} | State: {building.State}");
-            ToastUI.Show($"{building.Data.DisplayName} damaged! Needs repair.", UIColors.Default.Warn);
         }
 
         private void OnBuildingRepaired(Building building)
         {
-            Log($"BUILDING REPAIRED: {building.Data.DisplayName} at {building.GridOrigin} | Level {building.Level}");
-            ToastUI.Show($"{building.Data.DisplayName} repaired!", UIColors.Default.Ok);
+            Log($"BUILDING REPAITED: {building.Data.DisplayName} at {building.GridOrigin} | Level {building.Level}");
         }
 
         private void OnResourceChanged(ResourceType type, int newVal)
@@ -322,6 +353,8 @@ namespace HollowGround.Core
         private void OnTrainingCompleted(ArmyManager.TrainingQueueEntry entry)
         {
             Log($"TRAINING COMPLETE: {entry.Amount}x {entry.Data.DisplayName}");
+            if (QuestManager.Instance != null)
+                QuestManager.Instance.ProgressObjective(ObjectiveType.TrainTroops, entry.Data.DisplayName, entry.Amount);
         }
 
         private void OnTroopCountChanged(TroopType type, int count)
@@ -331,24 +364,18 @@ namespace HollowGround.Core
 
         private void OnWaveWarning(MutantWaveData wave)
         {
-            Log($"WARNING: MUTANT WARNING: {wave.DisplayName} | Power: {wave.MutantPower} | Count: {wave.MutantCount}");
-            ToastUI.Show($"WARNING: {wave.MutantCount} mutants approaching! Power: {wave.MutantPower}", UIColors.Default.Warn);
+            Log($"MUTANT WARNING: {wave.DisplayName} | Power: {wave.MutantPower} | Count: {wave.MutantCount}");
         }
 
         private void OnWaveStarted(MutantWaveData wave)
         {
             Log($"MUTANT ATTACK: {wave.DisplayName} | Power: {wave.MutantPower}");
-            ToastUI.Show($"Mutant wave {wave.WaveNumber} attacking!", UIColors.Default.Danger);
         }
 
         private void OnWaveEnded(MutantWaveData wave, bool victory)
         {
             string result = victory ? "VICTORY" : "DEFEAT";
-            Log($" MUTANT WAVE {result}: {wave.DisplayName} | Survived");
-            if (victory)
-                ToastUI.Show($"Wave {wave.WaveNumber} defeated!", UIColors.Default.Ok);
-            else
-                ToastUI.Show($"Wave {wave.WaveNumber} — DEFEATED! Buildings damaged.", UIColors.Default.Danger);
+            Log($"MUTANT WAVE {result}: {wave.DisplayName}");
         }
 
         private void OnResearchStarted(TechNode node)
@@ -359,18 +386,18 @@ namespace HollowGround.Core
         private void OnResearchCompleted(TechNode node)
         {
             Log($"RESEARCH COMPLETE: {node.DisplayName}");
-            ToastUI.Show($"Research complete: {node.DisplayName}!", UIColors.Default.Ok);
+            if (QuestManager.Instance != null)
+                QuestManager.Instance.ProgressObjective(ObjectiveType.ResearchTech, node.DisplayName, 1);
         }
 
         private void OnExpeditionLaunched(ExpeditionSystem.ActiveExpedition expedition)
         {
-            Log($"EXPEDITION LAUNCHED: → {expedition.TargetName} | Travel: {expedition.TravelTime:F1}s");
+            Log($"EXPEDITION LAUNCHED: -> {expedition.TargetName} | Travel: {expedition.TravelTime:F1}s");
         }
 
         private void OnExpeditionCompleted(ExpeditionSystem.ActiveExpedition expedition)
         {
             Log($"EXPEDITION ARRIVED: {expedition.TargetName}");
-            ToastUI.Show($"Expedition arrived: {expedition.TargetName}", UIColors.Default.Ok);
         }
 
         private void OnSettlerSpawned(SettlerWalker walker)
@@ -383,15 +410,37 @@ namespace HollowGround.Core
             Log($"SETTLER REMOVED | Total: {SettlerManager.Instance?.SettlerCount ?? 0}");
         }
 
-        private void OnRoadsGenerated(HollowGround.Buildings.Building source, System.Collections.Generic.List<UnityEngine.Vector2Int> newRoads)
+        private void OnRoadsGenerated(Building source, System.Collections.Generic.List<Vector2Int> newRoads)
         {
             Log($"ROAD GENERATED: {newRoads.Count} tiles for {source.Data.DisplayName} at {source.GridOrigin}");
         }
 
-        private void OnGardenMerged(HollowGround.Buildings.Building largeGarden)
+        private void OnGardenMerged(Building largeGarden)
         {
-            Log($"GARDEN MERGED: 4 small gardens → {largeGarden.Data.DisplayName} at {largeGarden.GridOrigin}");
-            ToastUI.Show("4 Gardens merged into Community Garden!", UIColors.Default.Ok);
+            Log($"GARDEN MERGED: 4 small gardens -> {largeGarden.Data.DisplayName} at {largeGarden.GridOrigin}");
+            ToastUI.Show($"4 Gardens merged into {largeGarden.Data.DisplayName}!", UIColors.Default.Gold);
+        }
+
+        private void OnTradeCompleted(FactionData faction)
+        {
+            if (QuestManager.Instance != null)
+                QuestManager.Instance.ProgressObjective(ObjectiveType.TradeWithFaction, faction.DisplayName, 1);
+        }
+
+        private void OnQuestCompleted(QuestInstance quest)
+        {
+            Log($"QUEST COMPLETED: {quest.Data.DisplayName}");
+            ToastUI.Show($"Quest complete: {quest.Data.DisplayName}! Turn in for rewards.", UIColors.Default.Gold);
+        }
+
+        private void OnQuestTurnedIn(QuestInstance quest)
+        {
+            Log($"QUEST TURNED IN: {quest.Data.DisplayName}");
+            var rewards = quest.Data.GetRewardMap();
+            var parts = new System.Collections.Generic.List<string>();
+            foreach (var kvp in rewards)
+                parts.Add($"+{kvp.Value} {kvp.Key}");
+            ToastUI.Show($"Turned in: {quest.Data.DisplayName} | {string.Join(" ", parts)}", UIColors.Default.Ok);
         }
 
         #endregion

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using HollowGround.Quests;
 using TMPro;
@@ -105,7 +106,8 @@ namespace HollowGround.UI
             {
                 TabActive => QuestManager.Instance.GetActiveQuests(),
                 TabAvailable => QuestManager.Instance.GetAvailableQuests(),
-                TabCompleted => QuestManager.Instance.GetQuestsByStatus(QuestStatus.Completed),
+                TabCompleted => QuestManager.Instance.GetQuestsByStatus(QuestStatus.Completed)
+                    .Concat(QuestManager.Instance.GetQuestsByStatus(QuestStatus.TurnedIn)).ToList(),
                 _ => new List<QuestInstance>()
             };
 
@@ -131,8 +133,10 @@ namespace HollowGround.UI
                 var nle = nameT.gameObject.AddComponent<LayoutElement>();
                 nle.preferredWidth = 180;
 
-                string progress = quest.IsComplete() ? "COMPLETE" : $"{quest.GetProgress():P0}";
-                Color pColor = quest.IsComplete() ? UIColors.Default.Ok : UIColors.Default.Muted;
+                string progress = quest.Status == QuestStatus.TurnedIn ? "[DONE]"
+                    : quest.IsComplete() ? "COMPLETE" : $"{quest.GetProgress():P0}";
+                Color pColor = quest.Status == QuestStatus.TurnedIn ? UIColors.Default.Gold
+                    : quest.IsComplete() ? UIColors.Default.Ok : UIColors.Default.Muted;
                 var progT = UIPrimitiveFactory.AddThemedText(row.transform, progress, 14, pColor);
                 progT.alignment = TextAlignmentOptions.MidlineRight;
 
@@ -198,8 +202,19 @@ namespace HollowGround.UI
         public void AcceptSelectedQuest()
         {
             if (_selectedQuest == null || QuestManager.Instance == null) return;
-            QuestManager.Instance.AcceptQuest(_selectedQuest.Data);
-            ToastUI.Show($"Quest accepted: {_selectedQuest.Data.DisplayName}", UIColors.Default.Ok);
+
+            bool success = QuestManager.Instance.AcceptQuest(_selectedQuest.Data);
+            if (success)
+            {
+                ToastUI.Show($"Quest accepted: {_selectedQuest.Data.DisplayName}", UIColors.Default.Ok);
+                Debug.Log($"[QuestLogUI] Accepted quest: {_selectedQuest.Data.DisplayName} -> Status: {_selectedQuest.Status}");
+            }
+            else
+            {
+                ToastUI.Show($"Cannot accept quest (status: {_selectedQuest.Status})", UIColors.Default.Warn);
+                Debug.LogWarning($"[QuestLogUI] AcceptQuest FAILED for {_selectedQuest.Data.DisplayName} status={_selectedQuest.Status}");
+            }
+
             _detailPanel.SetActive(false);
             _selectedQuest = null;
             RefreshList();
