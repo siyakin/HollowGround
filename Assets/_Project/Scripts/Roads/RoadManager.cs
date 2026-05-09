@@ -90,6 +90,13 @@ namespace HollowGround.Roads
             var coords = GridSystem.Instance.GetGridCoordinates(hit.point);
             if (!_roadCells.Contains(coords)) return;
 
+            var reachable = GetReachableRoadCells();
+            if (reachable.Contains(coords))
+            {
+                ToastUI.Show("Cannot remove connected road!", UIColors.Default.Warn);
+                return;
+            }
+
             _roadCells.Remove(coords);
             _visualizer.FadeOutAndRemove(new HashSet<Vector2Int> { coords });
             NotifyRoadsChanged();
@@ -105,12 +112,16 @@ namespace HollowGround.Roads
             building.OnConstructionComplete += OnBuildingCompleted;
 
             if (building.State == BuildingState.Active)
+            {
+                if (HollowGround.Core.SaveSystem.IsLoading) return;
                 GenerateRoadsFromBuilding(building);
+            }
         }
 
         private void OnBuildingRemoved(Building building)
         {
             building.OnConstructionComplete -= OnBuildingCompleted;
+            if (HollowGround.Core.SaveSystem.IsLoading) return;
             ScheduleOrphanCleanup();
         }
 
@@ -128,12 +139,12 @@ namespace HollowGround.Roads
             _cleanupCoroutine = null;
         }
 
-        private void RemoveOrphanedRoads()
+        private HashSet<Vector2Int> GetReachableRoadCells()
         {
-            if (BuildingManager.Instance == null) return;
-            if (_roadCells.Count == 0) return;
-
             var reachable = new HashSet<Vector2Int>();
+            if (BuildingManager.Instance == null || _roadCells.Count == 0)
+                return reachable;
+
             var queue = new Queue<Vector2Int>();
 
             foreach (var b in BuildingManager.Instance.AllBuildings)
@@ -168,6 +179,14 @@ namespace HollowGround.Roads
                 }
             }
 
+            return reachable;
+        }
+
+        private void RemoveOrphanedRoads()
+        {
+            if (_roadCells.Count == 0) return;
+
+            var reachable = GetReachableRoadCells();
             var orphaned = new HashSet<Vector2Int>();
             foreach (var cell in _roadCells)
             {
