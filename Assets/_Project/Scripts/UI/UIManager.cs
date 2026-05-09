@@ -1,10 +1,6 @@
-using System.Collections.Generic;
-using HollowGround.Buildings;
 using HollowGround.Core;
 using HollowGround.Roads;
-using TMPro;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace HollowGround.UI
 {
@@ -30,32 +26,16 @@ namespace HollowGround.UI
         [SerializeField] private GameObject _minimapPanel;
 
         private PanelManager _panels;
-        private Dictionary<string, Button> _actionBarButtons;
-        private Dictionary<string, ThemedButton> _actionBarThemed;
-        private bool _isPaused;
+        private PauseController _pause;
+        private ActionBarController _actionBar;
 
-        private static readonly HashSet<string> InputBlockingPanels = new()
-        {
-            "SaveMenu", "Pause", "About"
-        };
-
-        public bool IsInputBlocked
-        {
-            get
-            {
-                if (_isPaused) return true;
-                if (_saveMenuPanel != null && _saveMenuPanel.activeSelf) return true;
-                if (_aboutPanel != null && _aboutPanel.activeSelf) return true;
-                return false;
-            }
-        }
+        public bool IsInputBlocked => _pause != null && _pause.IsInputBlocked;
 
         private void Start()
         {
             InitPanelManager();
-            EnsurePausePanelContent();
-            CacheActionBarButtons();
-            UpdateActionBarHighlights();
+            InitPauseController();
+            InitActionBar();
 
             if (RoadManager.Instance != null)
                 RoadManager.Instance.OnRoadMessage += OnRoadMessage;
@@ -92,9 +72,67 @@ namespace HollowGround.UI
             _panels.Register("SaveMenu", Resolve(ref _saveMenuPanel, "SaveMenuPanel"));
             _panels.Register("Minimap", Resolve(ref _minimapPanel, "MinimapPanel"));
 
-            _panels.OnPanelOpened += _ => UpdateActionBarHighlights();
-            _panels.OnPanelClosed += _ => UpdateActionBarHighlights();
+            _panels.OnPanelOpened += _ => _actionBar?.UpdateHighlights();
+            _panels.OnPanelClosed += _ => _actionBar?.UpdateHighlights();
         }
+
+        private void InitPauseController()
+        {
+            _pause = new PauseController(_pausePanel, _saveMenuPanel, _aboutPanel, _panels);
+        }
+
+        private void InitActionBar()
+        {
+            _actionBar = new ActionBarController(_panels);
+            _actionBar.Initialize();
+            _actionBar.UpdateHighlights();
+        }
+
+        private void Update()
+        {
+            if (UnityEngine.InputSystem.Keyboard.current == null) return;
+            var kb = UnityEngine.InputSystem.Keyboard.current;
+
+            if (kb.escapeKey.wasPressedThisFrame)
+            {
+                _pause.HandleEscape();
+                return;
+            }
+
+            if (_pause.IsPaused) return;
+
+            if (kb.f5Key.wasPressedThisFrame) QuickSave();
+            if (kb.f9Key.wasPressedThisFrame) QuickLoad();
+            if (kb.f12Key.wasPressedThisFrame) _pause.ToggleDebugHUD(_debugPanel);
+            if (kb.f1Key.wasPressedThisFrame) _pause.ToggleAbout();
+        }
+
+        #region Save/Load Shortcuts
+
+        private void QuickSave()
+        {
+            if (SaveSystem.Instance == null) return;
+            SaveSystem.Instance.QuickSave();
+            ToastUI.Show("Quick saved!", UIColors.Default.Ok);
+        }
+
+        private void QuickLoad()
+        {
+            if (SaveSystem.Instance == null) return;
+            if (SaveSystem.Instance.HasSave("quicksave"))
+            {
+                SaveSystem.Instance.Load("quicksave");
+                ToastUI.Show("Quick loaded!", UIColors.Default.Ok);
+            }
+            else
+            {
+                ToastUI.Show("No quicksave found!", UIColors.Default.Warn);
+            }
+        }
+
+        #endregion
+
+        #region Panel Resolution
 
         private GameObject Resolve(ref GameObject field, string sceneName)
         {
@@ -110,234 +148,9 @@ namespace HollowGround.UI
             return gc != null ? gc : null;
         }
 
-        private void CacheActionBarButtons()
-        {
-            _actionBarButtons = new Dictionary<string, Button>();
-            _actionBarThemed = new Dictionary<string, ThemedButton>();
-            var actionBar = FindActionBar();
-            if (actionBar == null) return;
+        #endregion
 
-            var map = new (string id, string btnName)[]
-            {
-                ("BuildMenu", "BtnBuild"),
-                ("TechTree", "BtnResearch"),
-                ("Training", "BtnArmy"),
-                ("Hero", "BtnHero"),
-                ("Settler", "BtnSettler"),
-                ("QuestLog", "BtnQuest"),
-                ("FactionTrade", "BtnTrade"),
-                ("WorldMap", "BtnMap")
-            };
-
-            foreach (var (id, btnName) in map)
-            {
-                var t = actionBar.transform.Find(btnName);
-                if (t != null)
-                {
-                    var btn = t.GetComponent<Button>();
-                    if (btn != null)
-                    {
-                        _actionBarButtons[id] = btn;
-                        var themed = t.GetComponent<ThemedButton>();
-                        if (themed == null)
-                            themed = t.gameObject.AddComponent<ThemedButton>();
-                        themed.styleType = UIStyleType.ActionBarButton;
-                        _actionBarThemed[id] = themed;
-                    }
-                }
-            }
-        }
-
-        private Transform FindActionBar()
-        {
-            var canvas = GetComponentInParent<Canvas>();
-            if (canvas != null)
-            {
-                var t = canvas.transform.Find("ActionBar");
-                if (t != null) return t;
-            }
-
-            var found = FindAnyObjectByType<Canvas>();
-            if (found != null)
-                return found.transform.Find("ActionBar");
-
-            return null;
-        }
-
-        private void UpdateActionBarHighlights()
-        {
-            foreach (var kvp in _actionBarThemed)
-            {
-                if (kvp.Value == null) continue;
-                kvp.Value.SetSelected(_panels.IsOpen(kvp.Key));
-            }
-        }
-
-        private void Update()
-        {
-            if (UnityEngine.InputSystem.Keyboard.current == null) return;
-            var kb = UnityEngine.InputSystem.Keyboard.current;
-
-            if (kb.escapeKey.wasPressedThisFrame)
-            {
-                if (BuildingPlacer.Instance != null && BuildingPlacer.Instance.IsPlacing)
-                    return;
-
-                if (_aboutPanel != null && _aboutPanel.activeSelf)
-                {
-                    _aboutPanel.SetActive(false);
-                    if (!_isPaused && HollowGround.Core.TimeManager.Instance != null)
-                        HollowGround.Core.TimeManager.Instance.SetSpeed(1);
-                    return;
-                }
-
-                if (_isPaused)
-                {
-                    if (_saveMenuPanel != null && _saveMenuPanel.activeSelf)
-                    {
-                        _saveMenuPanel.SetActive(false);
-                        if (_pausePanel != null) _pausePanel.SetActive(true);
-                    }
-                    else
-                        TogglePauseMenu();
-                }
-                else if (_panels.IsPanelOpen)
-                    _panels.CloseCurrent();
-                else
-                    TogglePauseMenu();
-                return;
-            }
-
-            if (_isPaused) return;
-
-            if (kb.f5Key.wasPressedThisFrame)
-                QuickSave();
-            if (kb.f9Key.wasPressedThisFrame)
-                QuickLoad();
-            if (kb.f12Key.wasPressedThisFrame)
-                ToggleDebugHUD();
-            if (kb.f1Key.wasPressedThisFrame)
-                ToggleAbout();
-        }
-
-        private void QuickSave()
-        {
-            if (HollowGround.Core.SaveSystem.Instance == null) return;
-            HollowGround.Core.SaveSystem.Instance.QuickSave();
-            ToastUI.Show("Quick saved!", UIColors.Default.Ok);
-        }
-
-        private void ToggleDebugHUD()
-        {
-            if (_debugPanel != null)
-                _debugPanel.SetActive(!_debugPanel.activeSelf);
-        }
-
-        private void QuickLoad()
-        {
-            if (HollowGround.Core.SaveSystem.Instance == null) return;
-            if (HollowGround.Core.SaveSystem.Instance.HasSave("quicksave"))
-            {
-                HollowGround.Core.SaveSystem.Instance.Load("quicksave");
-                ToastUI.Show("Quick loaded!", UIColors.Default.Ok);
-            }
-            else
-            {
-                ToastUI.Show("No quicksave found!", UIColors.Default.Warn);
-            }
-        }
-
-        public void ToggleAbout()
-        {
-            if (_aboutPanel == null) return;
-            if (_aboutPanel.activeSelf)
-            {
-                _aboutPanel.SetActive(false);
-                if (!_isPaused && HollowGround.Core.TimeManager.Instance != null)
-                    HollowGround.Core.TimeManager.Instance.SetSpeed(1);
-            }
-            else
-            {
-                var about = _aboutPanel.GetComponent<AboutPanelUI>();
-                if (about != null) about.Show();
-                else _aboutPanel.SetActive(true);
-                if (HollowGround.Core.TimeManager.Instance != null)
-                    HollowGround.Core.TimeManager.Instance.SetSpeed(0);
-            }
-        }
-
-        public void TogglePauseMenu()
-        {
-            _isPaused = !_isPaused;
-
-            if (_isPaused)
-            {
-                _panels.CloseAll();
-                if (GameManager.Instance != null) GameManager.Instance.TogglePause();
-                if (HollowGround.Core.TimeManager.Instance != null) HollowGround.Core.TimeManager.Instance.TogglePause();
-                ShowPausePanel();
-            }
-            else
-            {
-                ClosePauseAndSubPanels();
-                if (HollowGround.Core.TimeManager.Instance != null && HollowGround.Core.TimeManager.Instance.IsPaused)
-                    HollowGround.Core.TimeManager.Instance.TogglePause();
-                if (GameManager.Instance != null && GameManager.Instance.CurrentState == GameState.Paused)
-                    GameManager.Instance.TogglePause();
-            }
-        }
-
-        private void ShowPausePanel()
-        {
-            if (_pausePanel != null) _pausePanel.SetActive(true);
-        }
-
-        private void ClosePauseAndSubPanels()
-        {
-            if (_pausePanel != null) _pausePanel.SetActive(false);
-            if (_saveMenuPanel != null) _saveMenuPanel.SetActive(false);
-        }
-
-        public void OnResumeButton()
-        {
-            _isPaused = false;
-            ClosePauseAndSubPanels();
-            if (HollowGround.Core.TimeManager.Instance != null && HollowGround.Core.TimeManager.Instance.IsPaused)
-                HollowGround.Core.TimeManager.Instance.TogglePause();
-            if (GameManager.Instance != null && GameManager.Instance.CurrentState == GameState.Paused)
-                GameManager.Instance.TogglePause();
-        }
-
-        public void OnSaveGameButton()
-        {
-            if (_saveMenuPanel == null) return;
-            _saveMenuPanel.SetActive(true);
-            if (_isPaused && _pausePanel != null) _pausePanel.SetActive(false);
-        }
-
-        public void OnQuitButton()
-        {
-            Application.Quit();
-        }
-
-        public void ShowPauseFromSaveMenu()
-        {
-            if (_isPaused && _pausePanel != null)
-                _pausePanel.SetActive(true);
-        }
-
-        public void ResumeAfterLoad()
-        {
-            if (_saveMenuPanel != null) _saveMenuPanel.SetActive(false);
-            ClosePauseAndSubPanels();
-            _isPaused = false;
-
-            if (HollowGround.Core.TimeManager.Instance != null && HollowGround.Core.TimeManager.Instance.IsPaused)
-                HollowGround.Core.TimeManager.Instance.TogglePause();
-
-            if (GameManager.Instance != null && GameManager.Instance.CurrentState == GameState.Paused)
-                GameManager.Instance.TogglePause();
-        }
+        #region Public Panel API
 
         public void ToggleBuildMenu() => _panels?.Toggle("BuildMenu");
         public void ToggleTrainingPanel() => _panels?.Toggle("Training");
@@ -350,49 +163,26 @@ namespace HollowGround.UI
         public void ToggleSettlerPanel() => _panels.Toggle("Settler");
         public void ToggleBattleReport() => _panels.Toggle("BattleReport");
 
-        public void TogglePause() => TogglePauseMenu();
-
-        public void ToggleSaveMenu()
-        {
-            if (_saveMenuPanel == null) return;
-            bool opening = !_saveMenuPanel.activeSelf;
-            _saveMenuPanel.SetActive(opening);
-            if (opening && _isPaused && _pausePanel != null)
-                _pausePanel.SetActive(false);
-        }
+        public void TogglePause() => _pause.TogglePause();
+        public void ToggleSaveMenu() => _pause.ToggleSaveMenu();
+        public void ToggleAbout() => _pause.ToggleAbout();
 
         public void ShowBuildingInfo() => _panels.OpenOverlay("BuildingInfo");
         public void HideBuildingInfo() => _panels.CloseOverlay("BuildingInfo");
 
-        public void TogglePanel(GameObject panel)
-        {
-            if (panel != null) panel.SetActive(!panel.activeSelf);
-        }
+        public void OnResumeButton() => _pause.Resume();
+        public void OnSaveGameButton() => _pause.OpenSaveMenuFromPause();
+        public void OnQuitButton() => Application.Quit();
+        public void ShowPauseFromSaveMenu() => _pause.ShowPauseFromSaveMenu();
+        public void ResumeAfterLoad() => _pause.ResumeAfterLoad();
 
-        public void ShowPanel(GameObject panel)
-        {
-            if (panel != null) panel.SetActive(true);
-        }
+        public void TogglePanel(GameObject panel) { if (panel != null) panel.SetActive(!panel.activeSelf); }
+        public void ShowPanel(GameObject panel) { if (panel != null) panel.SetActive(true); }
+        public void HidePanel(GameObject panel) { if (panel != null) panel.SetActive(false); }
 
-        public void HidePanel(GameObject panel)
-        {
-            if (panel != null) panel.SetActive(false);
-        }
+        public void QuitToMenu() => UnityEngine.SceneManagement.SceneManager.LoadScene(0);
+        public void QuitGame() => Application.Quit();
 
-        public void QuitToMenu()
-        {
-            UnityEngine.SceneManagement.SceneManager.LoadScene(0);
-        }
-
-        public void QuitGame()
-        {
-            Application.Quit();
-        }
-
-        private void EnsurePausePanelContent()
-        {
-            if (_pausePanel == null) return;
-            _pausePanel.SetActive(false);
-        }
+        #endregion
     }
 }
