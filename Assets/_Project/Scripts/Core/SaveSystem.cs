@@ -65,6 +65,7 @@ namespace HollowGround.Core
             CaptureRoads(data);
             CaptureSettlers(data);
             CaptureTerrain(data);
+            CaptureExpeditions(data);
 
             return data;
         }
@@ -175,6 +176,7 @@ namespace HollowGround.Core
             ApplyRoads(data);
             ApplySettlers(data);
             ApplyTerrain(data);
+            ApplyExpeditions(data);
         }
 
         #region Capture
@@ -348,6 +350,32 @@ namespace HollowGround.Core
         {
             if (SettlerManager.Instance == null) return;
             data.Settlers = SettlerManager.Instance.CaptureSettlersSave();
+        }
+
+        private void CaptureExpeditions(SaveData data)
+        {
+            if (ExpeditionSystem.Instance == null) return;
+
+            foreach (var exp in ExpeditionSystem.Instance.Expeditions)
+            {
+                if (exp == null || exp.Target == null) continue;
+
+                var save = new ExpeditionSave
+                {
+                    TargetX = exp.Target.GridPosition.x,
+                    TargetY = exp.Target.GridPosition.y,
+                    Phase = exp.Phase.ToString(),
+                    RemainingTime = exp.RemainingTime,
+                    TravelTime = exp.TravelTime,
+                    HasBattleResult = exp.BattleResult != null,
+                    BattleVictory = exp.BattleResult?.Victory ?? false
+                };
+
+                foreach (var kvp in exp.Troops)
+                    save.Troops.Add(new StringIntEntry { Key = kvp.Key.ToString(), Value = kvp.Value });
+
+                data.Expeditions.Add(save);
+            }
         }
 
         #endregion
@@ -674,6 +702,36 @@ namespace HollowGround.Core
             {
                 var type = (TerrainType)tile.TerrainType;
                 grid.SetTerrain(tile.X, tile.Z, type);
+            }
+        }
+
+        private void ApplyExpeditions(SaveData data)
+        {
+            if (ExpeditionSystem.Instance == null) return;
+            ExpeditionSystem.Instance.CancelAllExpeditions();
+
+            if (data.Expeditions == null || data.Expeditions.Count == 0) return;
+
+            foreach (var es in data.Expeditions)
+            {
+                var target = WorldMap.Instance?.GetNode(es.TargetX, es.TargetY);
+                if (target == null) continue;
+
+                var troops = new Dictionary<TroopType, int>();
+                foreach (var entry in es.Troops)
+                {
+                    if (Enum.TryParse<TroopType>(entry.Key, out var type))
+                        troops[type] = entry.Value;
+                }
+
+                float time = es.TravelTime > 0 ? es.TravelTime : 30f;
+                var expedition = new Expedition(target, troops, time);
+
+                if (Enum.TryParse<ExpeditionPhase>(es.Phase, out var phase))
+                    expedition.RestorePhase(phase);
+
+                expedition.SetRemainingTime(es.RemainingTime);
+                ExpeditionSystem.Instance.RestoreExpedition(expedition);
             }
         }
 

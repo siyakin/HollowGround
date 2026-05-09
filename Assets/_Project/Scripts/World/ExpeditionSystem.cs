@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using HollowGround.Army;
 using HollowGround.Combat;
 using HollowGround.Core;
@@ -9,66 +10,28 @@ namespace HollowGround.World
 {
     public class ExpeditionSystem : Singleton<ExpeditionSystem>
     {
+        private readonly List<Expedition> _expeditions = new();
 
-        private readonly List<ActiveExpedition> _expeditions = new();
+        public IReadOnlyList<Expedition> Expeditions => _expeditions;
 
-        public List<ActiveExpedition> Expeditions => _expeditions;
-
-        public event Action<ActiveExpedition> OnExpeditionLaunched;
-        public event Action<ActiveExpedition> OnExpeditionCompleted;
-
-        [Serializable]
-        public class TroopEntry
-        {
-            public TroopType Type;
-            public int Count;
-        }
-
-        [Serializable]
-        public class ActiveExpedition
-        {
-            public string Id;
-            public Vector2Int TargetPosition;
-            public string TargetName;
-            public BattleTarget BattleTarget;
-            public List<TroopEntry> Troops;
-            public float TravelTime;
-            public float RemainingTime;
-            public bool IsReturning;
-            public float Progress => TravelTime > 0 ? 1f - (RemainingTime / TravelTime) : 1f;
-
-            public Dictionary<TroopType, int> TroopsLookup
-            {
-                get
-                {
-                    var dict = new Dictionary<TroopType, int>();
-                    if (Troops != null)
-                        foreach (var e in Troops)
-                            dict[e.Type] = e.Count;
-                    return dict;
-                }
-            }
-        }
+        public event Action<Expedition> OnExpeditionLaunched;
+        public event Action<Expedition> OnExpeditionPhaseChanged;
+        public event Action<Expedition> OnExpeditionCompleted;
 
         private void Update()
         {
+            if (TimeManager.Instance != null && TimeManager.Instance.IsPaused) return;
+
+            float dt = Time.deltaTime * (TimeManager.Instance?.GameSpeed ?? 1f);
+
             for (int i = _expeditions.Count - 1; i >= 0; i--)
             {
                 var exp = _expeditions[i];
-                exp.RemainingTime -= Time.deltaTime;
+                exp.Tick(dt);
 
-                if (exp.RemainingTime <= 0f)
+                if (exp.IsComplete)
                 {
                     _expeditions.RemoveAt(i);
-
-                    if (!exp.IsReturning)
-                    {
-                        CompleteExpedition(exp);
-                    }
-                    else
-                    {
-                        ReturnExpedition(exp);
-                    }
                 }
             }
         }
@@ -98,72 +61,113 @@ namespace HollowGround.World
                 ArmyManager.Instance.RemoveTroops(kvp.Key, kvp.Value);
 
             var node = WorldMap.Instance.GetNode(target);
-            float distance = WorldMap.Instance.GetDistance(WorldMap.Instance.BasePosition, target);
-            float travelTime = distance * 30f;
-            float devMult = HollowGround.Core.GameConfig.Instance != null ? HollowGround.Core.GameConfig.Instance.GetExpeditionTimeMultiplier : 1f;
-            travelTime *= devMult;
+            float travelTime = CalculateTravelTime(target);
 
-            float expeditionBonus = 0f;
-            if (HollowGround.Tech.ResearchManager.Instance != null)
-                expeditionBonus = HollowGround.Tech.ResearchManager.Instance.GetTotalExpeditionSpeedBonus();
-            travelTime *= (1f - expeditionBonus);
-
-            var expedition = new ActiveExpedition
-            {
-                Id = Guid.NewGuid().ToString().Substring(0, 8),
-                TargetPosition = target,
-                TargetName = node.DisplayName,
-                BattleTarget = node.BattleTarget,
-                Troops = ToTroopEntries(troops),
-                TravelTime = travelTime,
-                RemainingTime = travelTime,
-                IsReturning = false
-            };
+            var expedition = new Expedition(node, troops, travelTime);
+            expedition.OnPhaseChanged += HandlePhaseChanged;
+            expedition.OnCompleted += HandleCompleted;
 
             _expeditions.Add(expedition);
             OnExpeditionLaunched?.Invoke(expedition);
+
+            if (!node.IsExplored)
+                WorldMap.Instance.ExploreNode(target);
+
             return true;
         }
 
-        private void CompleteExpedition(ActiveExpedition expedition)
+        public float CalculateTravelTime(Vector2Int target)
         {
-            WorldMap.Instance.ExploreNode(expedition.TargetPosition);
+            if (WorldMap.Instance == null) return 30f;
 
-            if (expedition.BattleTarget != null && BattleManager.Instance != null)
+            float pathCost;
+            var path = WorldMap.Instance.FindPath(WorldMap.Instance.BasePosition, target);
+            if (path.Count > 0)
             {
-                BattleManager.Instance.SendExpedition(expedition.BattleTarget, expedition.TroopsLookup);
+                pathCost = 0f;
+                foreach (var pos in path)
+                {
+                    var node = WorldMap.Instance.GetNode(pos);
+                    pathCost += node != null ? GetNodeMoveCost(node) : 1f;
+                }
             }
             else
             {
-                expedition.IsReturning = true;
-                expedition.RemainingTime = expedition.TravelTime * 0.5f;
-                expedition.TravelTime = expedition.TravelTime * 0.5f;
-                _expeditions.Add(expedition);
+                // Fallback to Euclidean if no path found
+                pathCost = WorldMap.Instance.GetDistance(WorldMap.Instance.BasePosition, target);
             }
+
+            float baseTime = pathCost * 30f;
+
+            float devMult = GameConfig.Instance?.GetExpeditionTimeMultiplier ?? 1f;
+            baseTime *= devMult;
+
+            float expeditionBonus = 0f;
+            if (Tech.ResearchManager.Instance != null)
+                expeditionBonus = Tech.ResearchManager.Instance.GetTotalExpeditionSpeedBonus();
+            baseTime *= (1f - expeditionBonus);
+
+            return Mathf.Max(baseTime, 1f);
+        }
+
+        private static float GetNodeMoveCost(MapNodeData node)
+        {
+            return node.NodeType switch
+            {
+                MapNodeType.RadioactiveZone => 2.5f,
+                MapNodeType.MutantCamp => 2.0f,
+                MapNodeType.BossArea => 3.0f,
+                _ => 1.0f
+            };
+        }
+
+        public List<Expedition> GetActiveExpeditions()
+        {
+            return new List<Expedition>(_expeditions);
+        }
+
+        public Expedition GetExpedition(string id)
+        {
+            return _expeditions.FirstOrDefault(e => e.Id == id);
+        }
+
+        public void RestoreExpedition(Expedition expedition)
+        {
+            if (expedition == null) return;
+            expedition.OnPhaseChanged += HandlePhaseChanged;
+            expedition.OnCompleted += HandleCompleted;
+            _expeditions.Add(expedition);
+        }
+
+        public void CancelAllExpeditions()
+        {
+            foreach (var exp in _expeditions)
+            {
+                exp.OnPhaseChanged -= HandlePhaseChanged;
+                exp.OnCompleted -= HandleCompleted;
+            }
+            _expeditions.Clear();
+        }
+
+        private void HandlePhaseChanged(Expedition expedition)
+        {
+            OnExpeditionPhaseChanged?.Invoke(expedition);
+
+            if (expedition.Phase == ExpeditionPhase.Engaging && expedition.BattleResult != null)
+            {
+                OnExpeditionCompleted?.Invoke(expedition);
+            }
+        }
+
+        private void HandleCompleted(Expedition expedition)
+        {
+            expedition.OnPhaseChanged -= HandlePhaseChanged;
+            expedition.OnCompleted -= HandleCompleted;
+
+            if (expedition.BattleResult != null)
+                BattleManager.Instance?.PublishBattleReport(expedition.BattleResult);
 
             OnExpeditionCompleted?.Invoke(expedition);
-        }
-
-        private void ReturnExpedition(ActiveExpedition expedition)
-        {
-            if (ArmyManager.Instance != null && expedition.Troops != null)
-            {
-                foreach (var entry in expedition.Troops)
-                    ArmyManager.Instance.AddTroops(entry.Type, entry.Count);
-            }
-        }
-
-        public List<ActiveExpedition> GetActiveExpeditions()
-        {
-            return new List<ActiveExpedition>(_expeditions);
-        }
-
-        private static List<TroopEntry> ToTroopEntries(Dictionary<TroopType, int> troops)
-        {
-            var list = new List<TroopEntry>(troops.Count);
-            foreach (var kvp in troops)
-                list.Add(new TroopEntry { Type = kvp.Key, Count = kvp.Value });
-            return list;
         }
     }
 }

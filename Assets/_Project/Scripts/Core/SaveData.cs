@@ -26,6 +26,7 @@ namespace HollowGround.Core
         public List<IntIntEntry> RoadCells = new();
         public List<SettlerWalkerSave> Settlers = new();
         public TerrainSave Terrain;
+        public List<ExpeditionSave> Expeditions = new();
     }
 
     [Serializable]
@@ -153,5 +154,18 @@ namespace HollowGround.Core
         public string NodeType;
         public bool IsExplored;
         public bool IsVisible;
+    }
+
+    [Serializable]
+    public class ExpeditionSave
+    {
+        public int TargetX;
+        public int TargetY;
+        public string Phase;
+        public List<StringIntEntry> Troops = new();
+        public float RemainingTime;
+        public float TravelTime;
+        public bool HasBattleResult;
+        public bool BattleVictory;
     }
 }

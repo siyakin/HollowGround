@@ -51,6 +51,8 @@ namespace HollowGround.UI
             RefreshAll();
             if (WorldMap.Instance != null)
                 WorldMap.Instance.OnMapUpdated += RefreshAll;
+            if (ExpeditionSystem.Instance != null)
+                ExpeditionSystem.Instance.OnExpeditionPhaseChanged += HandleExpeditionPhaseChanged;
             if (BattleManager.Instance != null)
                 BattleManager.Instance.OnBattleCompleted += HandleBattleCompleted;
         }
@@ -59,6 +61,8 @@ namespace HollowGround.UI
         {
             if (WorldMap.Instance != null)
                 WorldMap.Instance.OnMapUpdated -= RefreshAll;
+            if (ExpeditionSystem.Instance != null)
+                ExpeditionSystem.Instance.OnExpeditionPhaseChanged -= HandleExpeditionPhaseChanged;
             if (BattleManager.Instance != null)
                 BattleManager.Instance.OnBattleCompleted -= HandleBattleCompleted;
         }
@@ -68,7 +72,12 @@ namespace HollowGround.UI
             UpdateExpeditionList();
         }
 
-        private void HandleBattleCompleted(BattleManager.BattleReport report)
+        private void HandleExpeditionPhaseChanged(Expedition expedition)
+        {
+            RefreshAll();
+        }
+
+        private void HandleBattleCompleted(BattleReport report)
         {
             RefreshAll();
         }
@@ -271,8 +280,11 @@ namespace HollowGround.UI
                     }
                 }
 
+                bool hasActiveExpedition = ExpeditionSystem.Instance != null &&
+                    ExpeditionSystem.Instance.Expeditions.Any(e => e.Target.GridPosition == view.Pos && !e.IsComplete);
+
                 bool isSelected = _selectedNode != null && _selectedNode.GridPosition == view.Pos;
-                view.Border.color = isSelected ? UIColors.Selected : new Color(0, 0, 0, 0);
+                view.Border.color = isSelected ? UIColors.Selected : (hasActiveExpedition ? new Color(1f, 0.8f, 0.2f, 0.8f) : new Color(0, 0, 0, 0));
             }
         }
 
@@ -299,16 +311,32 @@ namespace HollowGround.UI
             }
 
             var node = _selectedNode;
-            float dist = WorldMap.Instance.GetDistance(WorldMap.Instance.BasePosition, node.GridPosition);
-            float travelSeconds = dist * 30f;
+            float travelSeconds = ExpeditionSystem.Instance != null
+                ? ExpeditionSystem.Instance.CalculateTravelTime(node.GridPosition)
+                : WorldMap.Instance.GetDistance(WorldMap.Instance.BasePosition, node.GridPosition) * 30f;
 
             _infoTitleText.text = node.DisplayName;
 
             var sb = new System.Text.StringBuilder();
             sb.AppendLine($"<color=#A6A6AE>Type:</color> {FormatNodeType(node.NodeType)}");
-            sb.AppendLine($"<color=#A6A6AE>Distance:</color> {dist:F1} tiles");
             sb.AppendLine($"<color=#A6A6AE>Travel time:</color> ~{travelSeconds:F0}s (one way)");
             sb.AppendLine();
+
+            var activeExp = ExpeditionSystem.Instance?.Expeditions
+                .FirstOrDefault(e => e.Target.GridPosition == node.GridPosition && !e.IsComplete);
+            if (activeExp != null)
+            {
+                string phaseColor = activeExp.Phase switch
+                {
+                    ExpeditionPhase.Traveling => "#F2BE26",
+                    ExpeditionPhase.Engaging => "#E64D4D",
+                    ExpeditionPhase.Returning => "#4DBF59",
+                    _ => "#A6A6AE"
+                };
+                sb.AppendLine($"<color={phaseColor}><b>Active expedition</b></color>");
+                sb.AppendLine($"Phase: {activeExp.Phase} | Progress: {activeExp.Progress:P0}");
+                sb.AppendLine();
+            }
 
             if (node.NodeType == MapNodeType.PlayerBase)
             {
@@ -587,11 +615,8 @@ namespace HollowGround.UI
         {
             if (!_built || _expeditionListText == null) return;
 
-            var worldExps = ExpeditionSystem.Instance != null ? ExpeditionSystem.Instance.GetActiveExpeditions() : null;
-            var battleExps = BattleManager.Instance != null ? BattleManager.Instance.GetExpeditions() : null;
-
-            int total = (worldExps?.Count ?? 0) + (battleExps?.Count ?? 0);
-            if (total == 0)
+            var exps = ExpeditionSystem.Instance != null ? ExpeditionSystem.Instance.GetActiveExpeditions() : null;
+            if (exps == null || exps.Count == 0)
             {
                 _expeditionListText.text = "<color=#A6A6AE>No active expeditions</color>";
                 _expeditionListText.color = UIColors.Default.Muted;
@@ -599,20 +624,23 @@ namespace HollowGround.UI
             }
 
             var sb = new System.Text.StringBuilder();
-            if (worldExps != null)
+            foreach (var exp in exps)
             {
-                foreach (var exp in worldExps)
+                string phaseLabel = exp.Phase switch
                 {
-                    string phase = exp.IsReturning ? "Returning" : "Traveling";
-                    sb.Append($"<color=#F2BE26>></color> {exp.TargetName} [{phase}] {exp.RemainingTime:F0}s   ");
-                }
-            }
-            if (battleExps != null)
-            {
-                foreach (var exp in battleExps)
+                    ExpeditionPhase.Traveling => "Traveling",
+                    ExpeditionPhase.Engaging => "Engaging",
+                    ExpeditionPhase.Returning => "Returning",
+                    _ => "Unknown"
+                };
+                string color = exp.Phase switch
                 {
-                    sb.Append($"<color=#E64D4D>X</color> {exp.Name} [Engaging] {exp.RemainingTime:F0}s   ");
-                }
+                    ExpeditionPhase.Traveling => "#F2BE26",
+                    ExpeditionPhase.Engaging => "#E64D4D",
+                    ExpeditionPhase.Returning => "#4DBF59",
+                    _ => "#A6A6AE"
+                };
+                sb.Append($"<color={color}>></color> {exp.Target.DisplayName} [{phaseLabel}] {exp.RemainingTime:F0}s   ");
             }
             _expeditionListText.text = sb.ToString();
             _expeditionListText.color = UIColors.Default.Text;

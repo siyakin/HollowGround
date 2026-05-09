@@ -132,7 +132,20 @@ namespace HollowGround.World
 
             while (openSet.Count > 0)
             {
-                var current = openSet.OrderBy(n => fScore.GetValueOrDefault(n, float.MaxValue)).First();
+                // Manual min-search: O(n) but zero LINQ/alloc overhead
+                Vector2Int current = openSet[0];
+                float minF = fScore.GetValueOrDefault(current, float.MaxValue);
+                int minIndex = 0;
+                for (int i = 1; i < openSet.Count; i++)
+                {
+                    float f = fScore.GetValueOrDefault(openSet[i], float.MaxValue);
+                    if (f < minF)
+                    {
+                        minF = f;
+                        current = openSet[i];
+                        minIndex = i;
+                    }
+                }
 
                 if (current == end)
                 {
@@ -146,7 +159,7 @@ namespace HollowGround.World
                     return path;
                 }
 
-                openSet.Remove(current);
+                openSet.RemoveAt(minIndex);
 
                 foreach (var dir in new Vector2Int[] {
                     Vector2Int.up, Vector2Int.down, Vector2Int.left, Vector2Int.right })
@@ -155,7 +168,8 @@ namespace HollowGround.World
                     var neighborNode = GetNode(neighbor);
                     if (neighborNode == null) continue;
 
-                    float tentativeG = gScore[current] + 1;
+                    float moveCost = GetNodeMoveCost(neighborNode);
+                    float tentativeG = gScore[current] + moveCost;
                     if (tentativeG < gScore.GetValueOrDefault(neighbor, float.MaxValue))
                     {
                         cameFrom[neighbor] = current;
@@ -169,6 +183,17 @@ namespace HollowGround.World
             }
 
             return new List<Vector2Int>();
+        }
+
+        private static float GetNodeMoveCost(MapNodeData node)
+        {
+            return node.NodeType switch
+            {
+                MapNodeType.RadioactiveZone => 2.5f,
+                MapNodeType.MutantCamp => 2.0f,
+                MapNodeType.BossArea => 3.0f,
+                _ => 1.0f
+            };
         }
 
         public void GenerateDefaultMap()
