@@ -1,4 +1,5 @@
 using System;
+using HollowGround.Core;
 using HollowGround.World;
 
 namespace HollowGround.Combat

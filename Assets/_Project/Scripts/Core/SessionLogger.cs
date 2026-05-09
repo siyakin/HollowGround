@@ -390,14 +390,14 @@ namespace HollowGround.Core
                 QuestManager.Instance.ProgressObjective(ObjectiveType.ResearchTech, node.DisplayName, 1);
         }
 
-        private void OnExpeditionLaunched(ExpeditionSystem.ActiveExpedition expedition)
+        private void OnExpeditionLaunched(Expedition expedition)
         {
-            Log($"EXPEDITION LAUNCHED: -> {expedition.TargetName} | Travel: {expedition.TravelTime:F1}s");
+            Log($"EXPEDITION LAUNCHED: -> {expedition.Target?.DisplayName ?? "Unknown"} | Travel: {expedition.TravelTime:F1}s");
         }
 
-        private void OnExpeditionCompleted(ExpeditionSystem.ActiveExpedition expedition)
+        private void OnExpeditionCompleted(Expedition expedition)
         {
-            Log($"EXPEDITION ARRIVED: {expedition.TargetName}");
+            Log($"EXPEDITION ARRIVED: {expedition.Target?.DisplayName ?? "Unknown"}");
         }
 
         private void OnSettlerSpawned(SettlerWalker walker)

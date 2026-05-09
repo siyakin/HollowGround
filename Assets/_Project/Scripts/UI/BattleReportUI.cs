@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using HollowGround.Army;
 using HollowGround.Combat;
 using HollowGround.Resources;
+using HollowGround.World;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -33,20 +34,18 @@ namespace HollowGround.UI
         [Header("Close")]
         [SerializeField] private Button _closeButton;
 
-        private void OnEnable()
+        private void Awake()
         {
             if (BattleManager.Instance != null)
                 BattleManager.Instance.OnBattleCompleted += ShowReport;
-
             if (_closeButton != null)
                 _closeButton.onClick.AddListener(Close);
         }
 
-        private void OnDisable()
+        private void OnDestroy()
         {
             if (BattleManager.Instance != null)
                 BattleManager.Instance.OnBattleCompleted -= ShowReport;
-
             if (_closeButton != null)
                 _closeButton.onClick.RemoveListener(Close);
         }
@@ -56,7 +55,7 @@ namespace HollowGround.UI
             UpdateExpeditionTracker();
         }
 
-        public void ShowReport(BattleManager.BattleReport report)
+        public void ShowReport(BattleReport report)
         {
             gameObject.SetActive(true);
 
@@ -106,9 +105,9 @@ namespace HollowGround.UI
 
         private void UpdateExpeditionTracker()
         {
-            if (BattleManager.Instance == null) return;
+            if (ExpeditionSystem.Instance == null) return;
 
-            var expeditions = BattleManager.Instance.GetExpeditions();
+            var expeditions = ExpeditionSystem.Instance.GetActiveExpeditions();
             bool hasActive = expeditions.Count > 0;
 
             if (_expeditionPanel != null)
@@ -118,7 +117,7 @@ namespace HollowGround.UI
 
             var current = expeditions[0];
             if (_expeditionLabel != null)
-                _expeditionLabel.text = $"{current.Name} ({current.RemainingTime:F0}s)";
+                _expeditionLabel.text = $"{current.Target.DisplayName} ({current.RemainingTime:F0}s)";
 
             if (_expeditionProgress != null)
                 _expeditionProgress.value = current.Progress;

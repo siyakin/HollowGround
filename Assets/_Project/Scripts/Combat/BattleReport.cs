@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using HollowGround.Army;
 using HollowGround.Resources;
 
 namespace HollowGround.Combat
