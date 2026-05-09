@@ -18,6 +18,10 @@ namespace HollowGround.NPCs
         [SerializeField] private RuntimeAnimatorController _animatorController;
 
         private readonly List<SettlerWalker> _pool = new();
+        private readonly Dictionary<Material, Material> _materialCache = new();
+        private static Shader _cachedUrpLitShader;
+        private Material _placeholderBodyMaterial;
+        private Material _placeholderHeadMaterial;
         private GameObject _settlerParent;
         private float _lastDispatchTime;
         private const float MinDispatchInterval = 2f;
@@ -318,9 +322,9 @@ namespace HollowGround.NPCs
             };
         }
 
-        private static void FixMaterials(GameObject go)
+        private void FixMaterials(GameObject go)
         {
-            var urpLit = Shader.Find("Universal Render Pipeline/Lit");
+            var urpLit = GetUrpLitShader();
             if (urpLit == null) return;
 
             foreach (var renderer in go.GetComponentsInChildren<Renderer>())
@@ -332,29 +336,34 @@ namespace HollowGround.NPCs
                     if (mats[i] == null || mats[i].shader == null) continue;
                     if (mats[i].shader.name.StartsWith("Universal Render Pipeline")) continue;
 
-                    var newMat = new Material(urpLit);
-
-                    string[] texProps = { "_MainTex", "_BaseMap", "_Albedo", "_Diffuse" };
-                    foreach (var prop in texProps)
+                    if (!_materialCache.TryGetValue(mats[i], out var converted))
                     {
-                        if (mats[i].HasProperty(prop) && mats[i].GetTexture(prop) != null)
+                        converted = new Material(urpLit);
+
+                        string[] texProps = { "_MainTex", "_BaseMap", "_Albedo", "_Diffuse" };
+                        foreach (var prop in texProps)
                         {
-                            newMat.SetTexture("_BaseMap", mats[i].GetTexture(prop));
-                            break;
+                            if (mats[i].HasProperty(prop) && mats[i].GetTexture(prop) != null)
+                            {
+                                converted.SetTexture("_BaseMap", mats[i].GetTexture(prop));
+                                break;
+                            }
                         }
+
+                        string[] colProps = { "_Color", "_BaseColor", "_AlbedoColor" };
+                        foreach (var prop in colProps)
+                        {
+                            if (mats[i].HasProperty(prop))
+                            {
+                                converted.SetColor("_BaseColor", mats[i].GetColor(prop));
+                                break;
+                            }
+                        }
+
+                        _materialCache[mats[i]] = converted;
                     }
 
-                    string[] colProps = { "_Color", "_BaseColor", "_AlbedoColor" };
-                    foreach (var prop in colProps)
-                    {
-                        if (mats[i].HasProperty(prop))
-                        {
-                            newMat.SetColor("_BaseColor", mats[i].GetColor(prop));
-                            break;
-                        }
-                    }
-
-                    mats[i] = newMat;
+                    mats[i] = converted;
                     changed = true;
                 }
                 if (changed)
@@ -362,8 +371,15 @@ namespace HollowGround.NPCs
             }
         }
 
-        private static void CreatePlaceholderVisual(Transform parent)
+        private static Shader GetUrpLitShader()
         {
+            return _cachedUrpLitShader ??= Shader.Find("Universal Render Pipeline/Lit");
+        }
+
+        private void CreatePlaceholderVisual(Transform parent)
+        {
+            EnsurePlaceholderMaterials();
+
             var visual = GameObject.CreatePrimitive(PrimitiveType.Capsule);
             visual.name = "Visual";
             visual.transform.SetParent(parent);
@@ -372,10 +388,7 @@ namespace HollowGround.NPCs
 
             var renderer = visual.GetComponent<MeshRenderer>();
             if (renderer != null)
-            {
-                renderer.material = new Material(Shader.Find("Universal Render Pipeline/Lit"));
-                renderer.material.color = GetRandomSettlerColor();
-            }
+                renderer.sharedMaterial = _placeholderBodyMaterial;
 
             var collider = visual.GetComponent<Collider>();
             if (collider != null)
@@ -389,14 +402,21 @@ namespace HollowGround.NPCs
 
             var headRenderer = head.GetComponent<MeshRenderer>();
             if (headRenderer != null)
-            {
-                headRenderer.material = new Material(Shader.Find("Universal Render Pipeline/Lit"));
-                headRenderer.material.color = new Color(0.85f, 0.75f, 0.65f);
-            }
+                headRenderer.sharedMaterial = _placeholderHeadMaterial;
 
             var headCollider = head.GetComponent<Collider>();
             if (headCollider != null)
                 headCollider.enabled = false;
+        }
+
+        private void EnsurePlaceholderMaterials()
+        {
+            if (_placeholderBodyMaterial != null) return;
+            var shader = GetUrpLitShader();
+            if (shader == null) return;
+
+            _placeholderBodyMaterial = new Material(shader) { color = GetRandomSettlerColor() };
+            _placeholderHeadMaterial = new Material(shader) { color = new Color(0.85f, 0.75f, 0.65f) };
         }
 
         private static readonly Color[] SettlerColors = {
@@ -429,6 +449,16 @@ namespace HollowGround.NPCs
             if (total == 0 && activeCount > 1)
                 total = activeCount;
             return total;
+        }
+
+        protected override void OnDestroy()
+        {
+            foreach (var kvp in _materialCache)
+                Destroy(kvp.Value);
+            _materialCache.Clear();
+            if (_placeholderBodyMaterial != null) Destroy(_placeholderBodyMaterial);
+            if (_placeholderHeadMaterial != null) Destroy(_placeholderHeadMaterial);
+            base.OnDestroy();
         }
 
         public void RemoveAllSettlers()
