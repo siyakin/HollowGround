@@ -60,7 +60,7 @@ namespace HollowGround.UI
 
         private static Transform FindActionBar()
         {
-            var canvas = FindAnyObjectByType<Canvas>();
+            var canvas = UnityEngine.Object.FindAnyObjectByType<Canvas>();
             if (canvas != null)
                 return canvas.transform.Find("ActionBar");
             return null;
