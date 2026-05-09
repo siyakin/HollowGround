@@ -47,11 +47,6 @@ namespace HollowGround.Buildings
             {
                 var b = _constructing[i];
                 b.TickConstruction(dt, speed, devMult);
-                if (b.State != BuildingState.Constructing)
-                {
-                    _constructing.RemoveAt(i);
-                    AddToStateList(b);
-                }
             }
         }
 
@@ -61,11 +56,6 @@ namespace HollowGround.Buildings
             {
                 var b = _upgrading[i];
                 b.TickUpgrade(dt, speed, devMult);
-                if (b.State != BuildingState.Upgrading)
-                {
-                    _upgrading.RemoveAt(i);
-                    AddToStateList(b);
-                }
             }
         }
 
