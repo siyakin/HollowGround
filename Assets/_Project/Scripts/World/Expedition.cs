@@ -53,6 +53,11 @@ namespace HollowGround.World
             RemainingTime = Mathf.Max(time, 0f);
         }
 
+        public void RestoreBattleResult(BattleReport report)
+        {
+            BattleResult = report;
+        }
+
         public void Tick(float deltaTime)
         {
             if (Phase == ExpeditionPhase.Completed) return;
@@ -161,7 +166,7 @@ namespace HollowGround.World
         {
             if (ArmyManager.Instance == null) return;
 
-            Dictionary<TroopType, int> survivors = BattleResult != null && BattleResult.Victory
+            Dictionary<TroopType, int> survivors = BattleResult != null
                 ? BattleResult.Survivors
                 : Troops;
 

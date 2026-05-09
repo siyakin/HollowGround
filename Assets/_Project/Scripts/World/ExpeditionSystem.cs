@@ -88,7 +88,7 @@ namespace HollowGround.World
                 foreach (var pos in path)
                 {
                     var node = WorldMap.Instance.GetNode(pos);
-                    pathCost += node != null ? GetNodeMoveCost(node) : 1f;
+                    pathCost += node != null ? WorldMap.GetNodeMoveCost(node) : 1f;
                 }
             }
             else
@@ -108,17 +108,6 @@ namespace HollowGround.World
             baseTime *= (1f - expeditionBonus);
 
             return Mathf.Max(baseTime, 1f);
-        }
-
-        private static float GetNodeMoveCost(MapNodeData node)
-        {
-            return node.NodeType switch
-            {
-                MapNodeType.RadioactiveZone => 2.5f,
-                MapNodeType.MutantCamp => 2.0f,
-                MapNodeType.BossArea => 3.0f,
-                _ => 1.0f
-            };
         }
 
         public List<Expedition> GetActiveExpeditions()
@@ -154,18 +143,13 @@ namespace HollowGround.World
             OnExpeditionPhaseChanged?.Invoke(expedition);
 
             if (expedition.Phase == ExpeditionPhase.Engaging && expedition.BattleResult != null)
-            {
-                OnExpeditionCompleted?.Invoke(expedition);
-            }
+                BattleManager.Instance?.PublishBattleReport(expedition.BattleResult);
         }
 
         private void HandleCompleted(Expedition expedition)
         {
             expedition.OnPhaseChanged -= HandlePhaseChanged;
             expedition.OnCompleted -= HandleCompleted;
-
-            if (expedition.BattleResult != null)
-                BattleManager.Instance?.PublishBattleReport(expedition.BattleResult);
 
             OnExpeditionCompleted?.Invoke(expedition);
         }

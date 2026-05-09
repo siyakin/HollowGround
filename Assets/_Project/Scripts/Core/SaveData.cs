@@ -167,5 +167,12 @@ namespace HollowGround.Core
         public float TravelTime;
         public bool HasBattleResult;
         public bool BattleVictory;
+        public string TargetName;
+        public List<StringIntEntry> AttackerLosses = new();
+        public List<StringIntEntry> Survivors = new();
+        public List<StringIntEntry> Loot = new();
+        public int TotalAttackerPower;
+        public int TotalDefenderPower;
+        public float PowerRatio;
     }
 }

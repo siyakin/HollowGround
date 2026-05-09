@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using HollowGround.Buildings;
 using HollowGround.Core;
+using HollowGround.Roads;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -55,6 +56,21 @@ namespace HollowGround.UI
             EnsurePausePanelContent();
             CacheActionBarButtons();
             UpdateActionBarHighlights();
+
+            if (RoadManager.Instance != null)
+                RoadManager.Instance.OnRoadMessage += OnRoadMessage;
+        }
+
+        protected override void OnDestroy()
+        {
+            if (RoadManager.Instance != null)
+                RoadManager.Instance.OnRoadMessage -= OnRoadMessage;
+            base.OnDestroy();
+        }
+
+        private void OnRoadMessage(string text, Color color)
+        {
+            ToastUI.Show(text, color);
         }
 
         private void InitPanelManager()

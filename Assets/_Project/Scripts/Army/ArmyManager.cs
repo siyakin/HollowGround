@@ -11,7 +11,7 @@ namespace HollowGround.Army
         private readonly Dictionary<TroopType, int> _troops = new();
         private readonly List<TrainingQueueEntry> _trainingQueue = new();
         private TroopData[] _cachedTroopData;
-        private TroopData[] AllTroopData => _cachedTroopData ??= UnityEngine.Resources.LoadAll<TroopData>("Troops");
+        public TroopData[] AllTroopData => _cachedTroopData ??= UnityEngine.Resources.LoadAll<TroopData>("Troops");
 
         public int TotalTroopCount { get; private set; }
         public int TotalArmyPower { get; private set; }

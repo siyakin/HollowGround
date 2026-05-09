@@ -185,7 +185,7 @@ namespace HollowGround.World
             return new List<Vector2Int>();
         }
 
-        private static float GetNodeMoveCost(MapNodeData node)
+        public static float GetNodeMoveCost(MapNodeData node)
         {
             return node.NodeType switch
             {

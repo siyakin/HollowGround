@@ -374,6 +374,26 @@ namespace HollowGround.Core
                 foreach (var kvp in exp.Troops)
                     save.Troops.Add(new StringIntEntry { Key = kvp.Key.ToString(), Value = kvp.Value });
 
+                if (exp.BattleResult != null)
+                {
+                    save.TargetName = exp.BattleResult.TargetName ?? "";
+                    save.TotalAttackerPower = exp.BattleResult.TotalAttackerPower;
+                    save.TotalDefenderPower = exp.BattleResult.TotalDefenderPower;
+                    save.PowerRatio = exp.BattleResult.PowerRatio;
+
+                    if (exp.BattleResult.AttackerLosses != null)
+                        foreach (var kvp in exp.BattleResult.AttackerLosses)
+                            save.AttackerLosses.Add(new StringIntEntry { Key = kvp.Key.ToString(), Value = kvp.Value });
+
+                    if (exp.BattleResult.Survivors != null)
+                        foreach (var kvp in exp.BattleResult.Survivors)
+                            save.Survivors.Add(new StringIntEntry { Key = kvp.Key.ToString(), Value = kvp.Value });
+
+                    if (exp.BattleResult.Loot != null)
+                        foreach (var kvp in exp.BattleResult.Loot)
+                            save.Loot.Add(new StringIntEntry { Key = kvp.Key.ToString(), Value = kvp.Value });
+                }
+
                 data.Expeditions.Add(save);
             }
         }
@@ -498,7 +518,7 @@ namespace HollowGround.Core
                     ArmyManager.Instance.AddTroops(type, entry.Value);
             }
 
-            var allTroopData = UnityEngine.Resources.LoadAll<TroopData>("Troops");
+            var allTroopData = ArmyManager.Instance.AllTroopData;
             foreach (var ts in data.Army.TrainingQueue)
             {
                 var troopData = allTroopData.FirstOrDefault(t => t.name == ts.TroopDataName);
@@ -731,6 +751,36 @@ namespace HollowGround.Core
                     expedition.RestorePhase(phase);
 
                 expedition.SetRemainingTime(es.RemainingTime);
+
+                if (es.HasBattleResult)
+                {
+                    var report = new BattleReport
+                    {
+                        TargetName = es.TargetName ?? target.DisplayName,
+                        Victory = es.BattleVictory,
+                        AttackerLosses = new Dictionary<TroopType, int>(),
+                        Survivors = new Dictionary<TroopType, int>(),
+                        Loot = new Dictionary<Resources.ResourceType, int>(),
+                        TotalAttackerPower = es.TotalAttackerPower,
+                        TotalDefenderPower = es.TotalDefenderPower,
+                        PowerRatio = es.PowerRatio
+                    };
+
+                    foreach (var entry in es.AttackerLosses)
+                        if (Enum.TryParse<TroopType>(entry.Key, out var t))
+                            report.AttackerLosses[t] = entry.Value;
+
+                    foreach (var entry in es.Survivors)
+                        if (Enum.TryParse<TroopType>(entry.Key, out var t))
+                            report.Survivors[t] = entry.Value;
+
+                    foreach (var entry in es.Loot)
+                        if (Enum.TryParse<Resources.ResourceType>(entry.Key, out var rt))
+                            report.Loot[rt] = entry.Value;
+
+                    expedition.RestoreBattleResult(report);
+                }
+
                 ExpeditionSystem.Instance.RestoreExpedition(expedition);
             }
         }

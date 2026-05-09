@@ -21,6 +21,7 @@ namespace HollowGround.Roads
 
         public event Action OnRoadsChanged;
         public event Action<Building, List<Vector2Int>> OnRoadsGenerated;
+        public event Action<string, Color> OnRoadMessage;
 
         private void NotifyRoadsChanged()
         {
@@ -93,7 +94,7 @@ namespace HollowGround.Roads
             var reachable = GetReachableRoadCells();
             if (reachable.Contains(coords))
             {
-                ToastUI.Show("Cannot remove connected road!", UIColors.Default.Warn);
+                OnRoadMessage?.Invoke("Cannot remove connected road!", UIColors.Default.Warn);
                 return;
             }
 
