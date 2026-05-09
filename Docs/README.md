@@ -1,78 +1,80 @@
 # Hollow Ground
 
-Nükleer savaş sonrası şehir kurma + strateji + RPG oyunu. Unity 6 + URP + 3D Low Poly.
+Nukleer savas sonrasi sehir kurma + strateji + RPG oyunu. Unity 6 + URP + 3D Low Poly.
 
-## Hızlı Başlangıç
+## Hizli Baslangic
 
-- **GDD**: [GDD.md](./GDD.md) — Oyun tasarım dokümanı
-- **Roadmap**: [ROADMAP.md](./ROADMAP.md) — Geliştirme planı (10 faz)
-- **Balans**: [BALANCE.md](./BALANCE.md) — Oyun dengesi referansı
+- **GDD**: [GDD.md](./GDD.md) — Oyun tasarim dokumani
+- **Roadmap**: [ROADMAP.md](./ROADMAP.md) — Gelistirme plani
+- **Balans**: [BALANCE.md](./BALANCE.md) — Oyun dengesi referansi
+- **Kontroller**: [CONTROLS.md](./CONTROLS.md) — Klavye kisayollari arastirmasi
+- **Modelleme**: [BLENDER_MODELING_GUIDE.md](./BLENDER_MODELING_GUIDE.md) — Blender rehberi
+- **Bina Spec**: [BuildingSpecs/](./BuildingSpecs/) — Her bina icin ayri spec dokumani
 
-## Proje Yapısı
+## Durum: v0.28.0
+
+19 faz tamamlandi, 2 playtest gecti (Faz 11: 13/13, Faz 19: 15/15).
+
+### Tamamlanan Sistemler
+
+| Modul | Detay |
+|-------|-------|
+| Grid System | 100x100 grid, cell state, snap-to-grid, terrain, water shader |
+| Building System | 17 bina SO (15 + Garden + GardenLarge), 105 FBX model, state-based swap |
+| Road System | BFS pathfinding, otomatik yol olusumu, orphan cleanup |
+| Resource System | 6 kaynak, kapasite yonetimi, baslangic degerleri |
+| Army System | 5 birlik SO, egitim kuyrugu, moral sistemi |
+| Combat System | BattleCalculator + BattleTarget SO, sefer sistemi, mutant dalgalari |
+| Hero System | 5 rol, 5 rarity, gacha summon, ekipman, XP |
+| World Map | 10x10 grid, fog of war, A*, sefer sistemi |
+| Tech Tree | 10 tech SO, prerequisite zinciri, arastirma kuyrugu |
+| Faction/Trade | 3 faction SO, al/sat mekanizmasi, iliski sistemi |
+| Quest System | 5 quest SO, 6 objective type, trigger sistemi |
+| Save/Load | JSON serilestirme, auto-save, full state capture |
+| Settler Walker | WalkerBase + WalkerManager, pool, cell occupancy, animasyon |
+| Settler Job | 12 rol, auto-assign, isci bazli uretim, SettlerPanelUI |
+| Garden Merge | 4 kucuk → 1 buyuk garden merge, NeedsRoads flag |
+| Minimap | RenderTexture, viewport frame, tiklama navigasyonu |
+| UI (16+ Panel) | ResourceBar, BuildMenu, BuildingInfo, WorldMap, TechTree, FactionTrade, QuestLog, SaveMenu, Hero, Training, Army, BattleReport, Settler, SettlerInfo, DebugHUD, Minimap |
+| Editor Tools | 8+ fabrika araci, custom inspector, scene setup menuleri |
+| Visual | Post-processing, weather (5 durum), highlight, damage efektleri, grid overlay |
+
+### Bekleyen
+
+- 7 acik issue (#34-#40)
+- 10 ek quest SO
+- Garden FBX (L03/L05/L10/Damaged/Destroyed) + Save/Load merge state
+- NPC Visual Feedback, SettlerPanel Enrichment, Quick Tooltips
+- Karakter modelleri, sahne dekorasyonu
+
+## Proje Yapisi
 
 ```
 Assets/_Project/
-├── Scripts/           # 55 C# script — 14 modül, ~4500+ satır
-│   ├── Core/          # GameManager, SaveSystem, TimeManager, GameInitializer, AudioManager
-│   ├── Grid/          # 50x50 grid sistemi, yerleştirme doğrulama
-│   ├── Buildings/     # 15 bina tipi, üretim, yükseltme, yıkım, ghost preview
-│   ├── Resources/     # 6 kaynak tipi, kapasite yönetimi
-│   ├── Army/          # 5 birlik tipi, eğitim kuyruğu, moral sistemi
-│   ├── Combat/        # Otomatik savaş çözümleme, mutant dalgaları
-│   ├── Heroes/        # Gacha summon, seviye/xp, ekipman, yaralanma
-│   ├── World/         # 10x10 dünya haritası, sis perdesi, A* pathfinding
-│   ├── Tech/          # Teknoloji ağacı, araştırma kuyruğu
-│   ├── Quests/        # 10 görev tipi, zincir sistemi, günlük görevler
-│   ├── NPCs/          # Faction ilişkileri, ticaret sistemi
-│   ├── Camera/        # RTS strateji kamerası (WASD, zoom, rotasyon)
-│   ├── UI/            # 15 UI panel (kaynak barı, bina menü, dünya haritası, vb.)
-│   └── Editor/        # 8 editor aracı (SO fabrikaları, custom inspector)
-├── ScriptableObjects/ # Bina, birlik, hero, görev, savaş hedefi verileri
-├── Prefabs/           # UI prefablari (SaveSlot, NodeButton, HeroCard, Toast)
-├── Models/            # 4 model paketi (~100+ model)
-│   ├── CityPack/      # Şehir modelleri, karakterler, aksesuarlar
-│   ├── PostApocolypsePack/ # Silahlar, zombiler, sokak objeleri
-│   ├── NaturePack/    # Ağaçlar, kayalar, çalılar, çiçekler
-│   └── SurvivalPack/  # Kamp ekipmanları, aletler, eşyalar
-├── Materials/         # Ghost materyalleri (geçerli/geçersiz yerleştirme)
-├── Audio/             # Müzik, SFX, ortam sesi (boş — içerik eklenmesi bekleniyor)
-└── Settings/          # Input action map, render pipeline ayarları
+├── Scripts/           ~80+ C# script — 15+ modul
+│   ├── Core/          GameManager, SaveSystem, TimeManager, GameInitializer, AudioManager, WeatherSystem
+│   ├── Camera/        StrategyCamera, ScreenShake, MinimapCamera
+│   ├── Grid/          GridSystem, GridVisualizer, GridOverlayRenderer, MapRenderer, WaterSurface
+│   ├── Buildings/     BuildingData, Building, BuildingManager, BuildingPlacer, GardenManager
+│   ├── Roads/         RoadManager, RoadVisualizer
+│   ├── Resources/     ResourceType, ResourceManager
+│   ├── Army/          TroopData, ArmyManager
+│   ├── Combat/        BattleCalculator, BattleManager, MutantAttackManager
+│   ├── Heroes/        HeroData, Hero, HeroManager
+│   ├── World/         MapNodeData, WorldMap, ExpeditionSystem
+│   ├── Tech/          TechNode, ResearchManager
+│   ├── NPCs/          FactionData, TradeSystem, SettlerManager, WalkerManager
+│   ├── Domain/        WalkerStateMachine, BattleCalc, ProductionCalc, PathfinderService
+│   ├── Quests/        QuestData, QuestInstance, QuestManager
+│   ├── UI/            16+ panel script, UIPrimitiveFactory, UIColors, UIThemeSO
+│   └── Editor/        8+ editor araci (SO fabrikalari, scene setup, FBX binder)
+├── ScriptableObjects/ Buildings, Troops, Heroes, TechNodes, Factions, Quests, Targets, Maps
+├── Models/            4 model paketi + 105 bina FBX (Buildings/)
+├── Prefabs/           ToastItem, UI prefabs
+├── Settings/          StrategyControls.inputactions, RenderTexture
+├── Shaders/           Water.shader (URP custom)
+└── Docs/              GDD, ROADMAP, BALANCE, CONTROLS, BuildingSpecs, Blender rehberleri
 ```
-
-## Uygulanan Sistemler
-
-| Modül | Durum | Detay |
-|-------|-------|-------|
-| Game State | Tamamlandı | Menü/Oyun/Duraklatma/İnşa state machine |
-| Grid System | Tamamlandı | 50x50 grid, hücre durumu, snap-to-grid |
-| Building System | Tamamlandı | 15 bina tipi, inşa/üretim/yükseltme/yıkım döngüsü |
-| Resource System | Tamamlandı | 6 kaynak, başlangıç değerleri, kapasite yönetimi |
-| Army System | Tamamlandı | 5 birlik tipi, eğitim kuyruğu, moral, güç hesaplama |
-| Combat System | Tamamlandı | Otomatik çözümleme, sefer yönetimi, ganimet |
-| Mutant Attacks | Tamamlandı | Zamanlı dalga sistemi, büyüyen zorluk, savunma hesaplama |
-| Hero System | Tamamlandı | Gacha summon, 5 nadirlik, seviye/xp, ekipman, yaralanma |
-| World Map | Tamamlandı | 10x10 grid, sis perdesi, A* pathfinding, sefer sistemi |
-| Tech Tree | Tamamlandı | 5 kategori, önkoşul zinciri, araştırma kuyruğu |
-| Quest System | Tamamlandı | 4 görev tipi, 10 hedef tipi, zincir sistemi |
-| Trade System | Tamamlandı | Faction ilişkileri, alım/satım, itibar |
-| Save/Load | Tamamlandı | JSON serileştirme, otomatik kayıt, tüm state yakalama |
-| Audio Manager | Tamamlandı | 19 ses tipi, SFX pool, müzik, ses seviyesi kontrolü |
-| Strategy Camera | Tamamlandı | WASD, zoom, rotasyon, edge panning, sınırlar |
-| UI (15 Panel) | Tamamlandı | Kaynak barı, bina menü, ordu, hero, dünya haritası, tech ağacı, görev, ticaret, kayıt |
-| Editor Tools | Tamamlandı | 8 fabrika aracı + custom inspector |
-
-## Tamamlanmamış / Bekleyen
-
-- **Sahne düzeni**: Manager GameObject'leri ve UI Canvas sahnede henüz yerleştirilmedi
-- **Bina prefablari**: 3D bina prefab'ları oluşturulmadı (modeller var, prefab yok)
-- **Birlik/Hero prefablari**: Görsel prefab'lar eksik
-- **Ses içerikleri**: Music, SFX, Ambient klasörleri boş
-- **Animasyonlar**: Hiçbir animasyon clip'i yok
-- **Faction/Tech SO verileri**: Klasörler mevcut ama .asset dosyaları oluşturulmadı
-- **Araştırma bonusları**: `ResearchManager.ApplyBonuses()` sadece logluyor, sistemlere entegre değil
-- **Hero yetenekleri**: İsim/açıklama var, çalışan yetenek sistemi yok
-- **Post-processing**: Bloom, vignette, atmosfer efektleri yok
-- **Görev objective hookları**: Sadece mutant saldırıları tetikliyor, diğer sistemlerden çağrılmıyor
 
 ## Teknik Stack
 
@@ -80,7 +82,3 @@ Assets/_Project/
 - **C#** (.NET Standard 2.1)
 - **New Input System**
 - **TextMeshPro** (UI)
-
-## Durum
-
-Tüm sistemlerin kod altyapısı tamamlandı (~4500+ satır, 55 script, 14 modül). Editor araçları, ScriptableObject verileri ve 4 model paketi hazır. Sahne entegrasyonu, prefab oluşturma, ses/animasyon içerikleri ve polish aşamaları bekleniyor.

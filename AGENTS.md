@@ -1,14 +1,11 @@
 # Hollow Ground — AGENTS.md
 
-## Mevcut Versiyon: 0.27.0
+## Mevcut Versiyon: 0.28.0
 
 ## Versiyon Kurallari
 
-- **Tek kaynak:** `VERSION` dosyasi (kok dizinde) — surum numarasi burada
-- **SemVer:** `MAJOR.MINOR.PATCH` (orn: 0.15.0)
-  - **MAJOR**: Oynanabilir surum (1.0.0 = tum eksikler bitti)
-  - **MINOR**: Yeni faz / yeni ozellik
-  - **PATCH**: Bug fix, kucuk duzeltme
+- **Tek kaynak:** `VERSION` dosyasi (kok dizinde)
+- **SemVer:** `MAJOR.MINOR.PATCH` — MAJOR: oynanabilir, MINOR: yeni faz/ozellik, PATCH: bug fix
 - **Git tag**: Her merge'de `v0.X.Y` tag olusturulur
 - **CHANGELOG.md**: Her versiyonda ne degisti yazilir
 - **Commit/push**: Kullanici acikca istemedikce yapilmaz
@@ -17,28 +14,10 @@
 
 Tum isler **GitHub Project** uzerinden yonetilir. Issue yoksa kod yazilmaz.
 
-### Proje Tahtasi
 - **URL:** https://github.com/users/siyakin/projects/2
 - **Status:** Todo → In progress → Done
-- **Priority:** P0 (kritik) / P1 (yuksek) / P2 (normal)
-- **Size:** XS / S / M / L / XL
-
-### Is Akisi
-1. **Backlog olusturma:** Yapilacak isler GitHub issue olarak acilir, projeye eklenir, priority ve size atanir
-2. **Is alma:** Bir issue uzerinde calismaya baslanirken GitHub Project'te status → `In progress` yapilir
-3. **Branch:** Her issue icin `feature/xxx` veya `fix/xxx` branch acilir (ornek: `fix/save-hero-id`, `feature/quest-so`)
-4. **Gelistirme:** Kod yazilir, test edilir
-5. **Pull Request:** Is bitince PR acilir, review istenir
-6. **Merge:** Onaydan sonra main'e merge, VERSION + CHANGELOG guncellenir, git tag olusturulur
-7. **Issue kapatma:** Issue `Done` olarak isaretlenir, branch silinir
-
-### Kurallar
-- **Issue yok = kod yok:** Yeni kod yazmadan once mutlaka issue acilmali
-- **Tek issue, tek PR:** Bir PR birden fazla issue kapatmamali
-- **Workflow:** `feature/xxx` branch → test/onay → main merge → tag + CHANGELOG guncelle
-- **AGENTS.md guncelleme:** Yeni faz bittiginde veya onemli degisikliklerde AGENTS.md guncellenmeli
-- **ROADMAP.md guncelleme:** Faz tamamlandiginda check isaretlenmeli
-- **Commit mesajlari:** `#issue-no` ile referans verilmeli (ornek: `fix: hero ID mismatch on load #8`)
+- **Workflow:** Issue ac → `feature/xxx` branch → kod yaz → PR → review → main merge → tag + CHANGELOG
+- **Commit mesajlari:** `#issue-no` ile referans verilmeli (orn: `fix: hero ID mismatch on load #8`)
 - **gh CLI:** Issue ve PR islemleri icin `gh` komutu kullanilir
 
 ## Proje Ozeti
@@ -52,31 +31,28 @@ Tek kisi PvE: Sehir kurma + ordu yonetimi + hero sistemi + dunya kesfi.
 ## Kritik Kurallar
 
 ### Dil ve Karakter
-- Tum script dosyalari, SO dosyalari, Display Name'ler **Ingilizce** olmali
-- **Turkce karakter YASAK** dosya adlarinda: c, g, o, u, s, i yerine English karsiliklari
-- Kod yorumlari (comment) eklenmez, kullanici ozelle istemedikce
+- Tum script/SO/Display Name'ler **Ingilizce** olmali
+- **Turkce karakter YASAK** dosya adlarinda
+- Kod yorumlari eklenmez, kullanici ozelle istemedikce
 
 ### Namespace Cakismalari
-- `HollowGround.Resources` namespace'i `UnityEngine.Resources` ile cakisiyor → `UnityEngine.Resources.LoadAll<T>()` seklinde tam nitelik kullan
-- `HollowGround.Camera` namespace'i `UnityEngine.Camera` ile cakisiyor → `UnityEngine.Camera.main` seklinde tam nitelik kullan
+- `UnityEngine.Resources.LoadAll<T>()` tam nitelik kullan
+- `UnityEngine.Camera.main` tam nitelik kullan
 
 ### Unity API
-- **Eski Input System YASAK**: `Input.GetMouseButtonDown` yerine `Mouse.current.leftButton.wasPressedThisFrame`
-- **TextMeshPro**: UI elementleri icin `UI > Button - TextMeshPro` ve `UI > Text - TextMeshPro`
-- **FindObjectOfType YASAK**: Unity 6'da deprecated. `FindAnyObjectByType<T>()` kullan
-- **FindFirstObjectByType YASAK**: Unity 6'da deprecated (instance ID ordering). `FindAnyObjectByType<T>()` kullan
-- **FindObjectsByType(FindObjectsSortMode) YASAK**: Unity 6'da deprecated. `FindObjectsByType<T>()` veya `FindObjectsByType<T>(FindObjectsInactive)` kullan
-- **Dictionary serialize olmaz**: `Dictionary<K,V>` Inspector'da gorunmez. Her zaman `List<Entry>` pattern'i kullan
-- **GitHub push oncesi derleme kontrolu ZORUNLU**: Her `git push` oncesi Unity'de derleme hatasi olmadigi dogrulanmali. Hata varsa push YASAK
-- **Branch farkındalığı**: Bir dosya bulunamadığında `git branch -a` ile mevcut branch'leri kontrol et, diğer branch'lerde (`git show main:dosya.yml` gibi) dosya var mı bak. Özellikle README.md, dokümantasyon ve konfigürasyon dosyaları main'de olabilir.
-- **Feature branch'leri sık merge et**: Biten feature branch'ler hemen main'e merge edilmeli. Uzun süre yaşayan branch'ler dosya bütünlüğünü bozar.
+- **Eski Input System YASAK**: `Mouse.current.leftButton.wasPressedThisFrame`
+- **FindObjectOfType/FindFirstObjectByType YASAK**: `FindAnyObjectByType<T>()` kullan
+- **FindObjectsByType(FindObjectsSortMode) YASAK**: `FindObjectsByType<T>()` veya `FindObjectsByType<T>(FindObjectsInactive)` kullan
+- **Dictionary serialize olmaz**: `List<Entry>` pattern'i kullan
+- **Push oncesi derleme kontrolu ZORUNLU**
+- **Feature branch'leri sik merge et**: main'den uzak branch'ler dosya butunlugunu bozar
 
 ### Pattern'ler
-- Manager'lar **Singleton** pattern kullanir (Instance property)
+- Manager'lar **Singleton<T>** pattern kullanir (Instance property)
 - Sistemler birbirini **event** ile haber verir, direkt cagri yok
 - Veriler **ScriptableObject** ile tanimlanir
 - UI panelleri `UIManager.ToggleXxx()` ile acilir/kapanir
-- Kodla yaratilan her UI elementine (Button, Label, Panel) **UIThemeTag** eklenmeli — `MakeButton` ve `MakeLabel` helper'lari otomatik ekler, semantic tag'i parametre olarak ver (orn: `UIStyleType.HeaderText`, `UIStyleType.DangerButton`)
+- Domain logic **ASLA** `ToastUI.Show()` cagirmaz — event firlatir, UI katmani dinler
 
 ---
 
@@ -85,38 +61,33 @@ Tek kisi PvE: Sehir kurma + ordu yonetimi + hero sistemi + dunya kesfi.
 ```
 Assets/_Project/
 ├── Scripts/
-│   ├── Core/        GameManager, TimeManager, Singleton, GameInitializer,
-│   │                SaveData, SaveSystem, AudioManager,
-│   │                PostProcessingSetup, AtmosphereEffects, GameConfig, SessionLogger,
+│   ├── Core/        GameManager, TimeManager, Singleton, GameInitializer, SaveData, SaveSystem,
+│   │                AudioManager, PostProcessingSetup, AtmosphereEffects, GameConfig, SessionLogger,
 │   │                WeatherSystem, CostEntryHelper
 │   ├── Camera/      StrategyCamera, ScreenShake, MinimapCamera
-│   ├── Grid/        GridSystem, GridCell, GridVisualizer, GridOverlayRenderer,
-│   │                MapRenderer, MapTemplate, TerrainTile, TerrainType, WaterSurface
-│   ├── Buildings/   BuildingType, BuildingData, Building, BuildingManager,
-│   │                BuildingPlacer, BuildingSelector, BuildingDatabase,
-│   │                BuildingConstructionAnimation, BuildingHighlight, DamageEffects,
-│   │                GardenManager
+│   ├── Grid/        GridSystem, GridCell, GridVisualizer, GridOverlayRenderer, MapRenderer,
+│   │                MapTemplate, TerrainTile, TerrainType, WaterSurface
+│   ├── Buildings/   BuildingType, BuildingData, Building, BuildingManager, BuildingPlacer,
+│   │                BuildingSelector, BuildingDatabase, BuildingConstructionAnimation,
+│   │                BuildingHighlight, DamageEffects, GardenManager
 │   ├── Roads/       RoadManager, RoadVisualizer
 │   ├── Resources/   ResourceType, ResourceManager
 │   ├── Army/        TroopType, TroopData, ArmyManager
-│   ├── Combat/      BattleCalculator, BattleTarget, BattleManager,
-│   │                MutantWave, MutantAttackManager
+│   ├── Combat/      BattleCalculator, BattleTarget, BattleManager, MutantWave, MutantAttackManager
 │   ├── Heroes/      HeroEnums, HeroData, Hero, HeroManager
 │   ├── World/       MapNodeData, WorldMap, ExpeditionSystem
 │   ├── Tech/        TechNode, ResearchManager
-│   ├── NPCs/        FactionData, TradeSystem, SettlerWalker, SettlerManager,
-│   │                SettlerJobManager, WalkerBase, WalkerManager
-│   ├── Domain/      Walkers/WalkerStateMachine, Combat/BattleCalc,
-│   │                Production/ProductionCalc, Pathfinding/PathfinderService
+│   ├── NPCs/        FactionData, TradeSystem, SettlerWalker, SettlerManager, SettlerJobManager,
+│   │                WalkerBase, WalkerManager
+│   ├── Domain/      Walkers/WalkerStateMachine, Combat/BattleCalc, Production/ProductionCalc,
+│   │                Pathfinding/PathfinderService
 │   ├── Quests/      QuestEnums, QuestData, QuestInstance, QuestManager
-│   ├── UI/          UIManager, PanelManager, ResourceBarUI, BuildMenuUI, BuildingInfoUI,
-│   │                ToastUI, TrainingPanelUI, ArmyPanelUI, BattleReportUI,
-│   │                HeroPanelUI, WorldMapUI, TechTreeUI, FactionTradeUI,
-│   │                QuestLogUI, SaveMenuUI, DebugHUD,
+│   ├── UI/          UIManager, PanelManager, ResourceBarUI, BuildMenuUI, BuildingInfoUI, ToastUI,
+│   │                TrainingPanelUI, ArmyPanelUI, BattleReportUI, HeroPanelUI, WorldMapUI,
+│   │                TechTreeUI, FactionTradeUI, QuestLogUI, SaveMenuUI, DebugHUD,
 │   │                UIThemeSO, UIThemeTag, MinimapUI
-│   └── Editor/      GridSystemEditor, BuildingDataFactory, TroopDataFactory,
-│                     HeroDataFactory, QuestDataFactory, FactionDataFactory,
-│                     TechNodeFactory, GhostMaterialCreator,
+│   └── Editor/      GridSystemEditor, BuildingDataFactory, TroopDataFactory, HeroDataFactory,
+│                     QuestDataFactory, FactionDataFactory, TechNodeFactory, GhostMaterialCreator,
 │                     UIThemeApplier, SceneSetupEditor, GameConfigCreator,
 │                     PostProcessingProfileFactory, GroundSetupEditor
 ├── ScriptableObjects/
@@ -126,26 +97,13 @@ Assets/_Project/
 │   ├── Heroes/      5 hero SO
 │   ├── TechNodes/   10 tech SO
 │   ├── Factions/    3 faction SO
-│   ├── Quests/      5 quest SO
+│   ├── Quests/      5 quest SO (10 daha eklenmeli)
 │   └── Maps/        MapTemplate, DefaultMap
-│   ├── Factions/    Klasor henuzz olusturulmadi
-│   └── Quests/      5 quest SO olusturuldu, 10 daha eklenmeli
-├── Models/
-│   ├── CityPack/    Bina modelleri, karakterler, prop'lar
-│   ├── PostApocolypsePack/ Yapilar, zombiler, silahlar
-│   ├── SurvivalPack/ Loot/prop objeler
-│   └── NaturePack/  Agaclar, kayalar, terrain
-├── Prefabs/
-│   ├── ToastItem.prefab
-│   └── UI/          NodeButton prefab henuzz olusturulmadi
-├── Settings/
-│   └── StrategyControls.inputactions
-├── Shaders/
-│   └── Water.shader (URP custom)
-└── Docs/
-    ├── GDD.md       Oyun tasarim dokumani
-    ├── ROADMAP.md   Gelistirme plani (17 faz tamamlandi)
-    └── BALANCE.md   Dengeleme referans tablosu
+├── Models/          CityPack, PostApocolypsePack, SurvivalPack, NaturePack, Buildings (105 FBX)
+├── Prefabs/         ToastItem.prefab, UI/
+├── Settings/        StrategyControls.inputactions
+├── Shaders/         Water.shader (URP custom)
+└── Docs/            GDD.md, ROADMAP.md, BALANCE.md
 ```
 
 ---
@@ -154,744 +112,198 @@ Assets/_Project/
 
 ### Sahne Root Nesneleri (DEGISTIRILEMEZ)
 
-Asagidaki 8 root nesne sahnede **ZORUNLU** olarak bulunur. Bu liste **tek kaynak**tir.
-**Yeni root nesne OLUSTURULMAZ**, **mevcut nesne SILINMEZ**, **isim DEGISTIRILMEZ** — kullanici acikca istemedikce.
+| # | Nesne Adi | Aciklama |
+|---|-----------|----------|
+| 1 | `Directional Light` | URP sun direction |
+| 2 | `GameObject` | GameManager GO — tum manager'lar burada |
+| 3 | `CameraRig` | Altinda Main Camera + MinimapCamera |
+| 4 | `GameCanvas` | Tum UI bu Canvas altinda |
+| 5 | `EventSystem` | Unity EventSystem |
+| 6 | `UIManager` | UIManager component + panel referanslari |
+| 7 | `GameInitializer` | StartGame() tetikler |
+| 8 | `Ground` | Layer: Ground (8) |
 
-| # | Nesne Adi | Aciklama | Not |
-|---|-----------|----------|-----|
-| 1 | `Directional Light` | Ana isik kaynagi | URP sun direction |
-| 2 | `GameObject` | GameManager GO — tum manager'lar burada | Asagida listesi |
-| 3 | `CameraRig` | Kamera sistemi | Altinda Main Camera |
-| 4 | `GameCanvas` | Tum UI bu Canvas altinda | Canvas + CanvasScaler |
-| 5 | `EventSystem` | Unity EventSystem | StandaloneInputModule |
-| 6 | `UIManager` | UI yonetim objesi | UIManager component + panel referanslari |
-| 7 | `GameInitializer` | Oyun baslangic kontrolcusu | StartGame() tetikler |
-| 8 | `Ground` | Yer duzlemi | Layer: Ground (8), editor'de olusturulur |
+**Yeni root nesne OLUSTURULMAZ / SILINMEZ / ISIM DEGISTIRILMEZ.**
 
-**Neden bu kurallar?**
-- Birden fazla ajan (AI/insan) ayni projede calisirken herkes ayni sahne yapisini bilir
-- Singleton manager'lar hep ayni GO (`GameObject`) uzerindedir — yeni GO uretimi YASAK
-- `Setup Ground & Camera` editor menusu bu yapiyi olusturur, elle mudahale YASAK
-- Herhangi bir script'in `new GameObject("GameManager")` veya benzeri kod uretmesi YASAK
+### GameManager Objeleri (`GameObject` root uzerinde)
 
-### GameManager Objeleri (`GameObject` root nesnesi uzerinde)
-
-Tum manager'lar **tek bir** `GameObject` root nesnesi uzerindedir. Yeni component buraya eklenir,
-yeni bir root GO **OLUSTURULMAZ**.
-
-GameManager, TimeManager, ResourceManager, GridSystem, GridVisualizer,
-BuildingPlacer, BuildingSelector, BuildingManager, ArmyManager,
-BattleManager, HeroManager, WorldMap, ExpeditionSystem,
-QuestManager, MutantAttackManager, ResearchManager, TradeSystem,
-SaveSystem, GameInitializer, WeatherSystem, RoadManager,
-SettlerManager, SettlerJobManager, WalkerManager, MapRenderer,
-GardenManager
+GameManager, TimeManager, ResourceManager, GridSystem, GridVisualizer, BuildingPlacer,
+BuildingSelector, BuildingManager, ArmyManager, BattleManager, HeroManager, WorldMap,
+ExpeditionSystem, QuestManager, MutantAttackManager, ResearchManager, TradeSystem,
+SaveSystem, GameInitializer, WeatherSystem, RoadManager, SettlerManager,
+SettlerJobManager, WalkerManager, MapRenderer, GardenManager
 
 ### GameCanvas Alt Yapisi
-- ResourceBar
-- ActionBar (Yapi, Arastir, Ordu, Hero, Gorev, Harita, Ticaret, Settler butonlari — hepsi bagli)
-- BuildMenu (buton: CommandCenter, Farm, Mine, WoodFactory, WaterWell, Barracks, Generator, Storage, Shelter, Garden)
-- TrainingPanel
-- BattleReportPanel
-- HeroPanel
-- WorldMapPanel (MapGrid + NodeInfoPanel + ExpeditionPanel)
-- QuestLogPanel (kurulum yapildi)
-- TechTreePanel (SceneSetupEditor ile otomatik)
-- FactionTradePanel (SceneSetupEditor ile otomatik)
-- SaveMenuPanel (kurulum yapildi)
-- SettlerPanel (Population/Workers — iki panel HLG, sol: bina isci listesi, sag: aktif isci listesi)
-- SettlerInfoPanel (Overlay — tiklaninca acilir, BuildingSelector ile yonetilir)
-- PausePanel (ESC ile acilir, Resume/Save-Load/Quit butonlari, runtime olusturulur)
-- DebugPanel (DebugText + DebugHUD)
-
-### Camera (`CameraRig` root nesnesi)
-- CameraRig altinda Main Camera (MainCamera tag'i atanmali, tek Audio Listener olmali)
-- ScreenShake component CameraRig uzerinde
-- StrategyCamera component Main Camera uzerinde
+ResourceBar, ActionBar, BuildMenu, TrainingPanel, BattleReportPanel, HeroPanel,
+WorldMapPanel, QuestLogPanel, TechTreePanel, FactionTradePanel, SaveMenuPanel,
+SettlerPanel, SettlerInfoPanel, PausePanel, DebugPanel, MinimapPanel
 
 ---
 
-## Tamamlanan Fazlar (1-17a)
+## Tamamlanan Fazlar (1-19)
 
-| Faz | Durum | Aciklama |
-|-----|-------|----------|
-| 1 | ✅ | Temel altyapi: Camera, Grid, Resources, GameManager, Input |
-| 2 | ✅ | Base Building: 10 bina SO, ghost preview, grid snap |
-| 3 | ✅ | UI: 15 panel, UIManager, tum toggle metotlari |
-| 4 | ✅ | Askeri: 5 birlik, egitim kuyrugu, moral sistemi |
-| 5 | ✅ | Savas: BattleCalculator, BattleTarget, sefer sistemi |
-| 6 | ✅ | Hero: 5 rol, gacha summon, ekipman, XP |
-| 7 | ✅ | Dunya Haritasi: 10x10 grid, A*, fog of war, sefer |
-| 8 | ✅ | Ileri: Tech tree, Faction/Ticaret, Quest, Mutant saldiri |
-| 9 | ✅ | Save/Load + Audio: JSON save, auto-save, SFX pool |
-| 10 | ✅ | Content: Starting buildings (GameInitializer), 3 faction, 10 tech, 15 quest, BALANCE.md |
-| 11 | ✅ | Playtest & Bugfix: 13/13 test gecti, GameConfig, SessionLogger |
-| 12 | ✅ | Bina Model Sistemi: 105 FBX, state-based model swap, hasar/tamir |
-| 13 | ✅ | Refactoring: Singleton<T>, UIPrimitiveFactory, UIColors, dead code silindi |
-| 14 | ✅ | Visual & Polish: Grid overlay, weather, highlight, damage efektleri |
-| 15 | ✅ | Settler Walker: NPC yolu yurume, nufus bazli spawn, save/load |
-| 16 | ✅ | Settler Job System: Roller, is atama, isci bazli uretim, SettlerPanelUI, SettlerInfoUI |
-| 17 | ✅ | Terrain System: MapTemplate, MapRenderer, 8 terrain type, water shader, lighting |
-| 17a | ✅ | Domain Layer: WalkerBase, WalkerManager, WalkerStateMachine, BattleCalc, PathfinderService |
-| 17b | ✅ | Toast UI Overhaul: Stacked multi-toast, slide animation, load toast suppression |
-| 18  | ✅ | Garden & Merge: 4-garden merge, NeedsRoads flag, FBX updates (Barracks/WaterWell/WoodFactory) |
-| 19  | ✅ | DebugHUD 3-tab + quest system triggers + TrainingPanel fix + playtest (v0.27.0) |
+| Faz | Aciklama |
+|-----|----------|
+| 1 | Temel altyapi: Camera, Grid, Resources, GameManager, Input |
+| 2 | Base Building: 10 bina SO, ghost preview, grid snap |
+| 3 | UI: 15+ panel, UIManager, tum toggle metotlari |
+| 4 | Askeri: 5 birlik, egitim kuyrugu, moral sistemi |
+| 5 | Savas: BattleCalculator, BattleTarget, sefer sistemi |
+| 6 | Hero: 5 rol, gacha summon, ekipman, XP |
+| 7 | Dunya Haritasi: 10x10 grid, A*, fog of war, sefer |
+| 8 | Ileri: Tech tree, Faction/Ticaret, Quest, Mutant saldiri |
+| 9 | Save/Load + Audio: JSON save, auto-save, SFX pool |
+| 10 | Content: Starting buildings, 3 faction, 10 tech, 15 quest, BALANCE.md |
+| 11 | Playtest & Bugfix: 13/13 test, GameConfig, SessionLogger |
+| 12 | Bina Model: 105 FBX, state-based model swap, hasar/tamir |
+| 13 | Refactoring: Singleton<T>, UIPrimitiveFactory, UIColors, dead code silindi |
+| 14 | Visual: Grid overlay, weather, highlight, damage efektleri, pause menu |
+| 15 | Settler Walker: NPC yolu yurume, nufus bazli spawn, animasyon |
+| 16 | Settler Job: 12 rol, auto-assign, isci bazli uretim, SettlerPanelUI |
+| 17 | Terrain + Domain: MapTemplate, MapRenderer, water shader, WalkerBase, WalkerStateMachine |
+| 17b | Toast Overhaul: Stacked multi-toast, slide animation, load toast suppression |
+| 18 | Garden & Merge: 4-garden merge, NeedsRoads flag, FBX updates |
+| 19 | DebugHUD 3-tab + quest triggers + TrainingPanel fix + playtest (v0.27.0) |
+
+**Playtest:** Faz 11 (13/13) ve Faz 19 (15/15) tam gecti.
 
 ---
 
-## Bilinen Eksikler ve Sonraki Adimlar
+## Yapilacaklar
 
-### Playtest Faz 11 (Tamamlandi) ✅
-
-Tum sistemler playtest edildi, 13/13 test gecti:
-
-| # | Test | Durum |
-|---|------|-------|
-| 1 | Oyun Baslangic | ✅ Kamera, WASD, zoom, GameManager, ResourceBar |
-| 2 | Bina Yerlestirme | ✅ CC, Farm, Mine, Barracks — toast + kaynak dususu |
-| 3 | Kaynak Uretim | ✅ Farm→Food, Mine→Metal uretimi |
-| 4 | UI Paneller | ✅ BuildMenu, BuildingInfo, Upgrade/Demolish |
-| 5 | Askeri Sistem | ✅ Barracks→Infantry egitimi, army summary |
-| 6 | Hero Sistemi | ✅ HeroPanel summon, DevMode ile TechPart boost |
-| 7 | Dunya Haritasi | ✅ WorldMapUI, node secimi, sefer sistemi |
-| 8 | Arastirma | ✅ TechTreeUI, 10 tech SO, START RESEARCH |
-| 9 | Faction Ticaret | ✅ 3 faction SO, BUY/SELL, iliski sistemi |
-| 10 | Gorev Sistemi | ✅ QuestLogUI, 5 quest SO, ACCEPT/TURN IN |
-| 11 | Mutant Saldirisi | ✅ Warning toast, attack, bina yikimi, session log |
-| 12 | Save/Load | ✅ F5 QuickSave, F9 QuickLoad, JSON |
-| 13 | Zaman Kontrolu | ✅ ResourceBarUI _timeText, hiz degisimi |
-
-**Playtest'te eklenen/duzeltilen sistemler:**
-- GameConfig SO — DevMode, DisableMutantAttacks, BoostStartingResources, SessionLog toggle
-- SessionLogger — tum oyun eventlerini dosyaya yazar (persistentDataPath/SessionLogs/)
-- DevMode ile test hizlandirma (0.1x build/production/training/research/expedition/mutant interval)
-- Tum UI panelleri runtime olusturucuya cevrildi (TrainingPanel, HeroPanel, QuestLog, TechTree, SaveMenu, FactionTrade)
-- UITheme font (Roboto) runtime panellere uygulaniyor
-- Paneller alttan 60px ActionBar padding ile aciliyor
-- Close butonlari kaldirildi, ActionBar toggle ile acilip kapaniyor
-- Toast mesajlari: mutant warning/attack/victory/defeat
-- F5/F9 QuickSave/QuickLoad eklendi
-- Training/Research speed multiplier bug'i duzeltildi (speed /= devMult)
-- SaveSystem dosya adi uyumsuzlugu duzeltildi
-- ResearchManager sahnede eksikti — eklendi
-- 3 FactionData SO olusturuldu (Scavenger Guild, Iron Legion, Green Haven)
-
-### Playtest Faz 19 (Tamamlandi) ✅
-
-| # | Test | Durum |
-|---|------|-------|
-| 1 | Oyun Baslangic | ✅ CC, Farm, Mine, Barracks, Shelter yerlestirme |
-| 2 | QuickSave/QuickLoad | ✅ F5/F9, bina/troop/hero/save duzgun yuklendi |
-| 3 | Kaynak Uretim | ✅ Farm (Food), Mine (Metal), GardenLarge (25 Food) |
-| 4 | Askeri Egitim | ✅ Infantry x3, Scout x1, Sniper x1, queue max 3 |
-| 5 | Hero Summon | ✅ Commander (Rare), TechPart harcandi |
-| 6 | Research | ✅ 4 arastirma (Basic Agriculture, Construction, Weapons, Medicine) |
-| 7 | Bina Upgrade | ✅ Shelter → Lv.2 |
-| 8 | Faction Ticaret | ✅ Green Haven ile 3 trade, iliski 21→23 |
-| 9 | Quest Accept | ✅ Build Your First Farm accepted |
-| 10 | Quest Complete | ✅ Farm insaat → quest aninda completed |
-| 11 | Quest Turn In | ✅ +50 Wood +30 Metal odul alindi |
-| 12 | Garden Merge | ✅ 4 Garden → GardenLarge, toast + log |
-| 13 | Settler Spawn | ✅ 44 settler, nufus bazli |
-| 14 | DebugHUD | ✅ 3 tab (Basic/Buildings/Events), F12 toggle |
-| 15 | Events Log | ✅ Toast eventleri DebugHUD'da goruldu |
-
-**Faz 19'da duzeltilen buglar:**
-- TrainingPanel TRAIN butonu barracks olmadan basilabiliyordu → HasBarracksFor() eklendi
-- Quest objective trigger'lari hic calismiyordu → SessionLogger'a event bridge eklendi
-- Quest accept sirada mevcut ilerleme sayilmiyordu → CheckExistingProgress() eklendi
-- QuestLogUI toast her zaman success gosteriyordu → return value kontrolu eklendi
-- Garden merge toast eksik → SessionLogger'a eklendi
-
-### SO'lar Olusturulmadi (Editor'de yapilmali)
-- `ScriptableObjects/Quests/` — 10 ek quest SO (QuestDataFactory ile) (5 mevcut, 10 daha eklenmeli)
-
-### SO'lar Olusturuldu
-- `ScriptableObjects/Buildings/` — 10 aktif bina SO ✅
-- `ScriptableObjects/Troops/` — 5 birlik SO (Infantry, Scout, Heavy, Sniper, Engineer) ✅
-- `ScriptableObjects/Heroes/` — 5 hero SO (Commander, Warrior, Ranger, Engineer, Scout) ✅
-- `ScriptableObjects/TechNodes/` — 10 teknoloji SO ✅
-- `ScriptableObjects/Factions/` — 3 faction SO ✅
-- `ScriptableObjects/Quests/` — 5 quest SO ✅
-- `ScriptableObjects/Targets/` — 5 BattleTarget SO ✅
-
-### Sahne Kurulumlari
-- `HollowGround > Setup Ground & Camera` ile ground plane + camera + lighting kalıcı olarak sahneye eklenir
-- Ground layer = "Ground" (Layer 8), BuildingPlacer._groundMask = Ground
-- CameraRig > Main Camera tag = MainCamera olmalı
-- Camera.main null olabilir → BuildingPlacer _cam ile cache edilir
-- GameInitializer artık ground oluşturmaz, sadece kamerayı merkezler
-
-### Bina Modelleri (Blender → Unity)
-- Rehber: `Docs/BLENDER_MODELING_GUIDE.md` — olculer, renk paleti, seviye stratejisi
-- Prompt serisi: `Docs/BLENDER_PROMPTS.md` — her bina icin kopyala-yapistir prompt'lar
-- Blender Z-up, Unity Y-up. FBX export: -Z forward, Y up, Apply Transform ON
-- Grid cell: 2m. 1x1 footprint max 1.9x1.9m, 2x2 footprint max 3.9x3.9m
-- Her bina: L01, L03, L05, L10 (active) + Construct + Damaged + Destroyed = 7 model
-- Vertex color: R=rust, G=moss, B=dirt. Materyaller: 6-8 slot Principled BSDF
-- **15 bina x 7 model = 105 FBX tamamlandi** (CC, Farm, Mine, Barracks, WaterWell, Generator, WoodFactory, Hospital, Storage, Shelter, Walls, WatchTower, Workshop, ResearchLab, TradeCenter)
-- **Claude** Blender modelleme icin en basarili model, **Grok 4.3** parametrik yaklasimda iyi
-- Tum bina spec'leri: `Docs/BuildingSpecs/` klasorunde (her bina icin ayri .md)
-- Bina rehberi: `Docs/BUILDING_GUIDE.md` (oyuncu + tasarim referans)
-- FBX import: `Assets/_Project/Models/Buildings/{BuildingName}/` altina
-
-### Bina Model Sistemi (Faz 12 — Tamamlandi) ✅
-
-### Refactoring Faz 13 (Tamamlandi) ✅
-
-### Visual Faz 14 (Tamamlandi) ✅
-
-### Settler Walker Faz 15-17a (Tamamlandi) ✅
-
-**Domain Layer (Scripts/Domain/):**
-- `Walkers/WalkerStateMachine.cs` — Pure C# state machine (None/WalkToTarget/WaitAtTarget/ReturnHome/Rest)
-  - `Tick(dt, gameSpeed)` → TickResult (Idle/Walking/Waiting/WaitComplete/Resting/RestComplete)
-  - `OnPathComplete()` → auto state transition (Walk→Wait, Return→Rest/None)
-  - `CaptureSnapshot()` / `RestoreFromSnapshot()` — save/load desteği
-  - No UnityEngine dependency — unit-testable
-- `Combat/BattleCalc.cs` — Pure C# battle calculation (no UnityEngine)
-- `Production/ProductionCalc.cs` — WorkerModifier, TotalProductionBonus, ModifiedInterval
-- `Pathfinding/PathfinderService.cs` — BFS with IGridDataProvider interface, 0-1 deque
-
-**WalkerBase.cs — Abstract Base:**
-- Grid-based movement, path following, rotation smoothing
-- `Tick(dt, gameSpeed)` called by WalkerManager
-- `TickMovement()` — cell-to-cell smooth lerp, Quaternion.Slerp rotation
-- `FindPath()` — WalkerManager path cache → RoadManager fallback
-- `SetAnimSpeed()` — Animator CrossFade (Walk/Idle via Speed hash)
-- Cell occupancy reporting via WalkerManager
-
-**WalkerManager.cs — Central Tick Loop:**
-- Singleton, GameManager GO uzerinde
-- Single `Update()` drives all walkers (no individual MonoBehaviour updates)
-- Path cache: `Dictionary<(start,end), List<Vector2Int>>`, invalidated on road changes
-- Grid-cell occupancy: `Dictionary<Vector2Int, WalkerBase>` prevents stacking
-- Recycle pool: `Stack<SettlerWalker>` for object reuse (GetRecycled/Recycle)
-- `Register()`/`Unregister()` — walker lifecycle
-
-**SettlerWalker.cs : WalkerBase:**
-- Uses WalkerStateMachine for state management
-- Work cycle: WalkToTarget → WaitAtTarget → ReturnHome → Rest → repeat
-- `AssignJob(role, building)` / `ReassignJob(role, building)` — job assignment
-- `Dispatch(origin, dest, wait, onDone)` — generic walk dispatch
-- `ResetForReuse()` — pool recycle, ClearJob for destruction
-- Save: `CaptureSave()` / `RestoreFromSave()` — SettlerWalkerSave format preserved
-
-**SettlerManager.cs — Nufus Bazli Spawn:**
-- Singleton, GameManager GO uzerinde
-- Her 5 saniyede (`SettlerSpawnCheckInterval`) nufus kontrol eder
-- Nufus = sum(Aktif bina PopulationCapacity x Level)
-- Hedef settler sayisi = `floor(population * SettlersPerPopulation)`, max `MaxSettlers`
-- `GameConfig.DisableSettlers` ile tamamen kapatilabilir
-- Spawn noktasi: rastgele aktif bina kapi hucresi
-- Placeholder gorsel: Capsule + Sphere (CityPack FBX ile degistirilecek)
-- `OnSettlerSpawned` / `OnSettlerRemoved` eventleri
-
-**RoadManager Public API:**
-- `FindPublicPath(start, end)` — 0-1 BFS, mevcut yollari tercih eder
-- `GetActiveBuildingDoorCells()` — tum aktif bina kapi hucreleri
-- `GetAllRoadCells()` — HashSet<Vector2Int> referans
-- `HasRoads` — yol var mi kontrolu
-
-**GameConfig Settler Ayarlari:**
-- `DisableSettlers` — settler spawn'ini tamamen kapatir (developer toggle)
-- `SettlersPerPopulation` (1.0) — nufus basina settler orani
-- `MaxSettlers` (50) — maksimum settler sayisi
-- `SettlerMoveSpeed` (2) — hareket hizi
-- `SettlerIdleTime` (3) — kapida bekleme suresi
-- `SettlerSpawnCheckInterval` (5s) — nufus kontrol sıklığı
-- `SettlerWorkDuration` (8f) — is yerinde bekleme suresi
-- `SettlerRestDuration` (5f) — dinlenme suresi
-
-**Save/Load:**
-- `SettlerWalkerSave`: GridX, GridZ, State, WaitTimer
-- SaveSystem: `CaptureSettlers()` / `ApplySettlers()`
-- GameInitializer: `ResetSettlers()` ile yeni oyunda temizler
-- Load sirasinda: settler pozisyon ve state geri yuklenir, visual yeniden olusturulur
-
-**Yapilacaklar (Faz 18+):**
+### Eksikler
+- [ ] ScriptableObjects/Quests/ — 10 ek quest SO (QuestDataFactory ile)
 - [ ] Garden: L03/L05/L10/Damaged/Destroyed FBX modelleri
 - [ ] Garden: Save/Load merge state
 - [ ] Garden: SettlerJobManager worker role (Farmer for Garden)
-- [ ] Garden: BuildingSpecs dokumani (Docs/BuildingSpecs/Garden.md)
-- [ ] Settler sayisi DebugPanel'de gosterim
-- [ ] Fazladan karakter modellerini SettlerModels dizisine ekleme (Worker harici 4 karakter daha var)
-- [ ] NPC Visual Feedback (Faz 17b): toz particle, ayak sesi SFX, hasat animasyonu
-- [ ] SettlerPanel Enrichment (Faz 17c): ozet satiri, bina bazli dagilim, rol pasta grafik
-- [ ] Quick Tooltips (Faz 17d): bina hover, settler tikla tooltip
-
-**Settler Animasyon Sistemi:**
-- CityPack karakter modelleri: Worker, Adventurer, Suit (Business Man) → 3 FBX aktif (CharacterArmature iskeleti)
-- Man (HumanArmature) ve Woman (HumanArmature) kaldırıldı — farklı iskelet, Generic rig'de uyumsuz
-- FBX import: Generic rig + `avatarSetup=1` (CreateAnAvatarFromThisModel) ZORUNLU
-- `SettlerAnimationSetup` editor araclari:
-  - `Fix: Enable Avatar on All Characters` — tum CityPack karakterlerde Avatar uretimini aktif eder
-  - `Fix: Rebuild Clips + Controller` — FBX clip'lerini bake eder, SettlerController olusturur
-  - `Test: Spawn Animated Settler in Scene` — sahnede test settler spawn eder, Avatar/Animator dogrulama
-  - `Test: Verify Model Hierarchy` — FBX hiyerarsi, SMR bone, Avatar validasyon
-- BakeFreshClip: PreviewAnimationClip (type 1108) → AnimationClip (type 74) donusumu AnimationUtility ile
-- Walk clip: loopTime=True, Idle clip: loopTime=False
-- SettlerController: Speed parametresi, Idle↔Walk transition (0.15s blend)
-- SettlerWalker.SetAnimSpeed(): CrossFade + SetFloat birlikte calisir
-- Runtime material fix: Standard shader → URP/Lit (FixMaterials)
-- **Kritik**: FBX Instantiate sonrasi Animator/Avatar kaybolur → kaynak asset'ten `model.GetComponent<Animator>().avatar` ile geri alinir
-- **Kritik**: `DestroyImmediate()` kullanilmali (`Destroy()` frame sonuna bekler, Animator bosta kalir)
-- **Kritik**: `Animator.Rebind()` setup sonrasi cagrilmali — skeleton binding refresh
-- Editor menu: `HollowGround/Settlers/...` altinda tum araclartoplandi
-
-**Runtime Grid Overlay:**
-- `GridOverlayRenderer.cs` — LineRenderer ile yerlestirme modunda grid gorunur
-- Snake/zigzag pattern (2 LineRenderer: H+V), camera-relative culling (30 hucre)
-- Smooth fade-in/out (0.3s), bina footprint highlight (yesil/kirmizi, rotation destekli)
-- `BuildingPlacer.CurrentRotation` property eklendi
-- Grid lines hucre koselerine cizilir (WorldPos = center - halfCell), footprint highlight merkez bazli
-
-**Weather System + Atmosfer:**
-- `WeatherSystem.cs` — 5 hava durumu: Clear, LightRain, HeavyRain, DustStorm, RadiationStorm
-- Auto-cycle 60-180s, weighted random (40/20/10/20/10%), 5s smooth transition
-- Per-weather: post-processing (vignette, saturation, color filter, chromatic aberration)
-- Per-weather: fog color/density, ambient lighting, particle systems
-- Events: OnWeatherChanged, OnRadiationStormStart, OnRadiationStormEnd
-- AtmosphereEffects: dust/fog varsayilan aktif, yeni Embers particle (kor parçaciklari)
-- PostProcessingSetup: SetColorFilter(), SetChromaticAberration() API eklendi
-
-**Bina Secim + Hasar Efektleri:**
-- `BuildingHighlight.cs` — 1.05x outline mesh, URP Unlit transparent, pulsing alpha
-- `DamageEffects.cs` — 3 fire emitter (additive blend), 2 smoke emitter, explosion burst
-- `ScreenShake.cs` — Perlin noise shake, LateUpdate, exponential decay
-- Auto-add: Building.Initialize() → BuildingHighlight + DamageEffects
-
-**Particle Shader Fix:**
-- Tum runtime ParticleSystem'ler `Universal Render Pipeline/Particles/Unlit` shader kullanmali
-- `ApplyURPParticleMaterial()` helper her particle olusturulduktan hemen sonra cagrilmali
-- Built-in `Particles/Standard Unlit` URP'de pembe/magenta flash verir
-
-**Pause Menu (ESC):**
-- ESC tuşu ile pause/resume toggle
-- Runtime olusturulan PausePanel: Resume, Save/Load, Quit butonlari
-- SaveMenuUI'ye Back butonu eklendi
-- GameManager.TogglePause() + TimeManager.TogglePause() entegrasyonu
-
-**Merkezi Altyapi Oluşturuldu:**
-- `Singleton<T>` base class: `protected set Instance`, `OnDestroy` ile Instance temizleme, `Destroy(gameObject)` duplicate koruması
-- `UIPrimitiveFactory`: 10+ static metod (CreateUIObject, AddThemedText, AddImage, CreateButton, StretchFull, SetAnchors, SetupPanelBackground, AddStandardVLG, AddRowHLG, AddLayoutElement)
-- `UIColors`: PanelColors struct (PanelBg, RowBg, Text, Muted, Ok, Gold, Danger, Warn) + GetRarityColor, GetNodeColor, GetStateColor + Fog, Empty, Selected, PanelInner, TextDim
-- `CostEntryHelper.Costs()`: Merkezi maliyet oluşturma utility
-
-**Factory'ler Merkezi Utility'ye Taşındı:**
-- BuildingDataFactory, TroopDataFactory, TechNodeFactory → lokal `Costs()` metodları kaldırıldı, `CostEntryHelper.Costs()` kullanılıyor
-
-**4 UI Panel UIPrimitiveFactory + UIColors'a Taşındı:**
-- FactionTradeUI, SaveMenuUI, TechTreeUI, WorldMapUI → tüm lokal CreateUIObject/AddText/CreateButton/StretchFull/SetAnchors metodları kaldırıldı
-- Tüm inline `static readonly Color` tanımları UIColors'a taşındı
-- BuildingInfoUI state renkleri → `UIColors.GetStateColor()`
-- UIManager QuickSave/Load renkleri → UIColors.Default.Ok/Warn
-- ToastUI bg → UIColors.Default.PanelBg
-- UIPrimitiveFactory buton renkleri → UIColors.Default
-
-**Magic Numbers → GameConfig SO'ya Taşındı:**
-- `DemolishRefundRatio` (0.5f) — Building.cs Demolish()
-- `RepairCostRatio` (0.5f) — Building.cs Repair()
-- `WallDefenseBonus` (20) — MutantAttackManager CalculateDefensePower()
-- `DefeatTroopLossRatio` (0.6f) — MutantAttackManager ExecuteWave()
-- `ArmyManager.CalculateArmyPower()` → `* 10` hard-code yerine `TroopData.BaseAttack` (cache pattern ile)
-- `GameConfigCreator` yeni alanları içeriyor
-
-**Ölü Kod Silindi:**
-- `GameEvent.cs` — C# `event Action<T>` kullanılıyor
-- `PlacementValidator.cs` — GridSystem direkt kullanılıyor
-
-**ToastUI Yeniden Yazıldı:**
-- Singleton<T> inheritance kaldırıldı → basit `_instance` field
-- `FindAnyObjectByType<ToastUI>(FindObjectsInactive.Include)` ile lazy activation
-- `EnsureContainer()` ile runtime container oluşturma
-- ToastPanel sahnede her zaman aktif olmalı
-
-**SessionLogger Event Subscription Düzeltmesi:**
-- `SubscribeEvents()` artık `EnableSessionLog`'dan bağımsız — toast'lar SessionLog kapalıyken de çalışıyor
-
-**Toast Mesajları Eklendi (15+ yeni mesaj):**
-- Bina: placed, built, upgraded, damaged, repaired, demolished, destroy
-- Kaynak eksik: "Not enough... Food 5 short, Metal 10 short"
-- CC level eksik: "Need Command Center Lv.2!"
-- Upgrade/Repair kaynak eksik detaylı mesajlar
-- Mutant: warning, attack, victory, defeat
-- Araştırma tamam, sefer varış
-- BuildMenuUI maliyet metni eksik kaynakları kırmızı gösteriyor
-- BuildMenuUI butonları her zaman tıklanabilir — eksik kaynak toast ile gösteriliyor
-- **BuildingData.BuildingModels** struct: 7 GameObject slot (Construct, L01, L03, L05, L10, Damaged, Destroyed)
-- **Level threshold**: L01 (lv1-2), L03 (lv3-4), L05 (lv5-9), L10 (lv10)
-- **State-based model swap**: Building.cs `UpdateModel()` state'e gore dogru modeli instantiate eder
-  - Constructing → ConstructModel (fallback: L01)
-  - Active/Upgrading → LevelModels (threshold'a gore)
-  - Damaged → DamagedModel (fallback: level model)
-  - Destroyed → DestroyedModel (2.5sn gosterim → otomatik kaldirma)
-- **Z-fighting fix**: Model `localPosition.y = 0.015f` (1.5cm offset)
-- **Ghost placement fix**: BuildingPlacer `_cachedCoords` / `_cachedWorldPos` ile ghost ve yerlestirme uyumu
-- **Hasar/Tamir sistemi**: `ApplyDamage()` → Damaged state, `Repair()` → kaynak harcayip Active'e donme
-- **MutantAttackManager**: Yenilgi durumunda `ApplyBuildingDamage()` hasar sayisini dondurur, toast ile REPAIR uyari
-- **BuildingInfoUI**: SmartPosition (bina ekran pozisyonuna gore panel konumlanir, binayi ortemez), Repair butonu, state renk kodlamasi
-- **SessionLogger**: OnDamaged/OnRepaired eventleri loglaniyor
-- **Editor araçları**:
-  - `HollowGround/FBX/Configure All Building FBX Imports` — 105 FBX toplu import ayari
-  - `HollowGround/Models/Bind All Building Models` — FBX → BuildingData SO otomatik baglama
-  - `HollowGround/Models/Show Binding Report` — her bina icin 7/7 durum raporu
-- **UIThemeTag**: MakeLabel/MakeButton helper'lari otomatik UIThemeTag ekler (HeaderText, DangerButton, CostText, vs.)
-
-### Gorsel/Polish (Editor isi, script gerektirmez)
-- Post-processing (bloom 0.2, vignette 0.2, filmgrain kapalı) — PostProcessingSetup runtime ✅
-- Atmosfer efektleri varsayılan kapalı (dust/fog particles) — AtmosphereEffects inspector'dan açılır ✅
-- Bina inşaat animasyonu — BuildingConstructionAnimation otomatik eklenir ✅
-- 15+ bina modeli sahne yerlesimi ✅
+- [ ] Garden: BuildingSpecs dokumani
+- [ ] NPC Visual Feedback: toz particle, ayak sesi SFX, hasat animasyonu
+- [ ] SettlerPanel Enrichment: ozet satiri, bina bazli dagilim, rol pasta grafik
+- [ ] Quick Tooltips: bina hover, settler tikla tooltip
 - [ ] 5+ karakter modeli sahne yerlesimi
 - [ ] Sahne dekorasyonu ve atmosfer
 
-### Potansiyel Bug'lar
-- `GameInitializer.Start()` ile `GameManager.StartGame()` cagrilir — sahnede yoksa `RuntimeInitializeOnLoadMethod` ile otomatik olusturulur
-- `BaseStarter` kaldirildi — baslangic binalari GameInitializer uzerinden yerlestirilir (SerializeField + PlaceStartingBuildings)
-- WorldMap.GenerateDefaultMap() runtime'da SO olusturur (ScriptableObject.CreateInstance) — save/load ile uyumlu degil
-- RoadManager.RemoveOrphanedRoads() bina yikildiktan 30s sonra calismiyor — BFS connectivity check debug edilmeli
-- RoadManager.HandleManualRoadRemoval() aktif/bagli yollari da silebiliyor — sadece orphan yollar silinmeli
-- Yol olan hucrelere bina yerlestirilebiliyor — BuildingPlacer'da road cell kontrolu eklenmeli
-
 ### Acik Issue'lar
-- **#34** Training queue not restored on load — ApplyArmy troop count restore ediyor ama training queue kaybolur
-- **#35** Building ProductionTimer save/load eksik — BuildingSave'de field var ama capture/restore edilmiyor
-- **#36** World Map & Expedition system rework — tasarim ve implementasyon ayri faz olarak planlanmali
-- **#37** RoadManager orphan road cleanup 30s sonra calismiyor — BFS connectivity check
-- **#38** Manual road removal aktif/bagli yollari da silebiliyor — sadece orphan yollar silinmeli
-- **#39** Yol olan hucrelere bina yerlestirilebiliyor — BuildingPlacer road cell check eksik
-- **#40** WorldMap.GenerateDefaultMap runtime SO — save/load ile uyumsuz
+- **#34** Training queue not restored on load
+- **#35** Building ProductionTimer save/load eksik
+- **#36** World Map & Expedition system rework
+- **#37** RoadManager orphan road cleanup calismiyor
+- **#38** Manual road removal aktif/bagli yollari da silebiliyor
+- **#39** Yol olan hucrelere bina yerlestirilebiliyor (partially fixed in v0.25.0)
+- **#40** WorldMap.GenerateDefaultMap runtime SO
+
+### Gorsel/Polish (Editor isi)
+- [x] Post-processing, atmosfer, bina insaat animasyonu, 15+ bina modeli sahne yerlesimi
+- [ ] Karakter modelleri, sahne dekorasyonu
 
 ---
 
 ## Kesfedilen Tuzaklar (Discoveries)
 
-1. `Dictionary<K,V>` Unity'de serialize olmaz → `List<Entry>` kullanildi (BuildingData.CostEntry, MutantWave.PenaltyEntry)
-2. `ResourceType?` (nullable enum) serialization sorunu → `bool HasProduction` alani eklendi
-3. GameCanvas'a Layout Group EKLENMEZ — cocuklarin boyutunu bozar, anchor'lari kirar
-4. Canvas Scaler: `Scale With Screen Size`, Reference: 1920x1080. Game penceresinde Free Aspect yerine 16:9
-5. TMP_Text ve Image ayni objede OLAMAZ — ayri parent/child yapilmali
-6. Iki Audio Listener olmamali — Main Camera silinip CameraRig altindaki kameraya MainCamera tag'i atanmali
-7. CommandCenterLevelRequired: 0 olmali ki ilk bina yerlestirilebilsin
-8. GridSystem `_cells` dizisi Edit mode'da null — Editor script'te `Application.isPlaying` kontrolu eklendi
-9. SO dosyalarinda Turkce karakter dosya adlari Unity'de bozulur
-10. `FindObjectOfType` Unity 6'da deprecated → `FindAnyObjectByType`
-11. `new() { new NestedType }` seklinde list initialization Editor script'lerde nested type cozemiyor → acik `List<FactionData.TradeOffer>` yazilmali
-12. `FindFirstObjectByType` Unity 6'da deprecated (instance ID ordering) → `FindAnyObjectByType` kullanilmali
-13. `FindObjectsByType(FindObjectsSortMode)` Unity 6'da deprecated → `FindObjectsByType<T>()` veya `FindObjectsByType<T>(FindObjectsInactive)` kullanilmali
-14. Ground'u runtime'da oluşturma → editor'de kalıcı oluştur (HollowGround > Setup Ground & Camera). Aksi takdirde çift ground, z-fighting, layer sorunu
-15. BuildingPlacer'da Camera.main null dönebilir → `_cam` field ile Awake'de cache et
-16. AtmosphereEffects varsayılanları agresif olmamalı: fog density 0.004, dust/fog particles kapalı
-17. GroundManager + GameInitializer aynı anda ground üretmez — sadece bir tanesi yapmalı
-18. Unity 6000.4'te `ModelImporter.normals`, `tangents`, `importColors`, `generateColliders`, `generateSecondaryUVSet`, `materialLocation`, `normalSmoothingSource` kaldırılmış — `SerializedProperty` ile erişilmeli
-19. BuildingPlacer ghost pozisyonu ile yerlestirme koordinati farkli olabilir → `_cachedCoords` / `_cachedWorldPos` ile ghost frame'indeki koordinat kullanilmali
-20. MutantAttackManager defeat'te `ApplyBuildingDamage()` → hasarli bina uretimi durur, kullanici Repair ile geri donmeli. SessionLogger'a OnDamaged/OnRepaired eklenmeli
-21. `Setup UI Panels` sadece kendi olusturdugu panelleri siler (`DestroyExisting`), diger paneller (ResourceBar, BuildMenu, vs.) dokunulmaz
-22. 1x1 binalar ground plane ile z-fighting yapar → model `localPosition.y = 0.015f` offset
-23. Inactive GameObject'te `Awake()` çağrılmaz → Singleton Instance null kalır. ToastUI gibi UI panelleri her zaman aktif olmalı
-24. `SessionLogger.SubscribeEvents()` SessionLog kapalıyken de çağrılmalı — yoksa event-driven toast'lar çalışmaz
-25. `Singleton<T>.Destroy(gameObject)` tüm manager'lar aynı GO üzerinde olduğu için güvenli — duplicate GO'yu tamamen siler. `Destroy(this)` sadece component siler, Instance referansı kopar
-26. `UIPrimitiveFactory.AddThemedText()` TMP_Text `richText = true` varsayılan — renkli maliyet metni çalışır
-27. `BuildMenuUI.SelectBuilding()` paneli `gameObject.SetActive(false)` ile kapatırsa PanelManager state'i bozulur → `UIManager.Instance.ToggleBuildMenu()` kullanılmalı
-28. `GridOverlayRenderer.WorldPos()` hucre merkezi değil köşe vermeli: `GetWorldPosition(x,z) - halfCell`. Footprint highlight `GetWorldPosition` direkt kullanmalı (zaten merkez verir), ekstra offset YASAK
-29. `TimeDisplayUI.cs` kaldirildi — zaman gosterimi ResourceBarUI'da `_timeText` SerializeField uzerinden. UI text'leri runtime'da otomatik olusturmak YERINE manuel SerializeField ile baglamak tercih edilir
-30. Blender modelleri `-Z forward` export edildigi icin kapı yönü: rotation 0=-Z, 1=-X, 2=+Z, 3=+X. `+Z` varsayılırsa yollar bina arkasında oluşur
-31. `Singleton<T>.OnDestroy()` virtual — override edenler `base.OnDestroy()` cagirmali yoksa Instance temizlenmez
-32. RoadVisualizer coroutine'leri destroyed tile Transform'a erisimeden once null check yapmali — `MissingReferenceException`
-33. FBX Instantiate sonrasi Animator ve Avatar kaybolur — `Instantiate()` FBX modelini klonlarken Animator component'i dahil edilmez veya Avatar=null olur. Kaynak asset'ten `model.GetComponent<Animator>().avatar` ile okunup instance'a atanmali
-34. CityPack FBX import'ta `avatarSetup: 0` (None) geliyor — Generic rig icin Avatar uretimi zorunlu. `avatarSetup: 1` (CreateAnAvatarFromThisModel) olarak degistirilmeli. Menu: `HollowGround > Settlers > Fix: Enable Avatar on All Characters`
-35. `AnimationUtility.SetEditorCurve()` ile bake edilen clip'ler PreviewAnimationClip (type 1108) yerine AnimationClip (type 74) olur — runtime'da calisir.Ama FBX'ten dogrudan `LoadAllAssetsAtPath()` ile alinan preview clip'ler calismaz
-36. FBX Instantiate sonrasi `Destroy()` ile Animator silmek yerine `DestroyImmediate()` kullanilmali — `Destroy()` frame sonuna bekler, arada Animator bosta kalir
-37. `Animator.Rebind()` setup sonrasi cagrilmali — skeleton binding refresh olmadan animasyon oynamaz
-38. `OnMouseDown()` + `BuildingSelector.Update()` ayni frame'de race condition: OnMouseDown panel açar, BuildingSelector aynı click'i isleyip paneli kapatır. Çözüm: OnMouseDown sil, tüm selection BuildingSelector.TrySelect() üzerinden tek merkezde yapılmalı
-39. `LoadSettlers()` path'inde SphereCollider eklenmezse save/load sonrasi settler tıklanamaz — CreatePoolSettler() ile LoadSettlers() collider setup aynı olmalı
-40. `SettlerManager.EnsureWalkerManager()` sadece `WalkerManager.Instance` null kontrolu yapıyor — WalkerManager henüz Awake çalışmamışsa Instance null olur, yeni GO + duplicate WalkerManager oluşturulur, Singleton `Destroy(gameObject)` ile **tüm GameManager GO'sunu siler**. Çözüm: `FindAnyObjectByType<WalkerManager>()` ile sahne kontrolu de yapilmali
-41. `HasEnoughResources()` ve `CanAffordBuilding()` ResourceManager.Instance null oldugunda `false` donerse butonlar hic enable olmaz. Timing issue: BuildMenuUI OnEnable ResourceManager'dan once calisabilir. Cozum: null ise `true` don (optimistik) — 1 sn polling ile tekrar kontrol edilir
-42. `BuildMenuFixer.cs` buton isimleri case-sensitive — sahnedeki buton adi `BtnCommandCenter` (buyuk B) ama aranan `btnCommandCenter` (kucuk b). Case-insensitive lookup kullanilmali
-43. `git checkout HEAD -- scene.unity` sahneyi commit'teki haline dondurur — local (kaydedilmemis) sahne degisiklikleri kaybolur. GameManager GO ve SerializeField baglantilari kalici olarak kaybolabilir
-44. `OnConstructionComplete` callback içinde `DestroyImmediate` çağrılırsa, callback'ten dönüş sonrası `UpdateModel()` MissingReferenceException verir. Çözüm: merge'i 1 frame geciktir (coroutine) veya `if (!this) return;` null check
-45. 2x2 bina merkezi: `GetWorldPosition(bottomLeft)` hucre merkezi verir. 2x2 icin `cellSize * 0.5f` offset gerekir, `cellSize * 1.0f` degil (baska binaya binme sorunu)
-46. Domain katmaninda `ToastUI.Show()` cagirmak yerine event firlatmali — UI katmani (SessionLogger) event'i dinleyip toast gosterir. GardenManager ornegi: OnGardenMerged event → SessionLogger subscribes
-47. `QuestLogUI.AcceptSelectedQuest()` toast'u her zaman gosteriyor, `AcceptQuest` basarisiz olsa bile — return value kontrol edilmeli
-48. Quest kabul edilip `CheckExistingProgress` ile aninda Completed olursa, QuestLogUI Available tab'da gorev kaybolur — kullanici "kabul edilmedi" sanir. Toast ile "Quest complete!" bildirilmeli
-49. `TrainingPanelUI.RefreshAll()` butonlarin `interactable` degerini sadece `CanAffordTraining` ile belirler — barracks/seviye kontrolu de eklenmeli (`HasBarracksFor`)
-50. `Resources.LoadAll<TroopData>("Troops")` bazen cache'den az donduruyor — debug log ile yuklenen troop sayisi dogrulanmali
+En sik tekrar eden sorunlar — yeni kod yazarken dikkat:
+
+1. `Dictionary<K,V>` serialize olmaz → `List<Entry>`
+2. GameCanvas'a Layout Group EKLENMEZ — boyut/anchor bozar
+3. TMP_Text ve Image ayni objede OLAMAZ
+4. Iki Audio Listener olmamali — tek MainCamera tag
+5. Ground'u runtime'da olusturma → editor'de kalici (`Setup Ground & Camera`)
+6. Camera.main null donebilir → field ile cache et
+7. `Singleton<T>.Destroy(gameObject)` ayni GO'daki tum manager'lar icin guvenli
+8. `BuildMenuUI.SelectBuilding()` → `UIManager.ToggleBuildMenu()` kullanmali, `SetActive(false)` YASAK
+9. Blender `-Z forward` export → kapi yonu: rotation 0=-Z, 1=-X, 2=+Z, 3=+X
+10. FBX Instantiate sonrasi Animator/Avatar kaybolur → kaynak asset'ten al
+11. `DestroyImmediate()` kullanilmali (Animator FBX cleanup)
+12. `Animator.Rebind()` setup sonrasi cagrilmali
+13. OnMouseDown + BuildingSelector ayni frame race condition → tek merkezde yonet
+14. Domain katmaninda ToastUI.Show() YASAK → event firlat
+15. 2x2 bina merkezi: `cellSize * 0.5f` offset, `cellSize * 1.0f` degil
+16. `Resources.LoadAll<T>()` disk I/O yapar → cache pattern kullan
+17. `ScriptableObject.CreateInstance<T>()` runtime'da YASAK (save/load uyumsuz)
+18. Inactive GameObject'te `Awake()` cagrilmaz — UI panelleri her zaman aktif olmali
+19. `SessionLogger.SubscribeEvents()` SessionLog kapaliyken de cagrilmali
+20. Roboto font SADECE Latin — emoji/Unicode sembol YASAK → ASCII kullan
+21. `OnConstructionComplete` callback icinde `DestroyImmediate` → MissingReferenceException, 1 frame geciktir
+22. `HasEnoughResources()` null ise optimistik `true` don (timing fix)
+23. `git checkout HEAD -- scene.unity` SerializeField baglantilarini kalici kaybeder
+24. `LoadSettlers()` SphereCollider eklemeli — CreatePoolSettler ile ayni setup
 
 ---
 
-## UI Layout Kurallari
-
-- PausePanel, SaveMenu gibi paneller **default kapali** olmali (SetActive false)
-- Buton gruplari icin parent'a `Horizontal Layout Group` veya `Vertical Layout Group` ekle
-- Child Force Expand: Width ✅ Height ❌ (genellikle)
-- Her butonun `Layout Element`: Min Width 120, Min Height 40
-- Buton onClick baglantisi: Obje surukle → dropdown'dan script/metot sec
-- `BuildMenuUI` gibi component'lerde SerializeField ile referans baglanir
-
-## Panel Yonetim Sistemi (PanelManager)
-
-- **Tek panel kurali**: Ayni anda sadece 1 ana panel acik olabilir. Yeni panel acilirsa onceki otomatik kapanir
-- **PanelManager**: Tum paneller string ID ile kaydedilir, Toggle/OpenOverlay/CloseCurrent ile yonetilir
-- **Overlay paneller**: BuildingInfo, BattleReport, Toast, ResourceBar — diger panellerle eszamanli acilabilir
-- **Panel gecmisi (stack)**: Panel acildiginda onceki panel history'ye eklenir, CloseCurrent ile geri donulur
-- **ESC davranisi**: Panel aciksa → once paneli kapat, panel yoksa → pause menuyu ac
-- **ActionBar highlight**: Aktif panelin butonu yesil (`_btnActive`) renkte, digerleri koyu (`_btnNormal`)
-- **Pause menü**: Tum panelleri kapatir, Save/Quit alt-panel olarak calisir
-
----
-
-## Dengeleme Kaynaklari
-
-Tum dengeleme degerleri `Docs/BALANCE.md` dosyasinda:
-- Bina maliyetleri ve uretim oranlari (seviye 1-5 ornekleri)
-- Asker egitim maliyeti ve guc referansi
-- Mutant dalga gucleri (1-10)
-- Hero gacha oranlari (Common 50% → Legendary 1%)
-- Faction baslangic iliskileri
-- Teknoloji arastirma maliyetleri
-- Quest odul referansi
-- Kaynak baslangic degerleri
-
----
-
-## Mimari Kurallar (Architecture Rules)
-
-Bu kurallar tekrarlanan hataları ve gereksiz kod tekrarını önlemek için Faz 11 sonrası eklenmiştir.
+## Mimari Kurallar
 
 ### Manager Singleton Pattern
-- Tüm Manager'lar `Singleton<T>` base class'ından inherit olmalıdır: `public class XxxManager : Singleton<XxxManager>`
-- `Awake()` override gerekirse `protected override void Awake() { base.Awake(); ... }` şeklinde yazılmalı
-- Kendi `Instance` property'si YAZILMAZ — `Singleton<T>` otomatik sağlar
-- `DontDestroyOnLoad` gerekirse override Awake içinde `base.Awake()` sonrası eklenir
+- `public class XxxManager : Singleton<XxxManager>`
+- `Awake()` override: `protected override void Awake() { base.Awake(); ... }`
+- Kendi Instance property'si YAZILMAZ
 
 ### UI Primitif Kodlama
-- Yeni UI panel oluştururken `UIPrimitiveFactory` static metodları kullanılmalı:
-  - `UIPrimitiveFactory.CreateUIObject()` — UI GameObject oluşturma
-  - `UIPrimitiveFactory.AddThemedText()` — Theme font'lı TMP_Text
-  - `UIPrimitiveFactory.AddText()` — Fontsuz TMP_Text
-  - `UIPrimitiveFactory.AddImage()` — Image component
-  - `UIPrimitiveFactory.CreateButton()` — Tam buton (bg + label + onClick)
-  - `UIPrimitiveFactory.StretchFull()` — RectTransform stretch
-  - `UIPrimitiveFactory.SetAnchors()` — Anchor ayarı
-  - `UIPrimitiveFactory.SetupPanelBackground()` — Panel bg + CanvasGroup temizleme
-  - `UIPrimitiveFactory.AddStandardVLG()` — Standart VerticalLayoutGroup
-  - `UIPrimitiveFactory.AddRowHLG()` — Satır HorizontalLayoutGroup
-  - `UIPrimitiveFactory.AddLayoutElement()` — LayoutElement ekleme
-- **ASLA** `AddText`, `StretchFull`, `CreateUIObject` gibi metodları panel script'lerde tekrar tanımlama
+- `UIPrimitiveFactory` static metodlari kullan: CreateUIObject, AddThemedText, AddText, AddImage,
+  CreateButton, StretchFull, SetAnchors, SetupPanelBackground, AddStandardVLG, AddRowHLG, AddLayoutElement
+- Panel script'lerde tekrar tanimlama YASAK
 
 ### Renk Tanımları
-- Tüm UI renkleri `UIColors` static class'ında tanımlanır
-- `UIColors.Default.PanelBg`, `UIColors.Default.Ok`, `UIColors.Default.Gold` vb.
-- Panel script'lerde `static readonly Color` tanımı YAPILMAZ
-- Hero rarity renkleri: `UIColors.GetRarityColor(rarity)`
-- Map node renkleri: `UIColors.GetNodeColor(type)`
+- Tum UI renkleri `UIColors` static class'inda — inline `static readonly Color` YASILMAMALIDIR
+- `UIColors.Default.PanelBg`, `.Ok`, `.Gold`, `.Danger`, `.Warn` vb.
 
-### Domain→UI Ayrımı
-- Domain logic (Building, MutantAttackManager, BattleManager vs.) **ASLA** doğrudan `ToastUI.Show()` çağırmaz
-- Domain sınıfları event fırlatır: `OnConstructionComplete`, `OnDamaged`, `OnWaveWarning` vb.
-- Toast mesajları UI katmanında (SessionLogger, UI paneller) event subscription ile gösterilir
-- Sadece UI script'ler (TrainingPanelUI, UIManager vs.) ToastUI çağırabilir
+### UI Theme
+- Her runtime panel `BuildUI()` sonunda `UIPrimitiveFactory.ApplyThemeStyles(transform)` cagirmali
+- Text tag'lari: HeaderText, BodyText, LabelText, CostText, WarningText, DangerText
+- Buton tag'lari: ConfirmButton, DangerButton, ActionBarButton, BuildingCardButton, TabButton
 
-### Resources.LoadAll Kullanımı
-- `Resources.LoadAll<T>()` her çağrıda disk I/O yapar → Update/tick içinde YASAK
-- Cache pattern: `private T[] _cachedData; private T[] AllData => _cachedData ??= Resources.LoadAll<T>("path");`
-- `GameConfig.Instance` zaten singleton SO'dur, her frame erişimi güvenlidir
-
-### Editor Factory Costs Helper
-- `CostEntryHelper.Costs(params object[])` merkezi utility kullanılmalı
-- BuildingDataFactory, TroopDataFactory, TechNodeFactory'de lokal `Costs()` metodu YAZILMAZ
-
-### Runtime ScriptableObject Oluşturma
-- `ScriptableObject.CreateInstance<T>()` runtime'da YASAK (save/load ile uyumsuz)
-- Runtime verileri için plain C# class/struct kullanılır
-- SO'lar sadece editörde tasarım verisi için kullanılır
-- Örnek: `MutantWaveData` (plain class) vs `MutantWave` (SO, editör only)
-- `MapNodeData` SO'dan plain class'a cevrildi — runtime SO uretimi kaldirildi
-
-### Ölü Kod (Dead Code)
-- Kullanılmayan script dosyaları projede tutulmaz
-- `GameEvent.cs` kaldırıldı — C# `event Action<T>` kullanılıyor
-- `PlacementValidator.cs` kaldırıldı — `GridSystem` direkt kullanılıyor
-
-### Hard-coded Magic Numbers
-- Birlik gücü çarpanı: `TroopData.BaseAttack` üzerinden hesaplanmalı, `* 10` hard-code YASAK
-- Bina tamir/para iadesi oranları `BuildingData` veya `GameConfig` SO'da tanımlanmalı
-- `Resources.LoadAll<T>("")` ile boş string path YASAK — spesifik klasör yolu verilmeli
-
-### Runtime Particle System Shader
-- Runtime olusturulan her ParticleSystem `Universal Render Pipeline/Particles/Unlit` shader kullanmali
-- Built-in `Particles/Standard Unlit` URP'de pembe/magenta gorunur — YASAK
-- `ApplyURPParticleMaterial(ps)` helper her `AddComponent<ParticleSystem>()` sonrasi cagrilmali
-- Fire/ember gibi parlak efektler icin additive blend (`_Blend=2, DstBlend=One`) kullanilmali
-
-### Runtime UITheme Uygulama (ZORUNLU)
-- Her runtime UI panel `BuildUI()` sonunda `UIPrimitiveFactory.ApplyThemeStyles(transform)` cagirmali
-- Bu metot UIThemeTag'li butun elementleri bulup UIThemeSO'dan stil uygular (font, renk, boyut, ColorBlock)
-- Kodla olusturulan her text'e uygun `UIThemeTag` eklenmeli:
-  - Header/panel basliklari → `UIStyleType.HeaderText`
-  - Govde/aciklama metni → `UIStyleType.BodyText`
-  - Etiket/ikincil bilgi → `UIStyleType.LabelText`
-  - Kaynak maliyeti → `UIStyleType.CostText`
-  - Uyari mesaji → `UIStyleType.WarningText`
-  - Hata/tehlike → `UIStyleType.DangerText`
-- Kodla olusturulan her butona uygun `UIThemeTag` eklenmeli:
-  - Onay/pozitif (Train, Upgrade, Research) → `UIStyleType.ConfirmButton`
-  - Tehlike/yikici (Demolish, Delete) → `UIStyleType.DangerButton`
-  - Genel aksiyon (Load, Back, Cancel) → `UIStyleType.ActionBarButton`
-  - BuildMenu bina kartlari → `UIStyleType.BuildingCardButton`
-  - Tab butonlari → `UIStyleType.TabButton`
-- Ornek kullanim:
-  ```csharp
-  var header = UIPrimitiveFactory.AddThemedText(transform, "TITLE", 28, UIColors.Default.Gold);
-  header.gameObject.AddComponent<UIThemeTag>().styleType = UIStyleType.HeaderText;
-  // BuildUI sonunda:
-  UIPrimitiveFactory.ApplyThemeStyles(transform);
-  ```
-
-### UI Panel Kapatma Kurallari
-- Panel'i `gameObject.SetActive(false)` ile dogrudan kapatmak YASAK — PanelManager state'i bozulur
-- Panel kapatma her zaman `UIManager.ToggleXxx()` veya `PanelManager.CloseCurrent()` uzerinden yapilmali
-- Ornek: `BuildMenuUI.SelectBuilding()` → `UIManager.Instance.ToggleBuildMenu()` kullanir
-
-### ResourceBarUI
-- `_timeText`, `_populationText`, `_levelText` SerializeField — sahnede manuel olusturulur, Inspector'dan baglanir
-- `CompactSpacing()` runtime'da HorizontalLayoutGroup spacing=8 yapar
-- `TimeDisplayUI.cs` kaldirildi — zaman gosterimi ResourceBarUI'da `_timeText` uzerinden
-
-### GridOverlayRenderer Offset Kurallari
-- `WorldPos(x, z)` hucre koselerini dondurur: `GetWorldPosition(x,z) - halfCell`
-- Footprint highlight: `GetWorldPosition(cx, cz)` direkt kullanilir (center), ekstra offset YASAK
-- `GetWorldPosition` zaten hucre merkezi dondurur: `origin + (x + 0.5) * cellSize`
-
-### TMP Font ve Unicode Tuzaklari
-- Roboto font SADECE standart Latin karakterleri destekler — emoji, Unicode sembol YASAK
-- Yasakli karakterler: ☢ ✅ ✓ ◆ 👤 ━ ve diger emoji/special Unicode
-- Yerine ASCII kullan: [OK], [!], >, =, -, *
-- TMP TextAlignmentOptions degerleri: `Midline`, `Center`, `MidlineLeft` (MiddleLeft/MidlineCenter YOK)
-- Theme font zorla uygula: `ApplyFont()` ile `GetComponentsInChildren<TMP_Text>()` uzerinden
-
-### Runtime Panel Acma/Kapama Tuzaklari
-- Inactive GameObject'te `Update()` calismaz — F1/F5 gibi input dinleyiciler UIManager'a konmali
-- Panel `BuildUI()` sonunda `gameObject.SetActive(false)` YAPILMAZ — UIManager Toggle metodunda yonetilir
-- ESC oncelik sirasi: About > SaveMenu > Pause > Panel > Pause toggle
-- Birden fazla panel ayni anda acilabilir (About + Pause) — UIManager'da kontrol sarti gerek
-
-### Versiyon Gosterimi
-- AboutPanelUI.VERSION dosyasindan okur: `Path.Combine(Application.dataPath, "..", "VERSION")`
-- Hardcoded versiyon stringi YASAK — her zaman VERSION dosyasindan oku
-- Yeni versiyon icin: VERSION dosyasini guncelle + CHANGELOG.md ekle + git tag
+### UI Panel Kurallari
+- `gameObject.SetActive(false)` ile direkt kapatma YASAK → `UIManager.ToggleXxx()` kullan
+- ESC oncelik: About > SaveMenu > Pause > Panel > Pause toggle
+- Panel default kapali olmali (SetActive false)
+- Layout Group: Child Force Expand Width=ON Height=OFF
 
 ### Save/Load Kurallari
-- `Building.Demolish()` kaynak iadesi yapar — load sirasinda `ClearForLoad()` kullanilmali (iade yok, event yok)
-- `ApplySaveData` sirasi: binalar once temizlenmeli, sonra kaynaklar set edilmeli (yoksa iade kaynaklari bozar)
-- `Destroy(gameObject)` deferred — load sirasinda `DestroyImmediate` kullanilmali
-- Hero yukleme: `AddHeroWithId(data, id)` ile save'deki ID korunmali, `AddHero()` yeni Guid uretir
-- Kaynak atama: `Set()` ile tam deger, `Add()` ile artirmali — load'da `Set()` kullanilmali
-- BuildingData eslestirme: once asset `name`, sonra `DisplayName`, sonra `BuildingNameAliases` dictionary
-- TechNode SO runtime degisiklikleri editor'de kalir — `ResetAllState()` ile her baslangicta sifirlanmali
+- Load'da `ClearForLoad()` kullan (iade yok, event yok)
+- `ApplySaveData` sirasi: binalar temizle → kaynaklar set et
+- Load'da `DestroyImmediate` kullan
+- Hero: `AddHeroWithId(data, id)` ile save ID koru
+- Kaynak: `Set()` ile tam deger, `Add()` degil
+- BuildingData eslestirme: asset name → DisplayName → BuildingNameAliases
+- TechNode: `ResetAllState()` her baslangicta
 
 ### Input Block Sistemi
-- `UIManager.IsInputBlocked` — pause/save/about paneli aciksa `true`
-- `StrategyCamera`, `BuildingPlacer`, `BuildingSelector` Update'te `IsInputBlocked` kontrol eder
-- Panel acildiginda `TimeManager.TogglePause()` ile zaman durur
-- Load sonrasi `ResumeAfterLoad()` ile tam resume yapilmali (pause + time + state)
+- `UIManager.IsInputBlocked` — panel aciksa true
+- StrategyCamera, BuildingPlacer, BuildingSelector Update'te kontrol eder
+- Load sonrasi `ResumeAfterLoad()` ile tam resume
 
-### Editor Setup Menuleri
-- `HollowGround > Setup UI Panels` — tum panel'leri olusturur ve UIManager'a baglar
-- `HollowGround > Setup Save Menu` — SaveMenuPanel icindeki ScrollList + butonlari olusturur, SerializeField'lari baglar
-- Panel isimlerinde trailing space olabilir — `name.Trim()` ile karsilastirilmali
+### Runtime Particle Shader
+- Her runtime ParticleSystem: `Universal Render Pipeline/Particles/Unlit`
+- Built-in `Particles/Standard Unlit` URP'de magenta — YASAK
+- `ApplyURPParticleMaterial(ps)` her AddComponent sonrasi
 
-### Organic Road System
-- RoadManager singleton, GameManager GO uzerinde olmali
-- Building rotation (0-3) save/load ile persist edilir
-- Kapı yönü: rotation 0=-Z, 1=-X, 2=+Z, 3=+X (Blender -Z forward export convention)
-- Yollar sadece visual — grid cell state degismez, bina yerlestirmeyi engellemez
-- BFS pathfinding kapılar arası: 0-1 deque ile mevcut yollar tercih edilir
-- Arama yaricapi: 15 hucre (Manhattan distance), max 500 BFS iterasyon
-- Yol tile'lari: 0.92 scale, 1.5s scale-in animasyon, URP Lit material, renderQueue=2001
-- Bina inşaatı bitince yol oluşur (OnConstructionComplete event)
-- **NeedsRoads=false** binalar icin yol olusturulmaz, yol hedefi olarak da kullanilmaz (ornegin Garden)
-- Load sirasinda: RoadManager.ClearAllRoads() → binalar yüklenir → ApplyRoads ile save'den geri yuklenir
-- `Building.GetRotatedFootprint()` rotation'a göre (SizeX,SizeZ) veya (SizeZ,SizeX) dondurur
-- `Building.GetDoorCell()` ön yüzeyin 1 hucre otesindeki grid koordinatini dondurur
+### Grid Overlay Offset
+- `WorldPos(x, z)` = `GetWorldPosition(x,z) - halfCell` (kose)
+- Footprint highlight: `GetWorldPosition(cx, cz)` direkt (merkez), ekstra offset YASAK
 
-### Garden Merge System
-- GardenManager singleton, GameManager GO uzerinde olmali
-- 4 kucuk Garden (1x1) 2x2 kare olusturunca → 1 buyuk GardenLarge (2x2) merge olur
-- Merge gecikmeli calisir (1 frame coroutine) — MissingReferenceException onler
-- Merge sonrasi buyuk garden inşaat sürecinden gecer (instant Active degil)
-- Garden/GardenLarge NeedsRoads=false — yol olusturulmaz
-- GardenManager.BuildingManager.OnBuildingAdded → OnConstructionComplete → CheckAndMerge akışı
-- OnGardenMerged event → SessionLogger log + toast
-- Eksik: L03/L05/L10/Damaged/Destroyed FBX modelleri (simdilik L01 fallback), Save/Load merge state
+### Resources.LoadAll Kullanimi
+- Update/tick icinde YASAK → cache pattern: `_cachedData ??= Resources.LoadAll<T>("path")`
 
-### Settler Walker System
-- SettlerManager singleton, GameManager GO uzerinde olmali
-- Settler'lar road hücreleri üzerinde hareket eder (grid-based, NavMesh yok)
-- `RoadManager.FindPublicPath()` 0-1 BFS ile yolu hesaplar, mevcut yolları tercih eder
-- Nüfus = sum(Aktif bina PopulationCapacity × Level)
-- CityPack FBX karakter modelleri: Worker, Adventurer, Suit (Business Man) → 3 FBX aktif (CharacterArmature iskeleti)
-- Man (HumanArmature) ve Woman (HumanArmature) kaldırıldı — farklı iskelet, Generic rig'de uyumsuz
-- `GameConfig.DisableSettlers` ile settler sistemi tamamen kapatilabilir
-- Save/Load uyumlu: settler pozisyonu, state, waitTimer kaydedilir (`SettlerWalkerSave`)
-- **OnMouseDown YASAK** — settler secimi BuildingSelector.TrySelect() uzerinden merkezi yapilir (Discovery #38)
-- **LoadSettlers** SphereCollider eklemeli — CreatePoolSettler ile ayni collider setup (Discovery #39)
+### Editor Menuleri
+- `HollowGround > Setup UI Panels` / `Setup Save Menu` / `Setup Minimap` / `Setup Ground & Camera`
+- `HollowGround > FBX/Configure All Building FBX Imports` / `Models/Bind All Building Models`
+- `HollowGround > Settlers/...` (Avatar fix, clip bake, test)
 
-### Settler Job System (Faz 16)
-- **SettlerRole.cs** — 12-role enum: None, Builder, Farmer, Miner, Woodcutter, WaterCarrier, Engineer, Medic, Guard, Researcher, Trader, Hauler + SettlerRoleInfo display names
-- **SettlerJobManager.cs** — Singleton, GameManager GO uzerinde (SettlerManager ile birlikte)
-  - Auto-assigns idle settlers to buildings by priority: Farm > Mine > WaterWell > WoodFactory > Generator > Hospital > ResearchLab > TradeCenter > CommandCenter
-  - Releases workers on building destroy/demolish
-  - Tracks building→workers mapping (Dictionary<Building, List<SettlerWalker>>)
-  - `GetAssignedWorkerCount(building)`, `GetWorkerFillRatio(building)`, `RebuildAssignmentsFromLoad()`
-- **SettlerWalker.cs** — Work cycle: Idle → Walking(work) → Working → Walking(home) → Resting → repeat
-  - `Role`, `AssignedBuilding` property'leri
-  - `SettlerWorkDuration=8f`, `SettlerRestDuration=5f` (GameConfig)
-  - Save: `SettlerWalkerSave` — Role + AssignedBuildingGridX/Z (backward compatible, old saves get None→auto-assign)
-- **BuildingData.cs** — `WorkerSlot` class (Role + Count), `RequiredWorkers` list, `WorkerProductionBonus` (0-1)
-  - `GetTotalRequiredWorkers()` — toplam gerekli işçi sayısı
-  - WorkerProductionBonus 0=no dependency, 1=no workers=no production
-- **Building.cs** — `AssignedWorkerCount` property, `GetWorkerProductionModifier()` formula: `1 - bonus * (1 - fillRatio)`
-- **SettlerPanelUI.cs** — Population panel (ActionBar "Settler" butonu)
-  - İki sütun: sol bina-işçi listesi, sağ aktif işçi listesi
-  - Event-driven refresh (OnBuildingChanged, OnSettlerSpawned/Removed)
-- **SettlerInfoUI.cs** — Overlay panel, settler tiklandiginda acilir
-  - Root (width/height/VLG/Image/CanvasGroup) Inspector'da yapilandirilir, kod sadece child olusturur
-  - BuildingSelector ile birlikte calisir (raycast priority: en yakin obje)
-- **BuildingSelector.cs** — Extended: hem bina hem settler raycast selection, DeselectAll() ile ikisini birlikte yönet
-  - SphereCollider (r=0.8, y=0.7 center) settler'lara SettlerManager.CreatePoolSettler() tarafindan eklenir
-  - Settler selection → SettlerInfoUI göster, Building selection → BuildingInfoUI göster
-- **SettlerWalker.cs** — Work cycle: Idle → Walking(work) → Working → Walking(home) → Resting → repeat
-- **SettlerJobDataFactory.cs** — Editor araçları:
-  - `Apply Default Worker Requirements` — 10 BuildingData SO'ya varsayılan RequiredWorkers uygular
-  - `Show Report` — her binanın worker requirement/assignment durumunu gösterir
-- **GameConfig** — `SettlerWorkDuration=8f`, `SettlerRestDuration=5f`
-- **UIManager** — `ToggleSettlerPanel()`, "Settler"/"BtnSettler" panel registration
-- **DebugHUD** — F12 ile toggle, settler count gösterimi
+---
 
-**Fixed Issues (Faz 16):**
-- 6 BuildingData SO wrong m_Name (Barracks, Generator, Shelter, Storage, WaterWell, WoodFactory)
-- Hospital SO Type: 0 (CommandCenter) → Type: 11 (Hospital)
-- 9 legacy/yedek BuildingData SO silindi + 1 duplicate BuildingData.asset root'tan silindi
+## Bina Modelleri (Blender → Unity)
 
-### Minimap System
-- **MinimapCamera.cs** — Orthographic kamera, CameraRig altinda, StrategyCamera pozisyonunu takip eder
-  - Yukseklik: 120 birim ( SerializeField _height)
-  - Orthographic size: grid buyuklugu + padding
-  - LateUpdate ile StrategyCamera pozisyonunu XZ'de takip eder
-  - RenderTexture'ye render eder (512x512, ARGB32, no MSAA)
-  - Depth=-2, UI layer haric tum layerlari gorur
-- **MinimapUI.cs** — RawImage minimap panel (sag ust kose), viewport cercevesi, tiklama navigasyonu
-  - UIPrimitiveFactory ile runtime UI olusturur (frame + border + RawImage + marker layer + viewport frame)
-  - Viewport frame: ana kameranin gorus alanini beyaz cerceve olarak gosterir (frustum corner hesabi)
-  - Tiklama: IPointerClickHandler + IDragHandler → StrategyCamera.FocusOn() ile kamerayi yonlendirir
-  - Bina marker'lari: Texture2D pixel cizimi (256x256), BuildingManager event'leri ile guncellenir
-  - Bina renkleri: BuildingType bazli (CC=gold, Farm=yesil, Barracks=kirmizi, vb.)
-  - Overlay panel (PanelManager'da "Minimap" olarak kayitli, her zaman acik)
-- **Editor Setup**: `HollowGround > Setup Minimap` menusu
-  - MinimapRenderTexture.asset olusturur (Settings klasoru)
-  - CameraRig altinda MinimapCamera olusturur
-  - GameCanvas altinda MinimapPanel olusturur
-  - UIManager'a SerializeField baglama
-- **Entegrasyon**: UIManager _minimapPanel SerializeField, PanelManager overlay panel, SceneSetupEditor wiring
+- Rehber: `Docs/BLENDER_MODELING_GUIDE.md` — olculer, renk paleti
+- Prompt serisi: `Docs/BLENDER_PROMPTS.md` — kopyala-yapistir prompt'lar
+- Grid cell: 2m. 1x1 max 1.9x1.9m, 2x2 max 3.9x3.9m
+- Her bina: 7 model (L01, L03, L05, L10, Construct, Damaged, Destroyed)
+- 15 bina x 7 model = 105 FBX tamamlandi
+- FBX export: -Z forward, Y up, Apply Transform ON
+- Vertex color: R=rust, G=moss, B=dirt
+- FBX import: `Assets/_Project/Models/Buildings/{BuildingName}/`
+- Level threshold: L01 (lv1-2), L03 (lv3-4), L05 (lv5-9), L10 (lv10)
+- Model offset: `localPosition.y = 0.015f` (z-fighting fix)
+
+---
+
+## Dengeleme
+
+Tum degerler `Docs/BALANCE.md` dosyasinda: bina maliyetleri, uretim, asker, hero gacha, faction, tech, quest odul, baslangic kaynaklari.

@@ -4,6 +4,20 @@ All notable changes to Hollow Ground are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Versioning follows [SemVer](https://semver.org/): MAJOR.MINOR.PATCH
 
+## [0.28.0] - 2026-05-08
+
+### Added
+- MinimapCamera: Orthographic kamera, CameraRig altinda, StrategyCamera pozisyonunu takip eder, RenderTexture (512x512)
+- MinimapUI: RawImage minimap panel (sag ust), viewport cercevesi (frustum corner hesabi), tiklama/drag navigasyonu
+- Bina marker'lari: Texture2D pixel cizimi (256x256), BuildingType bazli renkler, BuildingManager event'leri ile guncelleme
+- Editor Setup: `HollowGround > Setup Minimap` menusu (RenderTexture, MinimapCamera, MinimapPanel olusturma + wiring)
+- CONTROLS.md: Klavye kisayol arastirmasi ve oneri listesi (strategy oyunlari benchmark)
+
+### Changed
+- AGENTS.md: 19 faz detayi sadelestirildi (897 satir → 270 satir), tekrarlanan bilgiler kaldirildi
+- ROADMAP.md: Faz detaylari compact tabloya donusturuldu, versiyon gecmisi eklendi
+- Docs/README.md: v0.27.0 durumuna guncellendi
+
 ## [0.27.0] - 2026-05-08
 
 ### Added
