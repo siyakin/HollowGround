@@ -43,7 +43,7 @@ namespace HollowGround.NPCs
 
         private void Update()
         {
-            if (GameManager.Instance == null || GameManager.Instance.CurrentState != GameState.Playing) return;
+            if (GameManager.Instance == null || GameManager.Instance.CurrentState == GameState.Paused) return;
             if (TimeManager.Instance != null && TimeManager.Instance.IsPaused) return;
 
             float dt = Time.deltaTime;

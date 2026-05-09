@@ -28,7 +28,7 @@ namespace HollowGround.Buildings
 
         private void Update()
         {
-            if (GameManager.Instance != null && GameManager.Instance.CurrentState != GameState.Playing)
+            if (GameManager.Instance != null && GameManager.Instance.CurrentState == GameState.Paused)
                 return;
 
             float dt = Time.deltaTime;

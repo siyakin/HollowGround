@@ -43,7 +43,7 @@ namespace HollowGround.Combat
             if (HollowGround.Core.GameConfig.Instance != null && HollowGround.Core.GameConfig.Instance.DisableMutantAttacks)
                 return;
 
-            if (GameManager.Instance == null || GameManager.Instance.CurrentState != GameState.Playing)
+            if (GameManager.Instance == null || GameManager.Instance.CurrentState == GameState.Paused)
                 return;
 
             if (IsUnderAttack) return;
