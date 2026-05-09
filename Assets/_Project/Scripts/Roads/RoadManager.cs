@@ -204,7 +204,7 @@ namespace HollowGround.Roads
             NotifyRoadsChanged();
         }
 
-        private void RemoveRoadCellsUnderBuilding(Building building)
+        public void RemoveRoadCellsUnderBuilding(Building building)
         {
             var (sx, sz) = building.GetRotatedFootprint();
             bool changed = false;

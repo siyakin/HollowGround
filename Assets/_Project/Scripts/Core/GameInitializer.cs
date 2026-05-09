@@ -140,17 +140,12 @@ namespace HollowGround.Core
             if (GridSystem.Instance == null) return;
             if (!GridSystem.Instance.IsAreaBuildable(gridPos.x, gridPos.y, data.SizeX, data.SizeZ)) return;
 
-            Vector3 worldPos = GridSystem.Instance.GetWorldPosition(gridPos.x, gridPos.y);
-            float offsetX = (data.SizeX - 1) * GridSystem.Instance.CellSize * 0.5f;
-            float offsetZ = (data.SizeZ - 1) * GridSystem.Instance.CellSize * 0.5f;
+            Building building = Building.Create(data, gridPos);
+            int sx = data.SizeX;
+            int sz = data.SizeZ;
 
-            var go = new GameObject(data.DisplayName);
-            go.transform.position = new Vector3(worldPos.x + offsetX, worldPos.y, worldPos.z + offsetZ);
-
-            var building = go.AddComponent<Building>();
-            building.Initialize(data, gridPos);
-
-            GridSystem.Instance.OccupyCells(gridPos.x, gridPos.y, data.SizeX, data.SizeZ, go);
+            GridSystem.Instance.OccupyCells(gridPos.x, gridPos.y, sx, sz, building.gameObject);
+            RoadManager.Instance?.RemoveRoadCellsUnderBuilding(building);
 
             if (BuildingManager.Instance != null)
                 BuildingManager.Instance.RegisterBuilding(building);

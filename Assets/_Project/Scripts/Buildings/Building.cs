@@ -35,7 +35,7 @@ namespace HollowGround.Buildings
         private GameObject _currentModel;
         private float _destroyedTimer;
         private const float DestroyedDisplayDuration = 2.5f;
-        private const float GroundYOffset = 0.05f;
+        private const float GroundYOffset = 0.001f;
 
         public event Action<Building> OnConstructionComplete;
         public event Action<Building> OnUpgradeComplete;
@@ -43,6 +43,31 @@ namespace HollowGround.Buildings
         public event Action<Building> OnDestroyed;
         public event Action<Building> OnDamaged;
         public event Action<Building> OnRepaired;
+
+        public static Building Create(BuildingData data, Vector2Int gridOrigin, int rotation = 0)
+        {
+            var go = new GameObject(data.DisplayName);
+            PositionBuildingObject(go, data, gridOrigin, rotation);
+
+            var building = go.AddComponent<Building>();
+            building.Initialize(data, gridOrigin, rotation);
+            return building;
+        }
+
+        public static void PositionBuildingObject(GameObject go, BuildingData data, Vector2Int gridOrigin, int rotation)
+        {
+            int sx = rotation % 2 == 0 ? data.SizeX : data.SizeZ;
+            int sz = rotation % 2 == 0 ? data.SizeZ : data.SizeX;
+
+            Vector3 worldPos = GridSystem.Instance != null
+                ? GridSystem.Instance.GetWorldPosition(gridOrigin.x, gridOrigin.y)
+                : Vector3.zero;
+            float offsetX = (sx - 1) * (GridSystem.Instance != null ? GridSystem.Instance.CellSize : 2f) * 0.5f;
+            float offsetZ = (sz - 1) * (GridSystem.Instance != null ? GridSystem.Instance.CellSize : 2f) * 0.5f;
+
+            go.transform.position = new Vector3(worldPos.x + offsetX, worldPos.y, worldPos.z + offsetZ);
+            go.transform.rotation = Quaternion.Euler(0, rotation * 90f, 0);
+        }
 
         public void Initialize(BuildingData data, Vector2Int gridOrigin, int rotation = 0)
         {

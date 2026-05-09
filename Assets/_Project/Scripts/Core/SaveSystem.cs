@@ -461,25 +461,13 @@ namespace HollowGround.Core
                 int sx = rotation % 2 == 0 ? buildingData.SizeX : buildingData.SizeZ;
                 int sz = rotation % 2 == 0 ? buildingData.SizeZ : buildingData.SizeX;
 
-                Vector3 worldPos = GridSystem.Instance != null
-                    ? GridSystem.Instance.GetWorldPosition(bs.GridX, bs.GridZ)
-                    : Vector3.zero;
-
-                float offsetX = (sx - 1) * (GridSystem.Instance != null ? GridSystem.Instance.CellSize : 2f) * 0.5f;
-                float offsetZ = (sz - 1) * (GridSystem.Instance != null ? GridSystem.Instance.CellSize : 2f) * 0.5f;
-
-                var go = new GameObject(buildingData.DisplayName);
-                go.transform.position = new Vector3(worldPos.x + offsetX, worldPos.y, worldPos.z + offsetZ);
-                go.transform.rotation = Quaternion.Euler(0, rotation * 90f, 0);
-
-                var building = go.AddComponent<Building>();
-                building.Initialize(buildingData, new Vector2Int(bs.GridX, bs.GridZ), rotation);
+                Building building = Building.Create(buildingData, new Vector2Int(bs.GridX, bs.GridZ), rotation);
 
                 if (System.Enum.TryParse<BuildingState>(bs.State, out var state))
                     building.RestoreFromSave(bs.Level, state, bs.ConstructionProgress, bs.UpgradeProgress, bs.ProductionTimer);
 
                 if (GridSystem.Instance != null)
-                    GridSystem.Instance.OccupyCells(bs.GridX, bs.GridZ, sx, sz, go);
+                    GridSystem.Instance.OccupyCells(bs.GridX, bs.GridZ, sx, sz, building.gameObject);
 
                 BuildingManager.Instance.RegisterBuilding(building);
             }

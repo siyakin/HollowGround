@@ -213,30 +213,10 @@ namespace HollowGround.Buildings
             if (rm != null && !rm.SpendMultiple(costs))
                 return;
 
-            string buildingName = _currentBuilding.DisplayName;
+            Building building = Building.Create(_currentBuilding, coords, _rotation);
 
-            GameObject buildingObj = new(buildingName);
-
-            if (_ghostObject != null)
-            {
-                buildingObj.transform.position = _ghostObject.transform.position;
-                buildingObj.transform.rotation = _ghostObject.transform.rotation;
-            }
-            else
-            {
-                if (_cam == null) return;
-                Vector2 placePos = Mouse.current.position.ReadValue();
-                Ray placeRay = _cam.ScreenPointToRay(placePos);
-                if (TryGetGroundPoint(placeRay, out Vector3 placePoint))
-                {
-                    buildingObj.transform.position = GridSystem.Instance.SnapToGrid(placePoint);
-                }
-            }
-
-            Building building = buildingObj.AddComponent<Building>();
-            building.Initialize(_currentBuilding, coords, _rotation);
-
-            GridSystem.Instance.OccupyCells(coords.x, coords.y, sx, sz, buildingObj);
+            GridSystem.Instance.OccupyCells(coords.x, coords.y, sx, sz, building.gameObject);
+            RoadManager.Instance?.RemoveRoadCellsUnderBuilding(building);
             if (BuildingManager.Instance != null)
                 BuildingManager.Instance.RegisterBuilding(building);
 

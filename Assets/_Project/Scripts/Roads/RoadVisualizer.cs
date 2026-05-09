@@ -12,7 +12,7 @@ namespace HollowGround.Roads
         private Material _roadMaterial;
         private Texture2D _dirtTexture;
 
-        private const float TileY = 0.05f;
+        private const float TileY = 0.001f;
         private const float PathHalf = 0.7f;
         private const float CellHalf = 1.0f;
         private const float AppearDuration = 1.5f;

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using HollowGround.Combat;
 using HollowGround.Core;
 using UnityEngine;
 
@@ -19,6 +20,7 @@ namespace HollowGround.World
 
         private Dictionary<Vector2Int, MapNodeData> _nodes = new();
         private List<MapNodeData> _allNodes = new();
+        private BattleTarget[] _cachedBattleTargets;
 
         public int MapWidth => _mapWidth;
         public int MapHeight => _mapHeight;
@@ -198,6 +200,11 @@ namespace HollowGround.World
 
         public void GenerateDefaultMap()
         {
+            _cachedBattleTargets ??= UnityEngine.Resources.LoadAll<BattleTarget>("Targets");
+            var targetsByType = new Dictionary<TargetType, BattleTarget>();
+            foreach (var bt in _cachedBattleTargets)
+                targetsByType[bt.Type] = bt;
+
             var nodes = new List<MapNodeData>();
 
             for (int x = 0; x < _mapWidth; x++)
@@ -219,6 +226,7 @@ namespace HollowGround.World
                         float dist = Vector2Int.Distance(new Vector2Int(x, y), _basePosition);
                         node.NodeType = GetRandomNodeType(dist);
                         node.StartsRevealed = false;
+                        node.BattleTarget = GetBattleTargetForNode(node.NodeType, targetsByType, dist);
                     }
 
                     node.RevealRadius = 1;
@@ -227,6 +235,25 @@ namespace HollowGround.World
             }
 
             Initialize(nodes);
+        }
+
+        private BattleTarget GetBattleTargetForNode(MapNodeType nodeType, Dictionary<TargetType, BattleTarget> targets, float dist)
+        {
+            var targetType = nodeType switch
+            {
+                MapNodeType.MutantCamp => TargetType.MutantCamp,
+                MapNodeType.AbandonedBuilding => TargetType.AbandonedBuilding,
+                MapNodeType.RadioactiveZone => TargetType.RadioactiveZone,
+                MapNodeType.BossArea => TargetType.BossArea,
+                _ => TargetType.MutantCamp
+            };
+
+            if (!targets.TryGetValue(targetType, out var target))
+                return null;
+
+            var bt = Instantiate(target);
+            bt.Difficulty = Mathf.Max(1, Mathf.RoundToInt(dist * 0.5f));
+            return bt;
         }
 
         private MapNodeType GetRandomNodeType(float distanceFromBase)
