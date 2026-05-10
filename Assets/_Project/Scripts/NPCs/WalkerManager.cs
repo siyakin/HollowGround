@@ -44,6 +44,8 @@ namespace HollowGround.NPCs
                 RoadManager.Instance.OnRoadsChanged += InvalidatePathCache;
 
             SubscribePatrolEvents();
+            SyncHeroPatrols();
+            SyncTroopPatrols();
         }
 
         protected override void OnDestroy()
@@ -267,7 +269,11 @@ namespace HollowGround.NPCs
             if (ArmyManager.Instance == null) return;
             if (RoadManager.Instance == null || !RoadManager.Instance.HasRoads) return;
 
-            int desired = _scheduler.GetDesiredTroopWalkerCount(ArmyManager.Instance.TotalTroopCount);
+            int population = SettlerManager.Instance != null ? SettlerManager.Instance.GetPopulation() : 0;
+            int settlerCount = SettlerManager.Instance != null ? SettlerManager.Instance.SettlerCount : 0;
+            int budget = _scheduler.GetPopulationBudget(population, settlerCount + _heroPatrols.Count);
+            int raw = _scheduler.GetDesiredTroopWalkerCount(ArmyManager.Instance.TotalTroopCount);
+            int desired = _scheduler.ApplyPopulationCap(raw, budget);
 
             while (_scheduler.ShouldSpawn(_troopPatrols.Count, desired))
                 SpawnTroopPatrol();
@@ -293,6 +299,8 @@ namespace HollowGround.NPCs
             Register(walker);
             walker.StartPatrol();
             _heroPatrols.Add(walker);
+
+            SessionLogger.Instance?.Log($"PATROL HERO: {hero.Data.DisplayName} [{hero.Data.Role}] | Pop: {GetCurrentPopulationSnapshot()}");
         }
 
         private void SpawnTroopPatrol()
@@ -318,16 +326,21 @@ namespace HollowGround.NPCs
             Register(walker);
             walker.StartPatrol();
             _troopPatrols.Add(walker);
+
+            SessionLogger.Instance?.Log($"PATROL TROOP: {type} | TroopPatrols: {_troopPatrols.Count} | Pop: {GetCurrentPopulationSnapshot()}");
         }
 
         private void RemovePatrolAt(List<PatrolWalker> list, int index)
         {
             if (index < 0 || index >= list.Count) return;
             var walker = list[index];
+            string label = walker.IsHeroWalker ? $"Hero:{walker.GetDisplayName()}" : $"Troop:{walker.GetRoleLabel()}";
             walker.StopPatrol();
             Unregister(walker);
             list.RemoveAt(index);
             Destroy(walker.gameObject);
+
+            SessionLogger.Instance?.Log($"PATROL REMOVED: {label} | Pop: {GetCurrentPopulationSnapshot()}");
         }
 
         private void AddClickCollider(GameObject go)
@@ -466,6 +479,14 @@ namespace HollowGround.NPCs
 
             for (int i = _troopPatrols.Count - 1; i >= 0; i--)
                 RemovePatrolAt(_troopPatrols, i);
+        }
+
+        private string GetCurrentPopulationSnapshot()
+        {
+            int pop = SettlerManager.Instance != null ? SettlerManager.Instance.GetPopulation() : 0;
+            int settlers = SettlerManager.Instance != null ? SettlerManager.Instance.SettlerCount : 0;
+            int troops = ArmyManager.Instance != null ? ArmyManager.Instance.TotalTroopCount : 0;
+            return $"pop={pop} settlers={settlers} heroPatrols={_heroPatrols.Count} troopPatrols={_troopPatrols.Count} army={troops}";
         }
 
         #endregion

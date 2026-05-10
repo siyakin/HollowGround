@@ -8,7 +8,8 @@ namespace HollowGround.Domain.Walkers
     {
         public const int MaxTroopWalkers = 5;
         public const float PatrolMoveSpeed = 1.8f;
-        public const float SpawnCheckInterval = 15f;
+        public const float SpawnCheckInterval = 10f;
+        public const int TroopsPerWalker = 3;
 
         public int GetDesiredHeroWalkerCount(List<Hero> availableHeroes)
         {
@@ -25,7 +26,14 @@ namespace HollowGround.Domain.Walkers
         public int GetDesiredTroopWalkerCount(int totalTroops)
         {
             if (totalTroops <= 0) return 0;
-            return ClampTroopCount(totalTroops / 10);
+            int raw = totalTroops / TroopsPerWalker;
+            if (raw < 1) raw = totalTroops > 0 ? 1 : 0;
+            return ClampTroopCount(raw);
+        }
+
+        public int GetPopulationBudget(int population, int settlerCount)
+        {
+            return population - settlerCount;
         }
 
         public int ClampTroopCount(int raw)
@@ -33,6 +41,12 @@ namespace HollowGround.Domain.Walkers
             if (raw < 0) return 0;
             if (raw > MaxTroopWalkers) return MaxTroopWalkers;
             return raw;
+        }
+
+        public int ApplyPopulationCap(int desired, int populationBudget)
+        {
+            if (populationBudget <= 0) return 0;
+            return desired > populationBudget ? populationBudget : desired;
         }
 
         public bool ShouldSpawn(int current, int desired)
