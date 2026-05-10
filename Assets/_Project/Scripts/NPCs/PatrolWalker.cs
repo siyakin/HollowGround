@@ -55,10 +55,6 @@ namespace HollowGround.NPCs
             ClearPath();
             _sm.Deactivate();
             SetAnimSpeed(0f);
-
-            if (WalkerManager.Instance != null)
-                WalkerManager.Instance.Unregister(this);
-
             gameObject.SetActive(false);
         }
 
