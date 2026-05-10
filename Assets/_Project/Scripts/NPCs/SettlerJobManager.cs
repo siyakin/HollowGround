@@ -274,6 +274,15 @@ namespace HollowGround.NPCs
             walker.ClearPathOnly();
         }
 
+        public void ReleaseAndReassign(SettlerWalker walker)
+        {
+            if (walker == null) return;
+
+            ReleaseSingleWorker(walker);
+            walker.ClearJob();
+            TryAssignBestJob(walker);
+        }
+
         private List<WorkerNeed> GetUnmetWorkerNeeds()
         {
             var needs = new List<WorkerNeed>();

@@ -79,6 +79,47 @@ namespace HollowGround.NPCs
             SetAnimSpeed(1f);
         }
 
+        public void ForceRest()
+        {
+            ClearPath();
+
+            var cfg = GameConfig.Instance;
+            float restDuration = cfg != null ? cfg.SettlerRestDuration : 5f;
+
+            if (HasJob && _assignedBuilding != null)
+            {
+                Vector2Int currentCell = GridSystem.Instance != null
+                    ? GridSystem.Instance.GetGridCoordinates(transform.position)
+                    : GetHomeCell();
+                var homeCell = _sm.HomeCell;
+                Vector2Int home = homeCell.HasValue
+                    ? new Vector2Int(homeCell.Value.x, homeCell.Value.z)
+                    : currentCell;
+
+                if (currentCell == home)
+                {
+                    _sm.StartResting();
+                    _sm.SetRestDuration(restDuration);
+                    SetAnimSpeed(0f);
+                    return;
+                }
+
+                var path = FindPath(currentCell, home);
+                if (path != null && path.Count >= 2)
+                {
+                    SetPath(path);
+                    _sm.StartWalkingHome();
+                    SetAnimSpeed(1f);
+                    return;
+                }
+            }
+
+            _sm.StartResting();
+            _sm.SetRestDuration(restDuration);
+            SetAnimSpeed(0f);
+            gameObject.SetActive(false);
+        }
+
         private void StartWorkCycle()
         {
             if (_assignedBuilding == null || GridSystem.Instance == null) return;

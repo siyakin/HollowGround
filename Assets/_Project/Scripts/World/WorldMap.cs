@@ -45,11 +45,10 @@ namespace HollowGround.World
             var baseNode = GetNode(_basePosition);
             if (baseNode != null)
             {
-                baseNode.SetVisible(true);
                 baseNode.SetExplored(true);
             }
-            RevealArea(_basePosition, 2);
-            OnMapUpdated?.Invoke();
+
+            RefreshVisibility();
         }
 
         public MapNodeData GetNode(Vector2Int pos)
@@ -100,6 +99,43 @@ namespace HollowGround.World
             }
 
             RevealArea(pos, node.RevealRadius);
+            OnMapUpdated?.Invoke();
+        }
+
+        public void RefreshVisibility()
+        {
+            foreach (var node in _allNodes)
+                node.SetVisible(false);
+
+            int baseRadius = GameConfig.Instance != null
+                ? GameConfig.Instance.WorldMapBaseVisionRadius
+                : 2;
+
+            var baseNode = GetNode(_basePosition);
+            if (baseNode != null)
+            {
+                baseNode.SetVisible(true);
+                baseNode.SetExplored(true);
+            }
+            RevealArea(_basePosition, baseRadius);
+
+            if (ExpeditionSystem.Instance != null)
+            {
+                foreach (var exp in ExpeditionSystem.Instance.Expeditions)
+                {
+                    if (exp.IsComplete) continue;
+                    var target = exp.Target;
+                    if (target == null) continue;
+                    target.SetVisible(true);
+                    if (!target.IsExplored)
+                    {
+                        target.SetExplored(true);
+                        OnNodeExplored?.Invoke(target);
+                    }
+                    RevealArea(target.GridPosition, target.RevealRadius);
+                }
+            }
+
             OnMapUpdated?.Invoke();
         }
 

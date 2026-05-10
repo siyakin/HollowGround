@@ -194,7 +194,7 @@ namespace HollowGround.UI
             var legend = UIPrimitiveFactory.CreateUIObject("Legend", _root);
             UIPrimitiveFactory.SetAnchors(legend, new Vector2(0, 0), new Vector2(0, 0), new Vector2(0, 0));
             legend.anchoredPosition = new Vector2(40, 30);
-            legend.sizeDelta = new Vector2(200, 160);
+            legend.sizeDelta = new Vector2(200, 190);
             UIPrimitiveFactory.AddImage(legend, UIColors.PanelInner);
 
             var legendText = UIPrimitiveFactory.AddThemedText(legend,
@@ -205,7 +205,8 @@ namespace HollowGround.UI
                 "<color=#996633>B</color> Ruins\n" +
                 "<color=#4DB3E6>N</color> Settlement\n" +
                 "<color=#BF4DD9>X</color> Radioactive\n" +
-                "<color=#F28019>!</color> Boss",
+                "<color=#F28019>!</color> Boss\n" +
+                "<color=#73737A>Dim</color> = Last seen",
                 13, UIColors.Default.Text, TextAlignmentOptions.TopLeft);
             UIPrimitiveFactory.StretchFull(legendText.rectTransform, new Vector2(10, 5), new Vector2(-10, -5));
         }
@@ -255,13 +256,22 @@ namespace HollowGround.UI
                 if (node == null) continue;
 
                 bool visible = node.IsVisible;
+                bool explored = node.IsExplored;
                 bool isBase = node.NodeType == MapNodeType.PlayerBase;
 
-                if (!visible)
+                if (!visible && !explored)
                 {
                     view.Background.color = UIColors.Fog;
                     view.Icon.text = "";
+                    view.Icon.color = Color.white;
                     view.Button.interactable = false;
+                }
+                else if (!visible && explored)
+                {
+                    view.Background.color = UIColors.FogExplored;
+                    view.Icon.text = isBase ? "*" : GetNodeIcon(node.NodeType);
+                    view.Icon.color = UIColors.TextDim;
+                    view.Button.interactable = true;
                 }
                 else
                 {
@@ -292,7 +302,7 @@ namespace HollowGround.UI
         {
             if (WorldMap.Instance == null) return;
             var node = WorldMap.Instance.GetNode(x, y);
-            if (node == null || !node.IsVisible) return;
+            if (node == null || (!node.IsVisible && !node.IsExplored)) return;
 
             _selectedNode = node;
             RefreshTiles();
@@ -318,6 +328,43 @@ namespace HollowGround.UI
             _infoTitleText.text = node.DisplayName;
 
             var sb = new System.Text.StringBuilder();
+
+            if (!node.IsVisible && node.IsExplored)
+            {
+                sb.AppendLine("<color=#A6A6AE>LAST SEEN</color>");
+                sb.AppendLine($"<color=#A6A6AE>Type:</color> {FormatNodeType(node.NodeType)}");
+                sb.AppendLine($"<color=#A6A6AE>Travel time:</color> ~{travelSeconds:F0}s (one way)");
+                sb.AppendLine();
+                sb.AppendLine("<color=#A6A6AE>No active vision. Info may be outdated.</color>");
+                sb.AppendLine();
+
+                if (node.HasBattle)
+                {
+                    sb.AppendLine("<b>ENEMY FORCES</b>");
+                    var defenders = node.BattleTarget.GetDefenderArmy();
+                    if (defenders.Count == 0)
+                        sb.AppendLine("<color=#A6A6AE>None.</color>");
+                    else
+                        foreach (var kvp in defenders)
+                            sb.AppendLine($"  {kvp.Key}: {kvp.Value}");
+                    sb.AppendLine();
+                }
+
+                _infoBodyText.text = sb.ToString();
+
+                bool canSend = ArmyManager.Instance != null && ArmyManager.Instance.TotalTroopCount > 0
+                    && !(node.IsCleared && !node.IsRepeatable);
+                _sendExpeditionButton.gameObject.SetActive(canSend);
+
+                var armySb = new System.Text.StringBuilder();
+                armySb.AppendLine("<b>YOUR ARMY</b>");
+                int myPower = ArmyManager.Instance != null ? ArmyManager.Instance.CalculateArmyPower() : 0;
+                int totalTroops = ArmyManager.Instance != null ? ArmyManager.Instance.TotalTroopCount : 0;
+                armySb.AppendLine($"Troops: {totalTroops} | Power: {myPower}");
+                _infoArmyText.text = armySb.ToString();
+                return;
+            }
+
             sb.AppendLine($"<color=#A6A6AE>Type:</color> {FormatNodeType(node.NodeType)}");
             sb.AppendLine($"<color=#A6A6AE>Travel time:</color> ~{travelSeconds:F0}s (one way)");
             sb.AppendLine();
@@ -403,26 +450,26 @@ namespace HollowGround.UI
 
             _infoBodyText.text = sb.ToString();
 
-            var armySb = new System.Text.StringBuilder();
-            armySb.AppendLine("<b>YOUR ARMY</b>");
-            int myPower = ArmyManager.Instance != null ? ArmyManager.Instance.CalculateArmyPower() : 0;
-            int totalTroops = ArmyManager.Instance != null ? ArmyManager.Instance.TotalTroopCount : 0;
-            armySb.AppendLine($"Troops: {totalTroops} | Power: {myPower}");
+            var armySb2 = new System.Text.StringBuilder();
+            armySb2.AppendLine("<b>YOUR ARMY</b>");
+            int myPower2 = ArmyManager.Instance != null ? ArmyManager.Instance.CalculateArmyPower() : 0;
+            int totalTroops2 = ArmyManager.Instance != null ? ArmyManager.Instance.TotalTroopCount : 0;
+            armySb2.AppendLine($"Troops: {totalTroops2} | Power: {myPower2}");
 
             if (node.HasBattle && explored)
             {
                 int enemyPower = EstimateDefenderPower(node.BattleTarget.GetDefenderArmy());
                 string verdict;
                 Color c;
-                if (myPower >= enemyPower * 1.3f) { verdict = "Favorable"; c = UIColors.Default.Ok; }
-                else if (myPower >= enemyPower * 0.9f) { verdict = "Even match"; c = UIColors.Default.Warn; }
+                if (myPower2 >= enemyPower * 1.3f) { verdict = "Favorable"; c = UIColors.Default.Ok; }
+                else if (myPower2 >= enemyPower * 0.9f) { verdict = "Even match"; c = UIColors.Default.Warn; }
                 else { verdict = "Outmatched"; c = UIColors.Default.Danger; }
-                armySb.Append($"<color=#{ColorUtility.ToHtmlStringRGB(c)}>{verdict}</color>");
+                armySb2.Append($"<color=#{ColorUtility.ToHtmlStringRGB(c)}>{verdict}</color>");
             }
-            _infoArmyText.text = armySb.ToString();
+            _infoArmyText.text = armySb2.ToString();
 
-            bool canSend = totalTroops > 0 && !(node.IsCleared && !node.IsRepeatable);
-            _sendExpeditionButton.gameObject.SetActive(canSend);
+            bool canSend2 = totalTroops2 > 0 && !(node.IsCleared && !node.IsRepeatable);
+            _sendExpeditionButton.gameObject.SetActive(canSend2);
         }
 
         private void BuildExpeditionSetupPanel()

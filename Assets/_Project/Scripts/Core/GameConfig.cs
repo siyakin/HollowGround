@@ -59,6 +59,10 @@ namespace HollowGround.Core
         public float SettlerWorkDuration = 8f;
         public float SettlerRestDuration = 5f;
 
+        [Header("World Map")]
+        [Tooltip("Vision radius (in tiles) around the player base on the world map")]
+        public int WorldMapBaseVisionRadius = 2;
+
         [Header("Settler Models")]
         public bool EnableWorker = true;
         public bool EnableAdventurer = true;

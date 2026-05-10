@@ -484,6 +484,26 @@ namespace HollowGround.NPCs
                 WalkerManager.Instance.ClearRecyclePool();
         }
 
+        public void RemoveSettler(SettlerWalker walker)
+        {
+            if (walker == null) return;
+
+            _pool.Remove(walker);
+
+            if (SettlerJobManager.Instance != null)
+                SettlerJobManager.Instance.UnregisterSettler(walker);
+
+            OnSettlerRemoved?.Invoke(walker);
+
+            if (WalkerManager.Instance != null)
+                WalkerManager.Instance.Unregister(walker);
+
+            if (!walker.IsBusy)
+                ActiveCount = Mathf.Max(0, ActiveCount - 1);
+
+            Destroy(walker.gameObject);
+        }
+
         public List<SettlerWalkerSave> CaptureSettlersSave()
         {
             var saves = new List<SettlerWalkerSave>();

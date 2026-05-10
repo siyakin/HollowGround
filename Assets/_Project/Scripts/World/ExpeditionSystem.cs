@@ -42,7 +42,7 @@ namespace HollowGround.World
             if (WorldMap.Instance == null) return false;
 
             var node = WorldMap.Instance.GetNode(target);
-            if (node == null || !node.IsVisible) return false;
+            if (node == null || (!node.IsVisible && !node.IsExplored)) return false;
 
             foreach (var kvp in troops)
             {
@@ -70,8 +70,7 @@ namespace HollowGround.World
             _expeditions.Add(expedition);
             OnExpeditionLaunched?.Invoke(expedition);
 
-            if (!node.IsExplored)
-                WorldMap.Instance.ExploreNode(target);
+            WorldMap.Instance.RefreshVisibility();
 
             return true;
         }
@@ -142,14 +141,26 @@ namespace HollowGround.World
         {
             OnExpeditionPhaseChanged?.Invoke(expedition);
 
-            if (expedition.Phase == ExpeditionPhase.Engaging && expedition.BattleResult != null)
-                BattleManager.Instance?.PublishBattleReport(expedition.BattleResult);
+            if (expedition.Phase == ExpeditionPhase.Engaging)
+            {
+                if (expedition.Target != null && !expedition.Target.IsExplored)
+                    WorldMap.Instance?.ExploreNode(expedition.Target.GridPosition);
+
+                if (expedition.BattleResult != null)
+                    BattleManager.Instance?.PublishBattleReport(expedition.BattleResult);
+            }
+
+            if (WorldMap.Instance != null)
+                WorldMap.Instance.RefreshVisibility();
         }
 
         private void HandleCompleted(Expedition expedition)
         {
             expedition.OnPhaseChanged -= HandlePhaseChanged;
             expedition.OnCompleted -= HandleCompleted;
+
+            if (WorldMap.Instance != null)
+                WorldMap.Instance.RefreshVisibility();
 
             OnExpeditionCompleted?.Invoke(expedition);
         }

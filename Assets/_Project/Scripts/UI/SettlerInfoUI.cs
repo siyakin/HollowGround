@@ -44,9 +44,17 @@ namespace HollowGround.UI
 
         public SettlerWalker Current => _current;
 
+        private void Awake()
+        {
+            if (_reassignBtn != null) _reassignBtn.onClick.AddListener(OnReassignClicked);
+            if (_restBtn != null) _restBtn.onClick.AddListener(OnRestClicked);
+            if (_dismissBtn != null) _dismissBtn.onClick.AddListener(OnDismissClicked);
+        }
+
         public void ShowInfo(SettlerWalker walker)
         {
             _current = walker;
+            _refreshTimer = RefreshInterval;
             gameObject.SetActive(true);
             RefreshDisplay();
             SmartPosition();
@@ -71,7 +79,13 @@ namespace HollowGround.UI
                 return;
             }
 
-            if (!_current.IsActive || _current.gameObject == null)
+            if (!_current.gameObject.activeInHierarchy)
+            {
+                HideInfo();
+                return;
+            }
+
+            if (!_current.IsActive)
             {
                 HideInfo();
                 return;
@@ -82,6 +96,7 @@ namespace HollowGround.UI
             {
                 _refreshTimer = 0f;
                 RefreshDisplay();
+                SmartPosition();
             }
         }
 
@@ -158,6 +173,55 @@ namespace HollowGround.UI
 
             if (_efficiencyText != null) _efficiencyText.text = "100%";
             if (_specialistText != null) _specialistText.text = "None";
+
+            UpdateActionButtonStates();
+        }
+
+        private void UpdateActionButtonStates()
+        {
+            if (_reassignBtn != null)
+                _reassignBtn.interactable = _current.HasJob;
+
+            if (_restBtn != null)
+                _restBtn.interactable = _current.HasJob && _current.CurrentTask != WalkerState.Resting;
+        }
+
+        private void OnReassignClicked()
+        {
+            if (_current == null) return;
+
+            var walker = _current;
+            string prevRole = SettlerRoleInfo.GetDisplayName(walker.Role);
+            HideInfo();
+
+            if (SettlerJobManager.Instance != null)
+                SettlerJobManager.Instance.ReleaseAndReassign(walker);
+
+            ToastUI.Show($"{prevRole} reassigned", UIColors.Default.Ok);
+        }
+
+        private void OnRestClicked()
+        {
+            if (_current == null) return;
+
+            var walker = _current;
+            walker.ForceRest();
+            HideInfo();
+
+            ToastUI.Show("Settler resting", UIColors.Default.Muted);
+        }
+
+        private void OnDismissClicked()
+        {
+            if (_current == null) return;
+
+            var walker = _current;
+            HideInfo();
+
+            if (SettlerManager.Instance != null)
+                SettlerManager.Instance.RemoveSettler(walker);
+
+            ToastUI.Show("Settler dismissed", UIColors.Default.Warn);
         }
 
         private void SmartPosition()

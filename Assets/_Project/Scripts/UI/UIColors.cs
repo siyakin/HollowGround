@@ -90,6 +90,7 @@ namespace HollowGround.UI
         }
 
         public static readonly Color Fog = new(0.12f, 0.12f, 0.14f, 1f);
+        public static readonly Color FogExplored = new(0.18f, 0.18f, 0.21f, 1f);
         public static readonly Color Empty = new(0.28f, 0.28f, 0.3f, 1f);
         public static readonly Color Selected = new(1f, 0.95f, 0.4f, 1f);
         public static readonly Color PanelInner = new(0.14f, 0.15f, 0.17f, 1f);

@@ -177,6 +177,9 @@ namespace HollowGround.Core
             ApplySettlers(data);
             ApplyTerrain(data);
             ApplyExpeditions(data);
+
+            if (WorldMap.Instance != null)
+                WorldMap.Instance.RefreshVisibility();
         }
 
         #region Capture
@@ -628,7 +631,6 @@ namespace HollowGround.Core
                 if (node == null) continue;
 
                 if (ns.IsExplored) node.SetExplored(true);
-                if (ns.IsVisible) node.SetVisible(true);
             }
         }
 
