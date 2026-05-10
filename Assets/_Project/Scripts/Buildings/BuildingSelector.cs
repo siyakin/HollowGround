@@ -68,6 +68,8 @@ namespace HollowGround.Buildings
             float closestBuildingDist = float.MaxValue;
             SettlerWalker closestSettler = null;
             float closestSettlerDist = float.MaxValue;
+            PatrolWalker closestPatrol = null;
+            float closestPatrolDist = float.MaxValue;
 
             foreach (var hit in hits)
             {
@@ -92,7 +94,26 @@ namespace HollowGround.Buildings
                         closestSettler = settler;
                         closestSettlerDist = hit.distance;
                     }
+                    continue;
                 }
+
+                PatrolWalker patrol = hit.collider.GetComponent<PatrolWalker>();
+                if (patrol == null) patrol = hit.collider.GetComponentInParent<PatrolWalker>();
+                if (patrol != null && patrol.IsActive)
+                {
+                    if (hit.distance < closestPatrolDist)
+                    {
+                        closestPatrol = patrol;
+                        closestPatrolDist = hit.distance;
+                    }
+                }
+            }
+
+            if (closestPatrol != null && closestPatrolDist <= closestSettlerDist && closestPatrolDist <= closestBuildingDist)
+            {
+                DeselectAll();
+                SelectPatrol(closestPatrol);
+                return;
             }
 
             if (closestSettler != null && closestSettlerDist <= closestBuildingDist)
@@ -111,6 +132,14 @@ namespace HollowGround.Buildings
             }
 
             DeselectAll();
+        }
+
+        private void SelectPatrol(PatrolWalker patrol)
+        {
+            string name = patrol.GetDisplayName();
+            string role = patrol.GetRoleLabel();
+            string type = patrol.IsHeroWalker ? "Hero" : "Soldier";
+            ToastUI.Show($"{type}: {name} [{role}]", UIColors.Default.Gold);
         }
 
         private void SelectSettler(SettlerWalker settler)

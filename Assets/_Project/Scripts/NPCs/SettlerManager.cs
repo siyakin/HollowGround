@@ -17,6 +17,8 @@ namespace HollowGround.NPCs
         [Header("Animator Controller")]
         [SerializeField] private RuntimeAnimatorController _animatorController;
 
+        public RuntimeAnimatorController AnimatorController => _animatorController;
+
         private readonly List<SettlerWalker> _pool = new();
         private readonly Dictionary<Material, Material> _materialCache = new();
         private static Shader _cachedUrpLitShader;
@@ -42,6 +44,7 @@ namespace HollowGround.NPCs
             _settlerParent = new GameObject(SettlerParentName);
             _settlerParent.transform.SetParent(transform);
             EnsureWalkerManager();
+            EnsurePatrolWalkerManager();
         }
 
         private void EnsureWalkerManager()
@@ -51,6 +54,15 @@ namespace HollowGround.NPCs
             var go = new GameObject("WalkerManager");
             go.transform.SetParent(transform);
             go.AddComponent<WalkerManager>();
+        }
+
+        private void EnsurePatrolWalkerManager()
+        {
+            if (PatrolWalkerManager.Instance != null) return;
+            if (FindAnyObjectByType<PatrolWalkerManager>() != null) return;
+            var go = new GameObject("PatrolWalkerManager");
+            go.transform.SetParent(transform);
+            go.AddComponent<PatrolWalkerManager>();
         }
 
         private void Start()
