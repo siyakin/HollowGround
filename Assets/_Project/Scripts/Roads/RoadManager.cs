@@ -315,7 +315,9 @@ namespace HollowGround.Roads
             }
             else
             {
-                Debug.LogWarning($"[RoadManager] No roads generated for {source.Data.DisplayName} at {source.GridOrigin} | Nearby buildings: {nearbyBuildings.Count} | Existing roads: {_roadCells.Count}");
+                bool doorHasRoad = _roadCells.Contains(sourceDoor);
+                if (!doorHasRoad)
+                    Debug.LogWarning($"[RoadManager] No roads generated for {source.Data.DisplayName} at {source.GridOrigin} | Nearby buildings: {nearbyBuildings.Count} | Existing roads: {_roadCells.Count}");
             }
         }
 

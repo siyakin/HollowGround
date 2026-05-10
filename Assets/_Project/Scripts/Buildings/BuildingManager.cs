@@ -208,6 +208,9 @@ namespace HollowGround.Buildings
         {
             RemoveFromStateList(building);
             AddToStateList(building);
+
+            if (newState == BuildingState.Active || newState == BuildingState.Destroyed)
+                UpdateStorageCapacities();
         }
 
         private void HandleBuildingDestroyed(Building building)
@@ -224,8 +227,7 @@ namespace HollowGround.Buildings
         {
             if (ResourceManager.Instance == null) return;
 
-            int totalStorage = TotalStorageCapacity;
-            if (totalStorage <= 0) return;
+            int totalStorage = ResourceManager.Instance.BaseCapacity + TotalStorageCapacity;
 
             foreach (ResourceType resType in System.Enum.GetValues(typeof(ResourceType)))
                 ResourceManager.Instance.SetCapacity(resType, totalStorage);

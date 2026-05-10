@@ -168,6 +168,16 @@ namespace HollowGround.UI
                 lines.Add($"  Size: {GridSystem.Instance.Width}x{GridSystem.Instance.Height}");
                 lines.Add($"  Cam Grid: ({coords.x}, {coords.y})");
             }
+            lines.Add("");
+
+            var cfg = GameConfig.Instance;
+            if (cfg != null)
+            {
+                lines.Add("<b>Config:</b>");
+                lines.Add($"  DevMode: {cfg.DevMode} | Boost: x{cfg.BoostMultiplier}");
+                lines.Add($"  Build: x{cfg.GetBuildTimeMultiplier:F2} | Prod: x{cfg.GetProductionIntervalMultiplier:F2}");
+                lines.Add($"  Training: x{cfg.GetTrainingTimeMultiplier:F2} | Research: x{cfg.GetResearchTimeMultiplier:F2}");
+            }
 
             lines.Add("");
             lines.Add($"{ColGray}F12 = Debug | ESC = Pause{ColEnd}");

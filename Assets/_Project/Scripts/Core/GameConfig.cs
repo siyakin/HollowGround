@@ -110,13 +110,18 @@ namespace HollowGround.Core
     public abstract class SingletonScriptableObject<T> : ScriptableObject where T : ScriptableObject
     {
         private static T _instance;
+        private static bool _searched;
         public static T Instance
         {
             get
             {
                 if (_instance != null) return _instance;
+                if (_searched) return null;
+                _searched = true;
                 var results = UnityEngine.Resources.LoadAll<T>("");
                 _instance = results.Length > 0 ? results[0] : null;
+                if (_instance == null)
+                    UnityEngine.Debug.LogWarning($"[SingletonSO] {typeof(T).Name} not found in Resources folder!");
                 return _instance;
             }
         }

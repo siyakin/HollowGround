@@ -75,6 +75,8 @@ namespace HollowGround.Resources
             return _capacity.TryGetValue(type, out int val) ? val : _baseCapacity;
         }
 
+        public int BaseCapacity => _baseCapacity;
+
         public void Add(ResourceType type, int amount)
         {
             if (amount <= 0) return;

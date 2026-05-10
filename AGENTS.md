@@ -191,6 +191,7 @@ SettlerPanel, SettlerInfoPanel, PausePanel, DebugPanel, MinimapPanel
 - **#38** Manual road removal aktif/bagli yollari da silebiliyor
 - **#39** Yol olan hucrelere bina yerlestirilebiliyor (partially fixed in v0.25.0)
 - **#40** WorldMap.GenerateDefaultMap runtime SO
+- **REG** Ghost bina yol kenarina getirildiginde kapı otomatik yola donmuyor (AutoRotateToRoad bozulmus)
 
 ### Gorsel/Polish (Editor isi)
 - [x] Post-processing, atmosfer, bina insaat animasyonu, 15+ bina modeli sahne yerlesimi
@@ -226,6 +227,8 @@ En sik tekrar eden sorunlar — yeni kod yazarken dikkat:
 22. `HasEnoughResources()` null ise optimistik `true` don (timing fix)
 23. `git checkout HEAD -- scene.unity` SerializeField baglantilarini kalici kaybeder
 24. `LoadSettlers()` SphereCollider eklemeli — CreatePoolSettler ile ayni setup
+25. `GameState.Building` tick loop'larini DURDURMAMALI — sadece `Paused` durdurur. `!= Playing` YASAK, `== Paused` kullan
+26. `HandleBuildingStateChanged` state degisikliginde `UpdateStorageCapacities()` cagirmali — Constructing→Active gecisinde storage guncellenmezse capacity artmaz
 
 ---
 
