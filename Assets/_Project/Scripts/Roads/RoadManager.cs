@@ -235,6 +235,8 @@ namespace HollowGround.Roads
             {
                 Vector2Int? alt = FindNearestReachableCell(sourceDoor);
                 if (alt == null)
+                    alt = FindReachableCellAroundBuilding(source);
+                if (alt == null)
                 {
                     Debug.LogWarning($"[RoadManager] No reachable cell near door {sourceDoor} for {source.Data.DisplayName}");
                     return;
@@ -274,6 +276,7 @@ namespace HollowGround.Roads
                 if (!IsReachableCell(targetDoor))
                 {
                     Vector2Int? alt = FindNearestReachableCell(targetDoor);
+                    if (alt == null) alt = FindReachableCellAroundBuilding(target);
                     if (alt == null) continue;
                     targetDoor = alt.Value;
                 }
@@ -336,6 +339,28 @@ namespace HollowGround.Roads
                 var next = cell + dir;
                 if (IsReachableCell(next))
                     return next;
+            }
+            return null;
+        }
+
+        private Vector2Int? FindReachableCellAroundBuilding(Building building)
+        {
+            if (GridSystem.Instance == null) return null;
+            var (sx, sz) = building.GetRotatedFootprint();
+            var origin = building.GridOrigin;
+
+            for (int ring = 1; ring <= 3; ring++)
+            {
+                for (int x = origin.x - ring; x <= origin.x + sx - 1 + ring; x++)
+                {
+                    for (int z = origin.y - ring; z <= origin.y + sz - 1 + ring; z++)
+                    {
+                        if (x >= origin.x && x < origin.x + sx && z >= origin.y && z < origin.y + sz)
+                            continue;
+                        if (IsReachableCell(new Vector2Int(x, z)))
+                            return new Vector2Int(x, z);
+                    }
+                }
             }
             return null;
         }

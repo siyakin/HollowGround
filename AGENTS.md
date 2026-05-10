@@ -191,7 +191,6 @@ SettlerPanel, SettlerInfoPanel, PausePanel, DebugPanel, MinimapPanel
 - **#38** Manual road removal aktif/bagli yollari da silebiliyor
 - **#39** Yol olan hucrelere bina yerlestirilebiliyor (partially fixed in v0.25.0)
 - **#40** WorldMap.GenerateDefaultMap runtime SO
-- **REG** Ghost bina yol kenarina getirildiginde kapı otomatik yola donmuyor (AutoRotateToRoad bozulmus)
 
 ### Gorsel/Polish (Editor isi)
 - [x] Post-processing, atmosfer, bina insaat animasyonu, 15+ bina modeli sahne yerlesimi
