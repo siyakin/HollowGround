@@ -183,6 +183,23 @@ SettlerPanel, SettlerInfoPanel, PausePanel, DebugPanel, MinimapPanel
 - [ ] 5+ karakter modeli sahne yerlesimi
 - [ ] Sahne dekorasyonu ve atmosfer
 
+### Planlanan Ozellikler (v0.29+)
+
+#### UI Panel Yonetimi
+- [ ] **Full-screen panel kavrami**: Buyuk paneller (WorldMap, TechTree, FactionTrade, SaveMenu) acik oldugunda sistem bilmeli
+- [ ] **Minimap davranisi**: Full-screen panel acikken minimap gizlenmeli veya altta kalmali
+- [ ] **Full-screen panel = pause**: Buyuk panel acikken oyun donmali, panel aktif/fokus olmali
+
+#### World Map Fog of War
+- [ ] **Starcraft tarzi FOW**: Expedition gönderilmemis/sehir görüsü disindaki node'lar haritada görünmez olmali
+- [ ] Expedition ile kesif veya savasla açilim
+- [ ] Sehir merkezinden belirli mesafe otomatik görünür
+
+#### Karakter Gorunumu
+- [ ] **Hero/Soldier walker**: Hero ve soldier'lar settler gibi etrafta dolaşabilmeli (ara sıra)
+- [ ] **Gorev walker**: Expedition/göreve gönderilen karakterin yürüyüşü izlenebilmeli
+- [ ] **SettlerInfo panel**: Settler tikla bilgisi calismali (su an kirik/eksik)
+
 ### Acik Issue'lar
 - **#34** Training queue not restored on load
 - **#35** Building ProductionTimer save/load eksik

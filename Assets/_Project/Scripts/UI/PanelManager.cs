@@ -11,12 +11,19 @@ namespace HollowGround.UI
 
         public string CurrentPanel => _currentPanelId;
         public bool IsPanelOpen => _currentPanelId != null;
+        public bool IsFullScreenPanelOpen => _currentPanelId != null && FullScreenPanels.Contains(_currentPanelId);
+        public bool IsFullScreenPanel(string id) => FullScreenPanels.Contains(id);
         public event System.Action<string> OnPanelOpened;
         public event System.Action<string> OnPanelClosed;
 
         private static readonly HashSet<string> OverlayPanels = new()
         {
             "BuildingInfo", "BattleReport", "Toast", "ResourceBar", "Minimap"
+        };
+
+        private static readonly HashSet<string> FullScreenPanels = new()
+        {
+            "WorldMap", "TechTree", "FactionTrade", "SaveMenu", "About"
         };
 
         public void Register(string id, GameObject panel)

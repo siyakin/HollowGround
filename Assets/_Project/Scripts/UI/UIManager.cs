@@ -37,6 +37,9 @@ namespace HollowGround.UI
             InitPauseController();
             InitActionBar();
 
+            _panels.OnPanelOpened += OnPanelOpened;
+            _panels.OnPanelClosed += OnPanelClosed;
+
             if (RoadManager.Instance != null)
                 RoadManager.Instance.OnRoadMessage += OnRoadMessage;
         }
@@ -51,6 +54,26 @@ namespace HollowGround.UI
         private void OnRoadMessage(string text, Color color)
         {
             ToastUI.Show(text, color);
+        }
+
+        private void OnPanelOpened(string id)
+        {
+            if (_panels.IsFullScreenPanel(id))
+                _pause.OnFullScreenPanelOpened();
+            UpdateMinimapVisibility();
+        }
+
+        private void OnPanelClosed(string id)
+        {
+            if (_panels.IsFullScreenPanel(id))
+                _pause.OnFullScreenPanelClosed();
+            UpdateMinimapVisibility();
+        }
+
+        private void UpdateMinimapVisibility()
+        {
+            if (_minimapPanel == null) return;
+            _minimapPanel.SetActive(!_panels.IsFullScreenPanelOpen);
         }
 
         private void InitPanelManager()

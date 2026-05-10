@@ -15,9 +15,10 @@ namespace HollowGround.UI
     public class PauseController
     {
         public bool IsPaused { get; private set; }
+        public bool IsFullScreenPaused { get; private set; }
         public PauseSubState SubState { get; private set; } = PauseSubState.None;
 
-        public bool IsInputBlocked => IsPaused || SubState == PauseSubState.SaveMenu || SubState == PauseSubState.About;
+        public bool IsInputBlocked => IsPaused || IsFullScreenPaused || SubState == PauseSubState.SaveMenu || SubState == PauseSubState.About;
 
         private readonly GameObject _pausePanel;
         private readonly GameObject _saveMenuPanel;
@@ -161,6 +162,27 @@ namespace HollowGround.UI
         {
             if (debugPanel != null)
                 debugPanel.SetActive(!debugPanel.activeSelf);
+        }
+
+        private int _savedSpeedBeforeFullScreen;
+
+        public void OnFullScreenPanelOpened()
+        {
+            if (IsPaused || IsFullScreenPaused) return;
+            IsFullScreenPaused = true;
+            if (TimeManager.Instance != null)
+            {
+                _savedSpeedBeforeFullScreen = TimeManager.Instance.GameSpeed;
+                TimeManager.Instance.SetSpeed(0);
+            }
+        }
+
+        public void OnFullScreenPanelClosed()
+        {
+            if (!IsFullScreenPaused) return;
+            IsFullScreenPaused = false;
+            if (TimeManager.Instance != null && TimeManager.Instance.IsPaused)
+                TimeManager.Instance.SetSpeed(_savedSpeedBeforeFullScreen > 0 ? _savedSpeedBeforeFullScreen : 1);
         }
 
         private void CloseAbout()
