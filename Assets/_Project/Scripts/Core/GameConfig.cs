@@ -49,6 +49,18 @@ namespace HollowGround.Core
         public int WallDefenseBonus = 20;
         [Range(0f, 1f)] public float DefeatTroopLossRatio = 0.6f;
 
+        [Header("Tooltips")]
+        [Tooltip("Enable tooltip on world buildings (hover)")]
+        public bool TooltipWorldBuildings = true;
+        [Tooltip("Enable tooltip on world settlers (hover)")]
+        public bool TooltipWorldSettlers = true;
+        [Tooltip("Enable tooltip on BuildMenu cards")]
+        public bool TooltipBuildMenu = true;
+        [Tooltip("Show tooltip delay in seconds")]
+        [Range(0.1f, 1f)] public float TooltipShowDelay = 0.4f;
+        [Tooltip("Which building states show tooltip in world")]
+        public TooltipBuildingState TooltipBuildingMinState = TooltipBuildingState.Constructing;
+
         [Header("Settlers")]
         public float SettlersPerPopulation = 0.2f;
         public int MaxSettlers = 20;
@@ -149,5 +161,14 @@ namespace HollowGround.Core
                 return _instance;
             }
         }
+    }
+
+    public enum TooltipBuildingState
+    {
+        None,
+        Constructing,
+        Active,
+        Upgrading,
+        Damaged
     }
 }

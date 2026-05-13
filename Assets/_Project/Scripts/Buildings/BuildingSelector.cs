@@ -1,4 +1,5 @@
-﻿using HollowGround.NPCs;
+﻿using HollowGround.Core;
+using HollowGround.NPCs;
 using HollowGround.UI;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -8,12 +9,17 @@ namespace HollowGround.Buildings
     public class BuildingSelector : MonoBehaviour
     {
         [SerializeField] private float _raycastDistance = 100f;
+        [SerializeField] private float _hoverRaycastInterval = 0.08f;
 
         private Building _selectedBuilding;
         private SettlerWalker _selectedSettler;
         private UnityEngine.Camera _cam;
         private BuildingInfoUI _buildingInfoUI;
         private SettlerInfoUI _settlerInfoUI;
+
+        private float _hoverTimer;
+        private Building _hoveredBuilding;
+        private SettlerWalker _hoveredSettler;
 
         public Building SelectedBuilding => _selectedBuilding;
         public SettlerWalker SelectedSettler => _selectedSettler;
@@ -51,6 +57,102 @@ namespace HollowGround.Buildings
             else if (Mouse.current.rightButton.wasPressedThisFrame || Keyboard.current.escapeKey.wasPressedThisFrame)
             {
                 DeselectAll();
+            }
+
+            if (!overUI)
+                HandleHover();
+            else
+                ClearHover();
+        }
+
+        private void HandleHover()
+        {
+            var cfg = GameConfig.Instance;
+            bool buildingsEnabled = cfg != null && cfg.TooltipWorldBuildings;
+            bool settlersEnabled = cfg != null && cfg.TooltipWorldSettlers;
+
+            if (!buildingsEnabled && !settlersEnabled) return;
+
+            _hoverTimer += Time.unscaledDeltaTime;
+            if (_hoverTimer < _hoverRaycastInterval) return;
+            _hoverTimer = 0f;
+
+            if (_cam == null) _cam = UnityEngine.Camera.main;
+            if (_cam == null) return;
+
+            Vector2 mousePos = Mouse.current.position.ReadValue();
+            Ray ray = _cam.ScreenPointToRay(mousePos);
+            var hits = Physics.RaycastAll(ray, _raycastDistance);
+
+            Building newBuilding = null;
+            float buildingDist = float.MaxValue;
+            SettlerWalker newSettler = null;
+            float settlerDist = float.MaxValue;
+
+            foreach (var hit in hits)
+            {
+                Building b = hit.collider.GetComponent<Building>();
+                if (b == null) b = hit.collider.GetComponentInParent<Building>();
+                if (b != null && b.State != BuildingState.Placing && buildingsEnabled
+                    && IsStateAllowed(b.State) && hit.distance < buildingDist)
+                {
+                    newBuilding = b;
+                    buildingDist = hit.distance;
+                    continue;
+                }
+
+                SettlerWalker s = hit.collider.GetComponent<SettlerWalker>();
+                if (s == null) s = hit.collider.GetComponentInParent<SettlerWalker>();
+                if (s != null && s.IsActive && settlersEnabled && hit.distance < settlerDist)
+                {
+                    newSettler = s;
+                    settlerDist = hit.distance;
+                }
+            }
+
+            if (newSettler != null && settlerDist <= buildingDist)
+            {
+                if (_selectedSettler == newSettler)
+                {
+                    ClearHover();
+                    return;
+                }
+                if (_hoveredSettler != newSettler)
+                {
+                    _hoveredSettler = newSettler;
+                    _hoveredBuilding = null;
+                    var captured = newSettler;
+                    TooltipUI.ScheduleShow(() => TooltipContentBuilder.ForSettler(captured));
+                }
+            }
+            else if (newBuilding != null)
+            {
+                if (_selectedBuilding == newBuilding)
+                {
+                    ClearHover();
+                    return;
+                }
+                if (_hoveredBuilding != newBuilding)
+                {
+                    _hoveredBuilding = newBuilding;
+                    _hoveredSettler = null;
+                    var captured = newBuilding;
+                    TooltipUI.ScheduleShow(() => TooltipContentBuilder.ForBuilding(captured));
+                }
+            }
+            else
+            {
+                ClearHover();
+            }
+        }
+
+        private void ClearHover()
+        {
+            if (_hoveredBuilding != null || _hoveredSettler != null)
+            {
+                _hoveredBuilding = null;
+                _hoveredSettler = null;
+                TooltipUI.Hide();
             }
         }
 
@@ -195,6 +297,22 @@ namespace HollowGround.Buildings
                 _settlerInfoUI = FindAnyObjectByType<SettlerInfoUI>(FindObjectsInactive.Include);
             if (_settlerInfoUI != null)
                 _settlerInfoUI.HideInfo();
+        }
+
+        private static bool IsStateAllowed(BuildingState state)
+        {
+            var cfg = GameConfig.Instance;
+            if (cfg == null) return true;
+
+            return cfg.TooltipBuildingMinState switch
+            {
+                TooltipBuildingState.None => false,
+                TooltipBuildingState.Constructing => state != BuildingState.Placing,
+                TooltipBuildingState.Active => state == BuildingState.Active || state == BuildingState.Upgrading,
+                TooltipBuildingState.Upgrading => state == BuildingState.Upgrading,
+                TooltipBuildingState.Damaged => state == BuildingState.Damaged,
+                _ => true
+            };
         }
     }
 }

@@ -29,7 +29,9 @@ namespace HollowGround.UI
             public ResourceCostDisplay CostDisplay;
             public GameObject LockedOverlay;
 
-            private ThemedButton _themedBtn;
+            [System.NonSerialized] private ThemedButton _themedBtn;
+            [System.NonSerialized] private TooltipTrigger _tooltipTrigger;
+
             public ThemedButton ThemedBtn
             {
                 get
@@ -37,6 +39,20 @@ namespace HollowGround.UI
                     if (_themedBtn == null && Button != null)
                         _themedBtn = Button.GetComponent<ThemedButton>() ?? Button.gameObject.AddComponent<ThemedButton>();
                     return _themedBtn;
+                }
+            }
+
+            public TooltipTrigger Tooltip
+            {
+                get
+                {
+                    if (_tooltipTrigger == null && Button != null)
+                    {
+                        _tooltipTrigger = Button.GetComponent<TooltipTrigger>();
+                        if (_tooltipTrigger == null)
+                            _tooltipTrigger = Button.gameObject.AddComponent<TooltipTrigger>();
+                    }
+                    return _tooltipTrigger;
                 }
             }
         }
@@ -185,6 +201,8 @@ namespace HollowGround.UI
 
                 if (card.LockedOverlay != null)
                     card.LockedOverlay.SetActive(!ccUnlocked);
+
+                UpdateCardTooltip(card);
             }
         }
 
@@ -194,6 +212,23 @@ namespace HollowGround.UI
             var costs = data.GetCostForLevel(1);
             if (costs.Count == 0) return true;
             return ResourceManager.Instance.CanAfford(costs);
+        }
+
+        private void UpdateCardTooltip(BuildingCard card)
+        {
+            if (card.Data == null || card.Tooltip == null) return;
+
+            var cfg = Core.GameConfig.Instance;
+            bool enabled = cfg == null || cfg.TooltipBuildMenu;
+
+            if (!enabled)
+            {
+                card.Tooltip.Clear();
+                return;
+            }
+
+            var captured = card.Data;
+            card.Tooltip.SetProvider(() => TooltipContentBuilder.ForBuildingData(captured));
         }
 
         public void SelectBuilding(int cardIndex)

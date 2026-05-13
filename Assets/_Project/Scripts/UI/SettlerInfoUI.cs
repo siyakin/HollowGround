@@ -96,7 +96,6 @@ namespace HollowGround.UI
             {
                 _refreshTimer = 0f;
                 RefreshDisplay();
-                SmartPosition();
             }
         }
 

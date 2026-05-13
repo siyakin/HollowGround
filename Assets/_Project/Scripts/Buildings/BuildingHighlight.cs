@@ -10,6 +10,7 @@ namespace HollowGround.Buildings
         [SerializeField] private float _highlightAlpha = 0.15f;
         [SerializeField] private float _pulseSpeed = 2f;
         [SerializeField] private float _scaleFactor = 1.05f;
+        [SerializeField] private Shader _highlightShader;
 
         private Building _building;
         private BuildingSelector _selector;
@@ -190,21 +191,32 @@ namespace HollowGround.Buildings
 
         private Material CreateHighlightMaterial()
         {
-            Shader shader = Shader.Find("Universal Render Pipeline/Unlit")
-                         ?? Shader.Find("Sprites/Default");
+            Shader shader = _highlightShader;
+            if (shader == null)
+                shader = Shader.Find("Universal Render Pipeline/Unlit");
+            if (shader == null)
+                shader = Shader.Find("Universal Render Pipeline/Lit");
 
             var mat = new Material(shader);
-            mat.SetFloat("_Surface", 1f);
-            mat.SetFloat("_Blend", 0f);
-            mat.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
-            mat.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
-            mat.SetInt("_ZWrite", 0);
+            if (mat.HasProperty("_Surface"))
+                mat.SetFloat("_Surface", 1f);
+            if (mat.HasProperty("_Blend"))
+                mat.SetFloat("_Blend", 0f);
+            if (mat.HasProperty("_SrcBlend"))
+                mat.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
+            if (mat.HasProperty("_DstBlend"))
+                mat.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+            if (mat.HasProperty("_ZWrite"))
+                mat.SetInt("_ZWrite", 0);
             mat.SetOverrideTag("RenderType", "Transparent");
-            mat.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
+            if (mat.HasProperty("_Surface"))
+                mat.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
             mat.renderQueue = (int)UnityEngine.Rendering.RenderQueue.Transparent;
 
-            Color c = new Color(_highlightColor.r, _highlightColor.g, _highlightColor.b, _highlightAlpha);
-            mat.SetColor("_BaseColor", c);
+            if (mat.HasProperty("_BaseColor"))
+                mat.SetColor("_BaseColor", new Color(_highlightColor.r, _highlightColor.g, _highlightColor.b, _highlightAlpha));
+            else if (mat.HasProperty("_Color"))
+                mat.SetColor("_Color", new Color(_highlightColor.r, _highlightColor.g, _highlightColor.b, _highlightAlpha));
 
             return mat;
         }
