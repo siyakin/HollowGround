@@ -51,9 +51,9 @@ MonoBehaviour:
   SceneFogCCVisionRadius: 6
   SceneFogWatchTowerVisionRadius: 8
   SceneFogInitialRevealRadius: 12
-  StartingCCPosition: {x: 0, y: 0}
+  StartingCCPosition: {x: 8, y: 8}
   UseCustomCameraPosition: 1
-  StartingCameraPosition: {x: 0, y: 0}
+  StartingCameraPosition: {x: 10, y: -10}
   EnableWorker: 1
   EnableAdventurer: 1
   EnableSuit: 1

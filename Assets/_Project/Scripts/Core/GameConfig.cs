@@ -76,10 +76,11 @@ namespace HollowGround.Core
         public int SceneFogInitialRevealRadius = 12;
 
         [Header("Starting Position")]
-        [Tooltip("Command Center starting grid position (bottom-left corner of map if small values)")]
-        public Vector2Int StartingCCPosition = new Vector2Int(6, 6);
-        [Tooltip("Camera starting grid position. If set, overrides CC-based centering.")]
-        public bool UseCustomCameraPosition = true;
+        [Tooltip("Command Center starting grid position. Camera centers here on start.")]
+        public Vector2Int StartingCCPosition = new Vector2Int(24, 24);
+        [Tooltip("If true, camera starts at StartingCameraPosition instead of CC position.")]
+        public bool UseCustomCameraPosition = false;
+        [Tooltip("Custom camera grid position (only used when UseCustomCameraPosition=true).")]
         public Vector2Int StartingCameraPosition = new Vector2Int(5, -10);
 
         [Header("Settler Models")]
