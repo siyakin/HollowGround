@@ -126,10 +126,21 @@ namespace HollowGround.Buildings
 
             _cachedCoords = GridSystem.Instance.GetGridCoordinates(groundPoint);
 
+            (int sx, int sz) = GetRotatedSize();
+
+            if (!GridSystem.Instance.IsValidCoordinate(_cachedCoords.x, _cachedCoords.y) ||
+                !GridSystem.Instance.IsValidCoordinate(_cachedCoords.x + sx - 1, _cachedCoords.y + sz - 1))
+            {
+                _ghostObject.SetActive(false);
+                _isValidPlacement = false;
+                return;
+            }
+
+            _ghostObject.SetActive(true);
+
             if (!_manualRotate)
                 AutoRotateToRoad();
 
-            (int sx, int sz) = GetRotatedSize();
             Vector3 snapped = GridSystem.Instance.GetWorldPosition(_cachedCoords.x, _cachedCoords.y);
             float offsetX = (sx - 1) * GridSystem.Instance.CellSize * 0.5f;
             float offsetZ = (sz - 1) * GridSystem.Instance.CellSize * 0.5f;

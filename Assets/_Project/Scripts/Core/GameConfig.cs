@@ -78,6 +78,9 @@ namespace HollowGround.Core
         [Header("Starting Position")]
         [Tooltip("Command Center starting grid position (bottom-left corner of map if small values)")]
         public Vector2Int StartingCCPosition = new Vector2Int(6, 6);
+        [Tooltip("Camera starting grid position. If set, overrides CC-based centering.")]
+        public bool UseCustomCameraPosition = true;
+        public Vector2Int StartingCameraPosition = new Vector2Int(5, -10);
 
         [Header("Settler Models")]
         public bool EnableWorker = true;

@@ -161,18 +161,21 @@ namespace HollowGround.Core
             var strategyCam = FindAnyObjectByType<HollowGround.Camera.StrategyCamera>();
             if (strategyCam == null) return;
 
+            var cfg = GameConfig.Instance;
+            Vector2Int gridPos;
+
+            if (cfg != null && cfg.UseCustomCameraPosition)
+                gridPos = cfg.StartingCameraPosition;
+            else if (cfg != null)
+                gridPos = cfg.StartingCCPosition;
+            else
+                gridPos = _ccPos;
+
             Vector3 target;
             if (GridSystem.Instance != null)
-            {
-                float cellSize = GridSystem.Instance.CellSize;
-                var cfg = GameConfig.Instance;
-                Vector2Int cc = cfg != null ? cfg.StartingCCPosition : _ccPos;
-                target = GridSystem.Instance.GetWorldPosition(cc.x, cc.y);
-            }
+                target = GridSystem.Instance.GetWorldPosition(gridPos.x, gridPos.y);
             else
-            {
-                target = new Vector3(12f, 0f, 12f);
-            }
+                target = new Vector3(gridPos.x * 2f, 0f, gridPos.y * 2f);
 
             strategyCam.transform.position = target;
             strategyCam.FocusOn(target);

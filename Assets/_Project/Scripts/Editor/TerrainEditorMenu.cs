@@ -28,6 +28,86 @@ namespace HollowGround.Editor
             Debug.Log("[Terrain] Created empty MapTemplate (100x100, all Flat). Use Paint tool to add terrain.");
         }
 
+        [MenuItem("HollowGround/Terrain/Generate All-Flat DefaultMap (100x100)")]
+        public static void GenerateAllFlatDefaultMap()
+        {
+            string folder = "Assets/_Project/ScriptableObjects/Maps";
+            EnsureFolderExists(folder);
+
+            string path = $"{folder}/DefaultMap.asset";
+            var existing = AssetDatabase.LoadAssetAtPath<MapTemplate>(path);
+            if (existing != null)
+            {
+                Undo.RecordObject(existing, "Regenerate DefaultMap");
+                existing.Initialize(100, 100);
+                existing.Fill(TerrainType.Flat);
+                EditorUtility.SetDirty(existing);
+            }
+            else
+            {
+                var template = ScriptableObject.CreateInstance<MapTemplate>();
+                template.Initialize(100, 100);
+                template.Fill(TerrainType.Flat);
+                AssetDatabase.CreateAsset(template, path);
+            }
+
+            AssetDatabase.SaveAssets();
+            Debug.Log("[Terrain] Generated all-flat DefaultMap (100x100, matches GridSystem). Every cell is buildable.");
+        }
+
+        [MenuItem("HollowGround/Terrain/Generate Bordered DefaultMap")]
+        public static void GenerateBorderedDefaultMap()
+        {
+            string folder = "Assets/_Project/ScriptableObjects/Maps";
+            EnsureFolderExists(folder);
+
+            int size = 100;
+            int border = 2;
+
+            string path = $"{folder}/DefaultMap.asset";
+            MapTemplate template;
+
+            var existing = AssetDatabase.LoadAssetAtPath<MapTemplate>(path);
+            if (existing != null)
+            {
+                template = existing;
+                Undo.RecordObject(template, "Regenerate DefaultMap");
+            }
+            else
+            {
+                template = ScriptableObject.CreateInstance<MapTemplate>();
+            }
+
+            template.Initialize(size, size);
+            template.Fill(TerrainType.Flat);
+
+            for (int x = 0; x < size; x++)
+            {
+                for (int z = 0; z < size; z++)
+                {
+                    if (x < border || x >= size - border || z < border || z >= size - border)
+                        template.SetTile(x, z, TerrainType.Mountain);
+                }
+            }
+
+            if (existing == null)
+                AssetDatabase.CreateAsset(template, path);
+
+            EditorUtility.SetDirty(template);
+            AssetDatabase.SaveAssets();
+            Debug.Log($"[Terrain] Generated bordered DefaultMap ({size}x{size}, {border}-cell mountain border).");
+        }
+
+        private static void EnsureFolderExists(string folder)
+        {
+            if (!AssetDatabase.IsValidFolder(folder))
+            {
+                if (!AssetDatabase.IsValidFolder("Assets/_Project/ScriptableObjects"))
+                    AssetDatabase.CreateFolder("Assets/_Project", "ScriptableObjects");
+                AssetDatabase.CreateFolder("Assets/_Project/ScriptableObjects", "Maps");
+            }
+        }
+
         [MenuItem("HollowGround/Terrain/Create Terrain Materials")]
         public static void CreateMaterials()
         {

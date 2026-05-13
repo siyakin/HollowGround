@@ -38,8 +38,8 @@ namespace HollowGround.Camera
         [SerializeField] private float _tiltSpeed   = 80f;
 
         [Header("Bounds")]
-        [SerializeField] private Vector2 _boundsMin = new(-10f, -10f);
-        [SerializeField] private Vector2 _boundsMax = new(110f, 110f);
+        [SerializeField] private Vector2 _boundsMin = new(-5f, -5f);
+        [SerializeField] private Vector2 _boundsMax = new(205f, 205f);
 
         private Vector3 _targetPos;
         private float   _targetYaw;

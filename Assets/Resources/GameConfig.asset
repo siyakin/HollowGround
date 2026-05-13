@@ -46,6 +46,14 @@ MonoBehaviour:
   SettlerWorkDuration: 8
   SettlerRestDuration: 5
   WorldMapBaseVisionRadius: 2
+  EnableSceneFog: 1
+  SceneFogBaseVisionRadius: 3
+  SceneFogCCVisionRadius: 6
+  SceneFogWatchTowerVisionRadius: 8
+  SceneFogInitialRevealRadius: 12
+  StartingCCPosition: {x: 0, y: 0}
+  UseCustomCameraPosition: 1
+  StartingCameraPosition: {x: 0, y: 0}
   EnableWorker: 1
   EnableAdventurer: 1
   EnableSuit: 1

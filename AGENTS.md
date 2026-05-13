@@ -1,6 +1,6 @@
 # Hollow Ground — AGENTS.md
 
-## Mevcut Versiyon: 0.28.0
+## Mevcut Versiyon: 0.29.0
 
 ## Versiyon Kurallari
 
@@ -164,6 +164,7 @@ SettlerPanel, SettlerInfoPanel, PausePanel, DebugPanel, MinimapPanel
 | 17b | Toast Overhaul: Stacked multi-toast, slide animation, load toast suppression |
 | 18 | Garden & Merge: 4-garden merge, NeedsRoads flag, FBX updates |
 | 19 | DebugHUD 3-tab + quest triggers + TrainingPanel fix + playtest (v0.27.0) |
+| 20 | Grid/Ground boyut uyumu: MapTemplate 100x100 all-flat, Ground scale 20, ghost bounds check (v0.29.0) |
 
 **Playtest:** Faz 11 (13/13) ve Faz 19 (15/15) tam gecti.
 
@@ -245,6 +246,10 @@ En sik tekrar eden sorunlar — yeni kod yazarken dikkat:
 24. `LoadSettlers()` SphereCollider eklemeli — CreatePoolSettler ile ayni setup
 25. `GameState.Building` tick loop'larini DURDURMAMALI — sadece `Paused` durdurur. `!= Playing` YASAK, `== Paused` kullan
 26. `HandleBuildingStateChanged` state degisikliginde `UpdateStorageCapacities()` cagirmali — Constructing→Active gecisinde storage guncellenmezse capacity artmaz
+27. **GridSystem/MapTemplate boyut uyumu ZORUNLU**: GridSystem 100x100, MapTemplate de 100x100 olmali. Farkli olursa `GetTile()` out-of-bounds → Mountain doner, grid disinda yapilamaz alan olusur
+28. **Ground plane scale grid'i tam kapsamali**: Grid 100x100 cellSize 2 = 200x200 world unit. Ground plane scale 20 = 200x200. Scale 22 = 220x220 olursa 10m'lik yapilamaz border olusur
+29. **Sahne `MapTemplate.asset` kullanir, `DefaultMap.asset` degil**: `_mapTemplate` SerializeField reference → `Assets/_Project/ScriptableObjects/Maps/MapTemplate.asset`. Yanlis dosyayi duzenlemek degisikligi gostermez
+30. **Ghost bina grid disinda gorunebilir**: BuildingPlacer matematiksel sonsuz plane raycast yapar. `IsValidCoordinate` check ile `SetActive(false)` yapilmazsa ground disinda ghost gorunur
 
 ---
 
@@ -303,6 +308,7 @@ En sik tekrar eden sorunlar — yeni kod yazarken dikkat:
 
 ### Editor Menuleri
 - `HollowGround > Setup UI Panels` / `Setup Save Menu` / `Setup Minimap` / `Setup Ground & Camera`
+- `HollowGround > Terrain/Create Empty MapTemplate` / `Generate All-Flat DefaultMap (100x100)` / `Generate Bordered DefaultMap`
 - `HollowGround > FBX/Configure All Building FBX Imports` / `Models/Bind All Building Models`
 - `HollowGround > Settlers/...` (Avatar fix, clip bake, test)
 
@@ -310,8 +316,6 @@ En sik tekrar eden sorunlar — yeni kod yazarken dikkat:
 
 ## Bina Modelleri (Blender → Unity)
 
-- Rehber: `Docs/BLENDER_MODELING_GUIDE.md` — olculer, renk paleti
-- Prompt serisi: `Docs/BLENDER_PROMPTS.md` — kopyala-yapistir prompt'lar
 - Grid cell: 2m. 1x1 max 1.9x1.9m, 2x2 max 3.9x3.9m
 - Her bina: 7 model (L01, L03, L05, L10, Construct, Damaged, Destroyed)
 - 15 bina x 7 model = 105 FBX tamamlandi
