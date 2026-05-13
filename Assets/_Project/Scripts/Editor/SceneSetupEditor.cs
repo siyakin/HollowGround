@@ -1213,5 +1213,68 @@ namespace HollowGround.Editor
         }
 
         #endregion
+
+        #region Building Prefab Setup
+
+        const string BUILDING_BASE_PREFAB_PATH = "Assets/_Project/Prefabs/Buildings/BuildingBase.prefab";
+
+        [MenuItem("HollowGround/Buildings/Create Base Prefab")]
+        public static void CreateBuildingBasePrefab()
+        {
+            var existing = AssetDatabase.LoadAssetAtPath<GameObject>(BUILDING_BASE_PREFAB_PATH);
+            if (existing != null)
+            {
+                Debug.Log("[Buildings] BuildingBase prefab already exists.");
+                return;
+            }
+
+            var go = new GameObject("BuildingBase");
+            go.AddComponent<BoxCollider>();
+            go.AddComponent<BuildingHighlight>();
+            go.AddComponent<DamageEffects>();
+            go.AddComponent<Building>();
+            go.layer = LayerMask.NameToLayer("Building");
+
+            System.IO.Directory.CreateDirectory("Assets/_Project/Prefabs/Buildings");
+            PrefabUtility.SaveAsPrefabAsset(go, BUILDING_BASE_PREFAB_PATH);
+            Object.DestroyImmediate(go);
+
+            Debug.Log("[Buildings] BuildingBase prefab created at " + BUILDING_BASE_PREFAB_PATH);
+        }
+
+        [MenuItem("HollowGround/Buildings/Assign Base Prefab to All BuildingData")]
+        public static void AssignBasePrefabToAllBuildingData()
+        {
+            var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(BUILDING_BASE_PREFAB_PATH);
+            if (prefab == null)
+            {
+                Debug.LogWarning("[Buildings] BuildingBase prefab not found. Run Create Base Prefab first.");
+                return;
+            }
+
+            int count = 0;
+            string[] guids = AssetDatabase.FindAssets("t:BuildingData");
+            foreach (var guid in guids)
+            {
+                string path = AssetDatabase.GUIDToAssetPath(guid);
+                var bd = AssetDatabase.LoadAssetAtPath<BuildingData>(path);
+                if (bd == null) continue;
+
+                if (bd.BuildingPrefab == null)
+                {
+                    SerializedObject so = new SerializedObject(bd);
+                    var prop = so.FindProperty("BuildingPrefab");
+                    if (prop != null) prop.objectReferenceValue = prefab;
+                    so.ApplyModifiedProperties();
+                    EditorUtility.SetDirty(bd);
+                    count++;
+                }
+            }
+
+            AssetDatabase.SaveAssets();
+            Debug.Log($"[Buildings] Assigned BuildingBase prefab to {count} BuildingData assets.");
+        }
+
+        #endregion
     }
 }

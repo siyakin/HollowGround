@@ -58,6 +58,10 @@ namespace HollowGround.Buildings
         [Header("Models")]
         public BuildingModels Models;
 
+        [Header("Prefab")]
+        [Tooltip("Building prefab with Building, BoxCollider, BuildingHighlight, DamageEffects. If null, Building.Create uses new GameObject().")]
+        public GameObject BuildingPrefab;
+
         [Header("Size")]
         public int SizeX = 1;
         public int SizeZ = 1;

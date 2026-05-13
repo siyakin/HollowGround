@@ -47,10 +47,21 @@ namespace HollowGround.Buildings
 
         public static Building Create(BuildingData data, Vector2Int gridOrigin, int rotation = 0)
         {
-            var go = new GameObject(data.DisplayName);
+            GameObject go;
+
+            if (data.BuildingPrefab != null)
+            {
+                go = Instantiate(data.BuildingPrefab);
+                go.name = data.DisplayName;
+            }
+            else
+            {
+                go = new GameObject(data.DisplayName);
+            }
+
             PositionBuildingObject(go, data, gridOrigin, rotation);
 
-            var building = go.AddComponent<Building>();
+            var building = go.GetComponent<Building>() ?? go.AddComponent<Building>();
             building.Initialize(data, gridOrigin, rotation);
             return building;
         }
@@ -87,14 +98,16 @@ namespace HollowGround.Buildings
             ConstructionProgress = 0f;
 
             var (sx, sz) = GetRotatedFootprint();
-            var col = gameObject.AddComponent<BoxCollider>();
+            var col = GetComponent<BoxCollider>() ?? gameObject.AddComponent<BoxCollider>();
             col.size = new Vector3(sx * GridSystem.Instance.CellSize, 5f, sz * GridSystem.Instance.CellSize);
             col.center = new Vector3(0f, 2.5f, 0f);
 
             gameObject.layer = LayerMask.NameToLayer("Building");
 
-            gameObject.AddComponent<BuildingHighlight>();
-            gameObject.AddComponent<DamageEffects>();
+            if (GetComponent<BuildingHighlight>() == null)
+                gameObject.AddComponent<BuildingHighlight>();
+            if (GetComponent<DamageEffects>() == null)
+                gameObject.AddComponent<DamageEffects>();
 
             UpdateModel();
         }

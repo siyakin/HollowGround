@@ -248,6 +248,18 @@ namespace HollowGround.Grid
         private void OnValidate()
         {
             _prevFancy = true;
+            AutoAssignShader();
+        }
+
+        private void Reset()
+        {
+            AutoAssignShader();
+        }
+
+        private void AutoAssignShader()
+        {
+            if (_waterShader != null) return;
+            _waterShader = Shader.Find("HollowGround/Water");
         }
 
         private Transform GetTerrainRoot()
