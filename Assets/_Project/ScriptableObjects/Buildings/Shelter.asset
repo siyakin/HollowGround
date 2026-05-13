@@ -25,6 +25,7 @@ MonoBehaviour:
     Level10Model: {fileID: 919132149155446097, guid: 464ff96ce7fc10e4c9d1282c902d496e, type: 3}
     DamagedModel: {fileID: 919132149155446097, guid: dc163f68441db2c4faaffe70d268d1d8, type: 3}
     DestroyedModel: {fileID: 919132149155446097, guid: 25c8f9c89b19e8d4aa9b916a6f54508a, type: 3}
+  BuildingPrefab: {fileID: 4596761124441498395, guid: afb7f3c55621f4c44b4d363980cf2ace, type: 3}
   SizeX: 2
   SizeZ: 2
   BaseCost:
@@ -44,3 +45,4 @@ MonoBehaviour:
   RequiredWorkers: []
   WorkerProductionBonus: 0
   CommandCenterLevelRequired: 1
+  NeedsRoads: 1
