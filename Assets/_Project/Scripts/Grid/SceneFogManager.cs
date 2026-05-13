@@ -14,6 +14,7 @@ namespace HollowGround.Grid
         [SerializeField] private int _wallRadius       = 1;
         [SerializeField] private int _baseRadius       = 3;
         [SerializeField] private int _roadVisionRadius = 1;
+        [SerializeField] private int _initialRevealRadius = 12;
 
         [Header("Visual")]
         [SerializeField] private float _fogPlaneY      = 0.05f;
@@ -48,6 +49,7 @@ namespace HollowGround.Grid
         private int _resolvedCCRadius;
         private int _resolvedWatchTowerRadius;
         private int _resolvedBaseRadius;
+        private int _resolvedInitialRevealRadius;
 
         public bool        IsInitialized => _initialized;
         public Texture2D   FogTexture    => _fogTex;
@@ -90,12 +92,14 @@ namespace HollowGround.Grid
                 _resolvedCCRadius         = cfg.SceneFogCCVisionRadius;
                 _resolvedWatchTowerRadius = cfg.SceneFogWatchTowerVisionRadius;
                 _resolvedBaseRadius       = cfg.SceneFogBaseVisionRadius;
+                _resolvedInitialRevealRadius = cfg.SceneFogInitialRevealRadius;
             }
             else
             {
                 _resolvedCCRadius         = _ccRadius;
                 _resolvedWatchTowerRadius = _watchTowerRadius;
                 _resolvedBaseRadius       = _baseRadius;
+                _resolvedInitialRevealRadius = _initialRevealRadius;
             }
         }
 
@@ -139,6 +143,7 @@ namespace HollowGround.Grid
             }
 
             MarkRoadsVisible();
+            ApplyInitialReveal();
             FlushTexture();
 
             if (_tintCamera)
@@ -280,6 +285,45 @@ namespace HollowGround.Grid
                 BuildingType.Walls         => _wallRadius,
                 _                          => _resolvedBaseRadius
             };
+        }
+
+        private void ApplyInitialReveal()
+        {
+            if (_resolvedInitialRevealRadius <= 0) return;
+
+            Vector2Int center = FindCommandCenterGridPos();
+            int r = _resolvedInitialRevealRadius;
+            float rSq = r * r;
+
+            for (int dx = -r; dx <= r; dx++)
+            {
+                for (int dz = -r; dz <= r; dz++)
+                {
+                    float distSq = dx * dx + dz * dz;
+                    if (distSq > rSq) continue;
+
+                    int x = center.x + dx;
+                    int z = center.y + dz;
+                    if ((uint)x >= (uint)_gW || (uint)z >= (uint)_gH) continue;
+
+                    if (_fogGrid[x, z] == FogState.Fogged)
+                        _fogGrid[x, z] = FogState.Visible;
+                }
+            }
+        }
+
+        private Vector2Int FindCommandCenterGridPos()
+        {
+            if (BuildingManager.Instance != null)
+            {
+                foreach (var b in BuildingManager.Instance.AllBuildings)
+                {
+                    if (b.Data != null && b.Data.Type == BuildingType.CommandCenter)
+                        return b.GridOrigin;
+                }
+            }
+
+            return new Vector2Int(_gW / 2, _gH / 2);
         }
 
         // ── texture ───────────────────────────────────────────────────────

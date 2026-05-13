@@ -72,6 +72,8 @@ namespace HollowGround.Core
         public int SceneFogCCVisionRadius = 6;
         [Tooltip("Vision radius around Watch Tower")]
         public int SceneFogWatchTowerVisionRadius = 8;
+        [Tooltip("Initial reveal radius around Command Center at game start (StarCraft-style starting visibility)")]
+        public int SceneFogInitialRevealRadius = 12;
 
         [Header("Settler Models")]
         public bool EnableWorker = true;
