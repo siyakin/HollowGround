@@ -724,7 +724,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 0, g: 0, b: 0, a: 0.78431374}
+  m_Color: {r: 0, g: 0.5622641, b: 0.00000003351355, a: 0.78431374}
   m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -38811,7 +38811,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 0.85, g: 0.65, b: 0.1, a: 1}
+  m_Color: {r: 0.8509804, g: 0.10196077, b: 0.799821, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -64403,7 +64403,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 'Wood: 0/500'
+  m_text: Wood:0/500
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 773d13c282d1ec1458a5e3da07f63db1, type: 2}
   m_sharedMaterial: {fileID: 6121361207246008853, guid: 773d13c282d1ec1458a5e3da07f63db1, type: 2}
@@ -67414,7 +67414,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 292884874}
         m_TargetAssemblyTypeName: HollowGround.UI.UIManager, Assembly-CSharp
-        m_MethodName: QuitToMenu
+        m_MethodName: OnQuitButton
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
