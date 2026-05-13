@@ -42,6 +42,7 @@ namespace HollowGround.Roads
 
         private const int SearchRadius = 15;
         private const int MaxBfsIterations = 500;
+        private const int MaxReachableBfsIterations = 2000;
         private const float OrphanCleanupDelay = 30f;
         private const float FadeOutDuration = 2f;
 
@@ -129,6 +130,7 @@ namespace HollowGround.Roads
         private void OnBuildingRemoved(Building building)
         {
             building.OnConstructionComplete -= OnBuildingCompleted;
+            RemoveRoadCellsUnderBuilding(building);
             if (HollowGround.Core.SaveSystem.IsLoading) return;
             ScheduleOrphanCleanup();
         }
@@ -160,22 +162,14 @@ namespace HollowGround.Roads
                 if (b.State != BuildingState.Active) continue;
                 var door = b.GetDoorCell();
 
-                if (_roadCells.Contains(door))
-                {
-                    if (reachable.Add(door))
-                        queue.Enqueue(door);
-                }
-
-                foreach (var dir in Directions)
-                {
-                    var adj = door + dir;
-                    if (_roadCells.Contains(adj) && reachable.Add(adj))
-                        queue.Enqueue(adj);
-                }
+                if (_roadCells.Contains(door) && reachable.Add(door))
+                    queue.Enqueue(door);
             }
 
-            while (queue.Count > 0)
+            int iterations = 0;
+            while (queue.Count > 0 && iterations < MaxReachableBfsIterations)
             {
+                iterations++;
                 var current = queue.Dequeue();
                 foreach (var dir in Directions)
                 {
@@ -469,8 +463,16 @@ namespace HollowGround.Roads
             return cell != null && cell.IsPassable;
         }
 
+        private void StopPendingCleanup()
+        {
+            if (_cleanupCoroutine == null) return;
+            StopCoroutine(_cleanupCoroutine);
+            _cleanupCoroutine = null;
+        }
+
         public void ClearAllRoads()
         {
+            StopPendingCleanup();
             _roadCells.Clear();
             _activeRoadCells.Clear();
             if (_visualizer != null)
@@ -485,6 +487,7 @@ namespace HollowGround.Roads
 
         public void LoadRoadCells(List<Vector2Int> cells)
         {
+            StopPendingCleanup();
             _roadCells.Clear();
             _activeRoadCells.Clear();
             foreach (var cell in cells)
