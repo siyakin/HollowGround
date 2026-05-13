@@ -44,5 +44,8 @@ namespace HollowGround.Core
             else
                 SetSpeed(0);
         }
+
+        public void Pause()  => SetSpeed(0);
+        public void Resume() => SetSpeed(IsPaused ? 1 : GameSpeed);
     }
 }
