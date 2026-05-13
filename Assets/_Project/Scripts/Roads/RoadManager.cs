@@ -14,10 +14,14 @@ namespace HollowGround.Roads
     public class RoadManager : Singleton<RoadManager>, IGridDataProvider
     {
         private readonly HashSet<Vector2Int> _roadCells = new();
+        private readonly HashSet<Vector2Int> _activeRoadCells = new();
         private HashSet<GridPos> _preferredCellsCache;
         private RoadVisualizer _visualizer;
         private Coroutine _cleanupCoroutine;
         private int _groundMask;
+
+        private const float ActiveWear   = 0.85f;
+        private const float OrphanWear   = 0.1f;
 
         public event Action OnRoadsChanged;
         public event Action<Building, List<Vector2Int>> OnRoadsGenerated;
@@ -91,14 +95,17 @@ namespace HollowGround.Roads
             var coords = GridSystem.Instance.GetGridCoordinates(hit.point);
             if (!_roadCells.Contains(coords)) return;
 
-            var reachable = GetReachableRoadCells();
-            if (reachable.Contains(coords))
+            if (_activeRoadCells.Count == 0 && _roadCells.Count > 0)
+                RefreshRoadWear();
+
+            if (_activeRoadCells.Contains(coords))
             {
-                OnRoadMessage?.Invoke("Cannot remove connected road!", UIColors.Default.Warn);
+                OnRoadMessage?.Invoke("Cannot remove active road!", UIColors.Default.Warn);
                 return;
             }
 
             _roadCells.Remove(coords);
+            _activeRoadCells.Remove(coords);
             _visualizer.FadeOutAndRemove(new HashSet<Vector2Int> { coords });
             NotifyRoadsChanged();
         }
@@ -202,6 +209,7 @@ namespace HollowGround.Roads
 
             _visualizer.FadeOutAndRemove(orphaned);
             NotifyRoadsChanged();
+            RefreshRoadWear();
         }
 
         public void RemoveRoadCellsUnderBuilding(Building building)
@@ -314,6 +322,7 @@ namespace HollowGround.Roads
                 Debug.Log($"[RoadManager] Generated {newRoads.Count} road tiles for {source.Data.DisplayName} at {source.GridOrigin}");
                 _visualizer.RebuildVisuals(_roadCells);
                 NotifyRoadsChanged();
+                RefreshRoadWear();
                 OnRoadsGenerated?.Invoke(source, newRoads);
             }
             else
@@ -463,6 +472,7 @@ namespace HollowGround.Roads
         public void ClearAllRoads()
         {
             _roadCells.Clear();
+            _activeRoadCells.Clear();
             if (_visualizer != null)
                 _visualizer.RebuildVisuals(_roadCells);
             NotifyRoadsChanged();
@@ -476,6 +486,7 @@ namespace HollowGround.Roads
         public void LoadRoadCells(List<Vector2Int> cells)
         {
             _roadCells.Clear();
+            _activeRoadCells.Clear();
             foreach (var cell in cells)
             {
                 if (CanPlaceRoad(cell))
@@ -484,6 +495,7 @@ namespace HollowGround.Roads
             if (_visualizer != null)
                 _visualizer.RebuildVisuals(_roadCells);
             NotifyRoadsChanged();
+            RefreshRoadWear();
         }
 
         public bool HasRoadAt(Vector2Int cell) => _roadCells.Contains(cell);
@@ -520,5 +532,21 @@ namespace HollowGround.Roads
 
             return doors;
         }
+
+        public void RefreshRoadWear()
+        {
+            if (_visualizer == null || _roadCells.Count == 0) return;
+
+            _activeRoadCells.Clear();
+            var reachable = GetReachableRoadCells();
+            _activeRoadCells.UnionWith(reachable);
+
+            foreach (var cell in _roadCells)
+                _visualizer.SetTileWear(cell, reachable.Contains(cell) ? ActiveWear : OrphanWear);
+        }
+
+        public bool IsActiveRoad(Vector2Int cell) => _activeRoadCells.Contains(cell);
+
+        public HashSet<Vector2Int> GetActiveRoadCells() => _activeRoadCells;
     }
 }

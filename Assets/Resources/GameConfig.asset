@@ -45,6 +45,7 @@ MonoBehaviour:
   SettlerSpawnCheckInterval: 5
   SettlerWorkDuration: 8
   SettlerRestDuration: 5
+  WorldMapBaseVisionRadius: 2
   EnableWorker: 1
   EnableAdventurer: 1
   EnableSuit: 1

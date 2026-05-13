@@ -9,6 +9,8 @@ namespace HollowGround.Roads
     {
         private readonly Dictionary<Vector2Int, GameObject> _tiles = new();
         private readonly Dictionary<Vector2Int, int> _tileMasks = new();
+        private readonly Dictionary<Vector2Int, float> _tileWear = new();
+        private readonly Dictionary<Vector2Int, MaterialPropertyBlock> _tileMPBs = new();
         private Material _roadMaterial;
         private Texture2D _dirtTexture;
 
@@ -18,6 +20,8 @@ namespace HollowGround.Roads
         private const float AppearDuration = 1.5f;
         private const int CornerSegments = 14;
         private const float UVScale = 0.5f;
+
+        private static readonly int WearID = Shader.PropertyToID("_Wear");
 
         public void RebuildVisuals(HashSet<Vector2Int> roadCells)
         {
@@ -48,6 +52,35 @@ namespace HollowGround.Roads
             }
         }
 
+        public void SetTileWear(Vector2Int cell, float wear)
+        {
+            if (!_tiles.TryGetValue(cell, out var go) || go == null) return;
+
+            if (!_tileMPBs.TryGetValue(cell, out var mpb))
+            {
+                mpb = new MaterialPropertyBlock();
+                _tileMPBs[cell] = mpb;
+            }
+
+            _tileWear[cell] = wear;
+            mpb.SetFloat(WearID, wear);
+
+            var mr = go.GetComponent<MeshRenderer>();
+            if (mr != null)
+                mr.SetPropertyBlock(mpb);
+        }
+
+        public void SetTileWearBulk(Dictionary<Vector2Int, float> wearData)
+        {
+            foreach (var kvp in wearData)
+                SetTileWear(kvp.Key, kvp.Value);
+        }
+
+        public float GetTileWear(Vector2Int cell)
+        {
+            return _tileWear.TryGetValue(cell, out float w) ? w : 0f;
+        }
+
         private int ComputeMask(Vector2Int cell, HashSet<Vector2Int> roadCells)
         {
             int mask = 0;
@@ -69,6 +102,8 @@ namespace HollowGround.Roads
             }
             _tiles.Remove(cell);
             _tileMasks.Remove(cell);
+            _tileWear.Remove(cell);
+            _tileMPBs.Remove(cell);
         }
 
         private void CreateTile(Vector2Int cell, int mask)
@@ -89,6 +124,7 @@ namespace HollowGround.Roads
 
             _tiles[cell] = go;
             _tileMasks[cell] = mask;
+            _tileWear[cell] = 0f;
             StartCoroutine(AnimateTileIn(go.transform));
         }
 
@@ -236,11 +272,19 @@ namespace HollowGround.Roads
 
             _dirtTexture = BuildDirtTexture();
 
-            _roadMaterial = new Material(Shader.Find("Universal Render Pipeline/Lit"));
-            _roadMaterial.SetColor("_BaseColor", new Color(0.55f, 0.45f, 0.35f));
+            var shader = Shader.Find("HollowGround/Road");
+            if (shader == null)
+            {
+                Debug.LogError("[RoadVisualizer] Shader 'HollowGround/Road' not found, falling back to URP/Lit");
+                shader = Shader.Find("Universal Render Pipeline/Lit");
+            }
+
+            _roadMaterial = new Material(shader);
+            _roadMaterial.SetColor("_FreshColor", new Color(0.45f, 0.37f, 0.27f));
+            _roadMaterial.SetColor("_WornColor",  new Color(0.72f, 0.63f, 0.50f));
+            _roadMaterial.SetFloat("_Wear", 0f);
+            _roadMaterial.SetFloat("_CenterBoost", 0.18f);
             _roadMaterial.SetTexture("_BaseMap", _dirtTexture);
-            _roadMaterial.SetFloat("_Smoothness", 0f);
-            _roadMaterial.SetFloat("_Metallic", 0f);
             _roadMaterial.SetFloat("_Cull", 0f);
             _roadMaterial.renderQueue = 2001;
         }
@@ -310,7 +354,7 @@ namespace HollowGround.Roads
 
             while (elapsed < 2f)
             {
-                if (go == null) { _tiles.Remove(cell); _tileMasks.Remove(cell); yield break; }
+                if (go == null) { CleanupTile(cell); yield break; }
                 elapsed += Time.deltaTime;
                 float t = 1f - Mathf.Clamp01(elapsed / 2f);
                 go.transform.localScale = startScale * (t * t);
@@ -323,8 +367,15 @@ namespace HollowGround.Roads
                 if (mf != null && mf.sharedMesh != null) Destroy(mf.sharedMesh);
                 Destroy(go);
             }
+            CleanupTile(cell);
+        }
+
+        private void CleanupTile(Vector2Int cell)
+        {
             _tiles.Remove(cell);
             _tileMasks.Remove(cell);
+            _tileWear.Remove(cell);
+            _tileMPBs.Remove(cell);
         }
     }
 }

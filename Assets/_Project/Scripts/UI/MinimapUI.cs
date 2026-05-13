@@ -14,7 +14,7 @@ namespace HollowGround.UI
         [SerializeField] private RenderTexture _renderTexture;
         [SerializeField] private float _minimapSize = 220f;
         [SerializeField] private float _marginRight = 15f;
-        [SerializeField] private float _marginTop = 15f;
+        [SerializeField] private float _marginTop = 50f;
         [SerializeField] private Color _frameColor = new(0.12f, 0.13f, 0.14f, 0.9f);
         [SerializeField] private Color _viewportColor = new(1f, 1f, 1f, 0.6f);
         [SerializeField] private float _viewportLineWidth = 2f;
@@ -26,6 +26,7 @@ namespace HollowGround.UI
         private GridSystem _gridSystem;
         private Image _markerLayer;
         private Texture2D _markerTexture;
+        private RawImage _fogOverlay;
         private float _worldSizeX;
         private float _worldSizeZ;
 
@@ -91,6 +92,12 @@ namespace HollowGround.UI
             _rawImage = mapGO.AddComponent<RawImage>();
             _rawImage.texture = _renderTexture;
             _rawImage.raycastTarget = false;
+
+            var fogRt = UIPrimitiveFactory.CreateUIObject("FogOverlay", transform);
+            UIPrimitiveFactory.StretchFull(fogRt, new Vector2(3, 3), new Vector2(-3, -3));
+            _fogOverlay = fogRt.gameObject.AddComponent<RawImage>();
+            _fogOverlay.raycastTarget = false;
+            _fogOverlay.color = Color.white;
 
             var markerGO = new GameObject("Markers", typeof(RectTransform));
             markerGO.transform.SetParent(transform, false);
@@ -169,6 +176,16 @@ namespace HollowGround.UI
         {
             if (GameManager.Instance != null && GameManager.Instance.CurrentState == GameState.Paused) return;
             UpdateViewportFrame();
+            TryBindFogTexture();
+        }
+
+        private void TryBindFogTexture()
+        {
+            if (_fogOverlay == null) return;
+            if (_fogOverlay.texture != null) return;
+            var fog = SceneFogManager.Instance;
+            if (fog == null || !fog.IsInitialized) return;
+            _fogOverlay.texture = fog.FogTexture;
         }
 
         private void UpdateViewportFrame()
@@ -355,5 +372,6 @@ namespace HollowGround.UI
             _markerTexture.SetPixels(pixels);
             _markerTexture.Apply();
         }
+
     }
 }

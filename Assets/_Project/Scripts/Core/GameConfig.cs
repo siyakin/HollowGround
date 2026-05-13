@@ -63,6 +63,16 @@ namespace HollowGround.Core
         [Tooltip("Vision radius (in tiles) around the player base on the world map")]
         public int WorldMapBaseVisionRadius = 2;
 
+        [Header("Scene Fog of War")]
+        [Tooltip("Enable Starcraft-style fog of war on the city scene")]
+        public bool EnableSceneFog = true;
+        [Tooltip("Vision radius (in grid cells) around normal buildings")]
+        public int SceneFogBaseVisionRadius = 3;
+        [Tooltip("Vision radius around Command Center")]
+        public int SceneFogCCVisionRadius = 6;
+        [Tooltip("Vision radius around Watch Tower")]
+        public int SceneFogWatchTowerVisionRadius = 8;
+
         [Header("Settler Models")]
         public bool EnableWorker = true;
         public bool EnableAdventurer = true;

@@ -35,6 +35,12 @@ namespace HollowGround.UI
         private RectTransform _setupTroopContainer;
 
         private bool _built;
+        private Texture2D _fogTexture;
+        private RawImage _fogOverlay;
+        private Texture2D _glowTexture;
+        private RawImage _glowOverlay;
+        private float _fogAnimTime;
+        private float _expeditionListTimer;
 
         private class TileView
         {
@@ -67,19 +73,33 @@ namespace HollowGround.UI
                 BattleManager.Instance.OnBattleCompleted -= HandleBattleCompleted;
         }
 
+        private void OnDestroy()
+        {
+            if (_fogTexture != null) Destroy(_fogTexture);
+            if (_glowTexture != null) Destroy(_glowTexture);
+        }
+
         private void Update()
         {
-            UpdateExpeditionList();
+            _expeditionListTimer += Time.unscaledDeltaTime;
+            if (_expeditionListTimer >= 1.5f)
+            {
+                _expeditionListTimer = 0f;
+                UpdateExpeditionList();
+            }
+            AnimateFog();
         }
 
         private void HandleExpeditionPhaseChanged(Expedition expedition)
         {
             RefreshAll();
+            _expeditionListTimer = 1.5f;
         }
 
         private void HandleBattleCompleted(BattleReport report)
         {
             RefreshAll();
+            _expeditionListTimer = 1.5f;
         }
 
         private void BuildUI()
@@ -187,6 +207,8 @@ namespace HollowGround.UI
                     };
                 }
             }
+
+            BuildFogOverlay();
         }
 
         private void BuildLegend()
@@ -268,9 +290,10 @@ namespace HollowGround.UI
                 }
                 else if (!visible && explored)
                 {
-                    view.Background.color = UIColors.FogExplored;
+                    Color terrainColor = isBase ? UIColors.GetNodeColor(MapNodeType.PlayerBase) : GetNodeColor(node.NodeType, node.IsCleared);
+                    view.Background.color = Color.Lerp(terrainColor, UIColors.Fog, 0.65f);
                     view.Icon.text = isBase ? "*" : GetNodeIcon(node.NodeType);
-                    view.Icon.color = UIColors.TextDim;
+                    view.Icon.color = new Color(0.60f, 0.60f, 0.64f, 1f);
                     view.Button.interactable = true;
                 }
                 else
@@ -296,6 +319,8 @@ namespace HollowGround.UI
                 bool isSelected = _selectedNode != null && _selectedNode.GridPosition == view.Pos;
                 view.Border.color = isSelected ? UIColors.Selected : (hasActiveExpedition ? new Color(1f, 0.8f, 0.2f, 0.8f) : new Color(0, 0, 0, 0));
             }
+
+            RefreshFogOverlay();
         }
 
         private void OnTileClicked(int x, int y)
@@ -734,6 +759,111 @@ namespace HollowGround.UI
             Color c = UIColors.GetNodeColor(type);
             if (cleared) c = Color.Lerp(c, UIColors.Empty, 0.55f);
             return c;
+        }
+
+        private void BuildFogOverlay()
+        {
+            if (WorldMap.Instance == null) return;
+            int w = WorldMap.Instance.MapWidth;
+            int h = WorldMap.Instance.MapHeight;
+
+            _fogTexture = new Texture2D(w, h, TextureFormat.RGBA32, false);
+            _fogTexture.filterMode = FilterMode.Bilinear;
+            _fogTexture.wrapMode = TextureWrapMode.Clamp;
+
+            _glowTexture = new Texture2D(w, h, TextureFormat.RGBA32, false);
+            _glowTexture.filterMode = FilterMode.Bilinear;
+            _glowTexture.wrapMode = TextureWrapMode.Clamp;
+
+            var fogGO = UIPrimitiveFactory.CreateUIObject("FogOverlay", _gridRect);
+            UIPrimitiveFactory.StretchFull(fogGO);
+            _fogOverlay = fogGO.gameObject.AddComponent<RawImage>();
+            _fogOverlay.texture = _fogTexture;
+            _fogOverlay.raycastTarget = false;
+
+            var glowGO = UIPrimitiveFactory.CreateUIObject("BoundaryGlow", _gridRect);
+            UIPrimitiveFactory.StretchFull(glowGO);
+            _glowOverlay = glowGO.gameObject.AddComponent<RawImage>();
+            _glowOverlay.texture = _glowTexture;
+            _glowOverlay.raycastTarget = false;
+        }
+
+        private void RefreshFogOverlay()
+        {
+            if (_fogTexture == null || WorldMap.Instance == null) return;
+
+            int w = WorldMap.Instance.MapWidth;
+            int h = WorldMap.Instance.MapHeight;
+
+            Color fogPx      = new Color(0.05f, 0.05f, 0.08f, 0.90f);
+            Color exploredPx = new Color(0.06f, 0.06f, 0.10f, 0.38f);
+            Color clearPx    = new Color(0f,    0f,    0f,    0f);
+            Color glowPx     = new Color(0.9f,  0.65f, 0.1f,  0.22f);
+            Color glowClear  = new Color(0.9f,  0.65f, 0.1f,  0f);
+
+            Color[] fogPixels  = new Color[w * h];
+            Color[] glowPixels = new Color[w * h];
+
+            for (int x = 0; x < w; x++)
+            {
+                for (int y = 0; y < h; y++)
+                {
+                    var node = WorldMap.Instance.GetNode(x, y);
+                    int idx = y * w + x;
+                    if (node == null || (!node.IsVisible && !node.IsExplored))
+                    {
+                        fogPixels[idx]  = fogPx;
+                        glowPixels[idx] = glowClear;
+                    }
+                    else if (!node.IsVisible && node.IsExplored)
+                    {
+                        fogPixels[idx]  = exploredPx;
+                        glowPixels[idx] = glowClear;
+                    }
+                    else
+                    {
+                        fogPixels[idx]  = clearPx;
+                        glowPixels[idx] = glowClear;
+                    }
+                }
+            }
+
+            int[] ddx = { -1, 1, 0, 0 };
+            int[] ddy = {  0, 0, -1, 1 };
+            for (int x = 0; x < w; x++)
+            {
+                for (int y = 0; y < h; y++)
+                {
+                    var node = WorldMap.Instance.GetNode(x, y);
+                    if (node == null || !node.IsVisible) continue;
+                    for (int d = 0; d < 4; d++)
+                    {
+                        int nx = x + ddx[d], ny = y + ddy[d];
+                        if (nx < 0 || nx >= w || ny < 0 || ny >= h) continue;
+                        var neighbor = WorldMap.Instance.GetNode(nx, ny);
+                        if (neighbor != null && !neighbor.IsVisible)
+                        {
+                            glowPixels[y * w + x] = glowPx;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            _fogTexture.SetPixels(fogPixels);
+            _fogTexture.Apply();
+            _glowTexture.SetPixels(glowPixels);
+            _glowTexture.Apply();
+        }
+
+        private void AnimateFog()
+        {
+            if (_fogOverlay == null) return;
+            _fogAnimTime += Time.deltaTime * 0.55f;
+            float pulse = Mathf.Sin(_fogAnimTime) * 0.5f + 0.5f;
+            var c = _fogOverlay.color;
+            c.a = 0.93f + pulse * 0.05f;
+            _fogOverlay.color = c;
         }
     }
 }

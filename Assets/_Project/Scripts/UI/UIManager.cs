@@ -122,7 +122,7 @@ namespace HollowGround.UI
                 return;
             }
 
-            if (_pause.IsPaused) return;
+            if (_pause == null || _pause.IsPaused) return;
 
             if (kb.f5Key.wasPressedThisFrame) QuickSave();
             if (kb.f9Key.wasPressedThisFrame) QuickLoad();

@@ -27,6 +27,7 @@ namespace HollowGround.Core
         public List<SettlerWalkerSave> Settlers = new();
         public TerrainSave Terrain;
         public List<ExpeditionSave> Expeditions = new();
+        public byte[] SceneFog;
     }
 
     [Serializable]

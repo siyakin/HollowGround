@@ -66,6 +66,7 @@ namespace HollowGround.Core
             CaptureSettlers(data);
             CaptureTerrain(data);
             CaptureExpeditions(data);
+            CaptureSceneFog(data);
 
             return data;
         }
@@ -177,6 +178,7 @@ namespace HollowGround.Core
             ApplySettlers(data);
             ApplyTerrain(data);
             ApplyExpeditions(data);
+            ApplySceneFog(data);
 
             if (WorldMap.Instance != null)
                 WorldMap.Instance.RefreshVisibility();
@@ -399,6 +401,19 @@ namespace HollowGround.Core
 
                 data.Expeditions.Add(save);
             }
+        }
+
+        private void CaptureSceneFog(SaveData data)
+        {
+            if (Grid.SceneFogManager.Instance == null || !Grid.SceneFogManager.Instance.IsInitialized) return;
+
+            var fogState = Grid.SceneFogManager.Instance.CaptureFogState();
+            if (fogState == null) return;
+
+            byte[] bytes = new byte[fogState.Length];
+            for (int i = 0; i < fogState.Length; i++)
+                bytes[i] = (byte)fogState[i];
+            data.SceneFog = bytes;
         }
 
         #endregion
@@ -773,6 +788,18 @@ namespace HollowGround.Core
 
                 ExpeditionSystem.Instance.RestoreExpedition(expedition);
             }
+        }
+
+        private void ApplySceneFog(SaveData data)
+        {
+            if (Grid.SceneFogManager.Instance == null || !Grid.SceneFogManager.Instance.IsInitialized) return;
+            if (data.SceneFog == null || data.SceneFog.Length == 0) return;
+
+            var fogState = new Grid.SceneFogManager.FogState[data.SceneFog.Length];
+            for (int i = 0; i < data.SceneFog.Length; i++)
+                fogState[i] = (Grid.SceneFogManager.FogState)data.SceneFog[i];
+
+            Grid.SceneFogManager.Instance.RestoreFogState(fogState);
         }
 
         #endregion
