@@ -323,6 +323,10 @@ namespace HollowGround.Grid
                 }
             }
 
+            var cfg = GameConfig.Instance;
+            if (cfg != null)
+                return cfg.StartingCCPosition;
+
             return new Vector2Int(_gW / 2, _gH / 2);
         }
 

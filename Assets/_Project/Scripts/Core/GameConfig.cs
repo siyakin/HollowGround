@@ -75,6 +75,10 @@ namespace HollowGround.Core
         [Tooltip("Initial reveal radius around Command Center at game start (StarCraft-style starting visibility)")]
         public int SceneFogInitialRevealRadius = 12;
 
+        [Header("Starting Position")]
+        [Tooltip("Command Center starting grid position (bottom-left corner of map if small values)")]
+        public Vector2Int StartingCCPosition = new Vector2Int(6, 6);
+
         [Header("Settler Models")]
         public bool EnableWorker = true;
         public bool EnableAdventurer = true;

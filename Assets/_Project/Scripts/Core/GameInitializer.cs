@@ -31,11 +31,11 @@ namespace HollowGround.Core
         [SerializeField] private BuildingData _woodFactoryData;
         [SerializeField] private BuildingData _waterWellData;
 
-        [Header("Starting Positions")]
-        [SerializeField] private Vector2Int _ccPos = new(24, 24);
-        [SerializeField] private Vector2Int _farmPos = new(26, 24);
-        [SerializeField] private Vector2Int _woodPos = new(24, 26);
-        [SerializeField] private Vector2Int _waterPos = new(26, 26);
+        [Header("Starting Positions (overridden by GameConfig.StartingCCPosition)")]
+        [SerializeField] private Vector2Int _ccPos = new(6, 6);
+        [SerializeField] private Vector2Int _farmOffset = new(2, 0);
+        [SerializeField] private Vector2Int _woodOffset = new(0, 2);
+        [SerializeField] private Vector2Int _waterOffset = new(2, 2);
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         private static void EnsureExists()
@@ -128,10 +128,13 @@ namespace HollowGround.Core
 
         private void PlaceStartingBuildings()
         {
-            PlaceBuilding(_commandCenterData, _ccPos);
-            PlaceBuilding(_farmData, _farmPos);
-            PlaceBuilding(_woodFactoryData, _woodPos);
-            PlaceBuilding(_waterWellData, _waterPos);
+            var cfg = GameConfig.Instance;
+            Vector2Int cc = cfg != null ? cfg.StartingCCPosition : _ccPos;
+
+            PlaceBuilding(_commandCenterData, cc);
+            PlaceBuilding(_farmData, cc + _farmOffset);
+            PlaceBuilding(_woodFactoryData, cc + _woodOffset);
+            PlaceBuilding(_waterWellData, cc + _waterOffset);
         }
 
         private void PlaceBuilding(BuildingData data, Vector2Int gridPos)
@@ -161,13 +164,14 @@ namespace HollowGround.Core
             Vector3 target;
             if (GridSystem.Instance != null)
             {
-                float cx = GridSystem.Instance.Width * GridSystem.Instance.CellSize * 0.5f;
-                float cz = GridSystem.Instance.Height * GridSystem.Instance.CellSize * 0.5f;
-                target = new Vector3(cx, 0f, cz);
+                float cellSize = GridSystem.Instance.CellSize;
+                var cfg = GameConfig.Instance;
+                Vector2Int cc = cfg != null ? cfg.StartingCCPosition : _ccPos;
+                target = GridSystem.Instance.GetWorldPosition(cc.x, cc.y);
             }
             else
             {
-                target = new Vector3(50f, 0f, 50f);
+                target = new Vector3(12f, 0f, 12f);
             }
 
             strategyCam.transform.position = target;
