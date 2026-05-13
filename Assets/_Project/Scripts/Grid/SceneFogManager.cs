@@ -68,7 +68,7 @@ namespace HollowGround.Grid
                 Roads.RoadManager.Instance.OnRoadsChanged += OnRoadsChanged;
         }
 
-        private void OnDestroy()
+        protected override void OnDestroy()
         {
             if (BuildingManager.Instance != null)
             {
