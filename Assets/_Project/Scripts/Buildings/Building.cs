@@ -108,6 +108,8 @@ namespace HollowGround.Buildings
                 gameObject.AddComponent<BuildingHighlight>();
             if (GetComponent<DamageEffects>() == null)
                 gameObject.AddComponent<DamageEffects>();
+            if (GetComponent<BuildingGlow>() == null)
+                gameObject.AddComponent<BuildingGlow>();
 
             UpdateModel();
         }
