@@ -147,6 +147,7 @@ namespace HollowGround.UI
             int amount   = ResourceManager.Instance.Get(slot.Type);
             int capacity = ResourceManager.Instance.GetCapacity(slot.Type);
             slot.AmountText.text = $"{GetDisplayName(slot.Type)} {amount}/{capacity}";
+            slot.AmountText.color = UIColors.GetResourceColor(slot.Type);
         }
 
         private static string GetDisplayName(ResourceType type) => type switch

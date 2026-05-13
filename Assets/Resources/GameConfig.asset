@@ -53,7 +53,7 @@ MonoBehaviour:
   SceneFogInitialRevealRadius: 12
   StartingCCPosition: {x: 8, y: 8}
   UseCustomCameraPosition: 1
-  StartingCameraPosition: {x: 10, y: -10}
+  StartingCameraPosition: {x: 60, y: 60}
   EnableWorker: 1
   EnableAdventurer: 1
   EnableSuit: 1
