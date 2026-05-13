@@ -135,6 +135,7 @@ namespace HollowGround.Resources
 
         public void SetCapacity(ResourceType type, int capacity)
         {
+            if (_capacity[type] == capacity) return;
             _capacity[type] = capacity;
             if (_resources[type] > capacity)
                 _resources[type] = capacity;

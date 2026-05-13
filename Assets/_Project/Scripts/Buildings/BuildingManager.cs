@@ -16,11 +16,13 @@ namespace HollowGround.Buildings
         private Building _commandCenter;
         private float _cachedProductionBonus = -1f;
         private bool _productionBonusDirty = true;
+        private int _totalPopulationCapacity;
+        private int _totalStorageCapacity;
 
         public List<Building> AllBuildings => _buildings;
         public Building CommandCenter => _commandCenter;
-        public int TotalPopulationCapacity => _buildings.Sum(b => b.Data.PopulationCapacity * (b.State == BuildingState.Active ? b.Level : 0));
-        public int TotalStorageCapacity => _buildings.Sum(b => b.Data.StorageCapacity * (b.State == BuildingState.Active ? b.Level : 0));
+        public int TotalPopulationCapacity => _totalPopulationCapacity;
+        public int TotalStorageCapacity => _totalStorageCapacity;
 
         public event System.Action<Building> OnBuildingAdded;
         public event System.Action<Building> OnBuildingRemoved;
@@ -227,10 +229,28 @@ namespace HollowGround.Buildings
         {
             if (ResourceManager.Instance == null) return;
 
-            int totalStorage = ResourceManager.Instance.BaseCapacity + TotalStorageCapacity;
+            RecalculateRunningTotals();
+            int totalStorage = ResourceManager.Instance.BaseCapacity + _totalStorageCapacity;
 
             foreach (ResourceType resType in System.Enum.GetValues(typeof(ResourceType)))
                 ResourceManager.Instance.SetCapacity(resType, totalStorage);
+        }
+
+        private void RecalculateRunningTotals()
+        {
+            int pop = 0;
+            int stor = 0;
+            for (int i = 0; i < _buildings.Count; i++)
+            {
+                var b = _buildings[i];
+                if (b.State == BuildingState.Active)
+                {
+                    pop += b.Data.PopulationCapacity * b.Level;
+                    stor += b.Data.StorageCapacity * b.Level;
+                }
+            }
+            _totalPopulationCapacity = pop;
+            _totalStorageCapacity = stor;
         }
     }
 }

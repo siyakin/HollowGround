@@ -468,7 +468,7 @@ namespace HollowGround.Core
             {
                 if (bs.State == BuildingState.Placing.ToString()) continue;
 
-                var buildingData = LoadBuildingDataByName(bs.BuildingDataName);
+                var buildingData = FindBuildingData(bs.BuildingDataName);
                 if (buildingData == null)
                 {
                     Debug.LogWarning($"[SaveSystem] BuildingData not found: {bs.BuildingDataName}");
@@ -489,11 +489,6 @@ namespace HollowGround.Core
 
                 BuildingManager.Instance.RegisterBuilding(building);
             }
-        }
-
-        private static BuildingData LoadBuildingDataByName(string name)
-        {
-            return FindBuildingData(name);
         }
 
         private static BuildingData FindBuildingData(string name)
