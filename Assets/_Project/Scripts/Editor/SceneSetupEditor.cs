@@ -7,6 +7,7 @@ using HollowGround.UI;
 using HollowGround.Camera;
 using HollowGround.Tech;
 using HollowGround.NPCs;
+using HollowGround.Buildings;
 
 namespace HollowGround.Editor
 {
