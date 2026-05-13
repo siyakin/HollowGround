@@ -1067,22 +1067,38 @@ namespace HollowGround.Editor
 
         #region Minimap Setup
 
+        const string MINIMAP_PANEL_PREFAB_PATH = "Assets/_Project/Prefabs/UI/MinimapPanel.prefab";
+        const string MINIMAP_CAMERA_PREFAB_PATH = "Assets/_Project/Prefabs/MinimapCamera.prefab";
+        const string MINIMAP_RT_PATH = "Assets/_Project/Settings/MinimapRenderTexture.renderTexture";
+
+        [MenuItem("HollowGround/Minimap/Create Prefabs")]
+        public static void CreateMinimapPrefabs()
+        {
+            var renderTexture = EnsureRenderTexture();
+
+            CreateMinimapPanelPrefab(renderTexture);
+            CreateMinimapCameraPrefab(renderTexture);
+
+            AssetDatabase.SaveAssets();
+            Debug.Log("[Minimap] Prefabs created at:");
+            Debug.Log("  Panel: " + MINIMAP_PANEL_PREFAB_PATH);
+            Debug.Log("  Camera: " + MINIMAP_CAMERA_PREFAB_PATH);
+        }
+
         [MenuItem("HollowGround/Setup Minimap")]
         public static void SetupMinimap()
         {
-            string rtPath = "Assets/_Project/Settings/MinimapRenderTexture.renderTexture";
-            var renderTexture = AssetDatabase.LoadAssetAtPath<RenderTexture>(rtPath);
-            if (renderTexture == null)
-            {
-                renderTexture = new RenderTexture(512, 512, 16, RenderTextureFormat.ARGB32);
-                renderTexture.antiAliasing = 1;
-                renderTexture.filterMode = FilterMode.Point;
-                renderTexture.Create();
+            var renderTexture = EnsureRenderTexture();
 
-                System.IO.Directory.CreateDirectory("Assets/_Project/Settings");
-                AssetDatabase.CreateAsset(renderTexture, rtPath);
-                AssetDatabase.SaveAssets();
-                Debug.Log("[Minimap] Created RenderTexture at " + rtPath);
+            var panelPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(MINIMAP_PANEL_PREFAB_PATH);
+            var cameraPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(MINIMAP_CAMERA_PREFAB_PATH);
+
+            if (panelPrefab == null || cameraPrefab == null)
+            {
+                Debug.LogWarning("[Minimap] Prefabs not found. Creating them now...");
+                CreateMinimapPrefabs();
+                panelPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(MINIMAP_PANEL_PREFAB_PATH);
+                cameraPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(MINIMAP_CAMERA_PREFAB_PATH);
             }
 
             Transform cameraRigT = null;
@@ -1100,23 +1116,10 @@ namespace HollowGround.Editor
             if (existingMinimapCam != null)
                 Object.DestroyImmediate(existingMinimapCam.gameObject);
 
-            GameObject minimapCamGO = new("MinimapCamera");
-            minimapCamGO.transform.SetParent(cameraRigT, false);
-            minimapCamGO.transform.localPosition = new Vector3(0f, 120f, 0f);
-            minimapCamGO.transform.localRotation = Quaternion.Euler(90f, 0f, 0f);
-
-            var cam = minimapCamGO.AddComponent<UnityEngine.Camera>();
-            cam.orthographic = true;
-            cam.orthographicSize = 120f;
-            cam.clearFlags = CameraClearFlags.SolidColor;
-            cam.backgroundColor = new Color(0.06f, 0.07f, 0.08f, 1f);
-            cam.targetTexture = renderTexture;
-            cam.depth = -2;
-            cam.allowHDR = false;
-            cam.allowMSAA = false;
-            cam.cullingMask = ~0 & ~(1 << 5);
-
-            var minimapCam = minimapCamGO.AddComponent<MinimapCamera>();
+            GameObject minimapCamInstance = (GameObject)PrefabUtility.InstantiatePrefab(cameraPrefab);
+            minimapCamInstance.transform.SetParent(cameraRigT, false);
+            minimapCamInstance.transform.localPosition = new Vector3(0f, 120f, 0f);
+            minimapCamInstance.transform.localRotation = Quaternion.Euler(90f, 0f, 0f);
 
             Canvas canvas = Object.FindAnyObjectByType<Canvas>();
             if (canvas == null)
@@ -1129,20 +1132,84 @@ namespace HollowGround.Editor
             if (existingMinimap != null)
                 Object.DestroyImmediate(existingMinimap.gameObject);
 
-            GameObject minimapPanel = new("MinimapPanel");
-            minimapPanel.transform.SetParent(canvas.transform, false);
-            minimapPanel.SetActive(true);
+            GameObject minimapPanelInstance = (GameObject)PrefabUtility.InstantiatePrefab(panelPrefab);
+            minimapPanelInstance.transform.SetParent(canvas.transform, false);
+            minimapPanelInstance.SetActive(true);
 
-            var minimapUI = minimapPanel.AddComponent<MinimapUI>();
+            EditorSceneManager.MarkAllScenesDirty();
+            Debug.Log("[Minimap] Setup complete! Instantiated from prefabs.");
+        }
+
+        static RenderTexture EnsureRenderTexture()
+        {
+            var renderTexture = AssetDatabase.LoadAssetAtPath<RenderTexture>(MINIMAP_RT_PATH);
+            if (renderTexture != null) return renderTexture;
+
+            renderTexture = new RenderTexture(512, 512, 16, RenderTextureFormat.ARGB32);
+            renderTexture.antiAliasing = 1;
+            renderTexture.filterMode = FilterMode.Point;
+            renderTexture.Create();
+
+            System.IO.Directory.CreateDirectory("Assets/_Project/Settings");
+            AssetDatabase.CreateAsset(renderTexture, MINIMAP_RT_PATH);
+            AssetDatabase.SaveAssets();
+            Debug.Log("[Minimap] Created RenderTexture at " + MINIMAP_RT_PATH);
+            return renderTexture;
+        }
+
+        static void CreateMinimapPanelPrefab(RenderTexture renderTexture)
+        {
+            var existing = AssetDatabase.LoadAssetAtPath<GameObject>(MINIMAP_PANEL_PREFAB_PATH);
+            if (existing != null)
+            {
+                Debug.Log("[Minimap] MinimapPanel prefab already exists, skipping.");
+                return;
+            }
+
+            GameObject go = new("MinimapPanel");
+            go.AddComponent<RectTransform>();
+            var minimapUI = go.AddComponent<MinimapUI>();
 
             SerializedObject so = new SerializedObject(minimapUI);
             var rtProp = so.FindProperty("_renderTexture");
             if (rtProp != null) rtProp.objectReferenceValue = renderTexture;
             so.ApplyModifiedProperties();
 
-            EditorUtility.SetDirty(minimapUI);
-            EditorSceneManager.MarkAllScenesDirty();
-            Debug.Log("[Minimap] Setup complete! MinimapCamera + MinimapPanel created.");
+            System.IO.Directory.CreateDirectory("Assets/_Project/Prefabs/UI");
+            PrefabUtility.SaveAsPrefabAsset(go, MINIMAP_PANEL_PREFAB_PATH);
+            Object.DestroyImmediate(go);
+
+            Debug.Log("[Minimap] MinimapPanel prefab saved.");
+        }
+
+        static void CreateMinimapCameraPrefab(RenderTexture renderTexture)
+        {
+            var existing = AssetDatabase.LoadAssetAtPath<GameObject>(MINIMAP_CAMERA_PREFAB_PATH);
+            if (existing != null)
+            {
+                Debug.Log("[Minimap] MinimapCamera prefab already exists, skipping.");
+                return;
+            }
+
+            GameObject go = new("MinimapCamera");
+
+            var cam = go.AddComponent<UnityEngine.Camera>();
+            cam.orthographic = true;
+            cam.orthographicSize = 120f;
+            cam.clearFlags = CameraClearFlags.SolidColor;
+            cam.backgroundColor = new Color(0.06f, 0.07f, 0.08f, 1f);
+            cam.targetTexture = renderTexture;
+            cam.depth = -2;
+            cam.allowHDR = false;
+            cam.allowMSAA = false;
+            cam.cullingMask = ~0 & ~(1 << 5);
+
+            go.AddComponent<MinimapCamera>();
+
+            PrefabUtility.SaveAsPrefabAsset(go, MINIMAP_CAMERA_PREFAB_PATH);
+            Object.DestroyImmediate(go);
+
+            Debug.Log("[Minimap] MinimapCamera prefab saved.");
         }
 
         #endregion
